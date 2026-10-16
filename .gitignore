@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+.svelte-kit/
+build/
+dist/
+*.timestamp-*
+
+# Environment
+.env
+.env.*
+!.env.example
