@@ -1,6 +1,6 @@
 # frontend
 
-SvelteKit 3 + TypeScript, built with Vite.
+SvelteKit 3 + TypeScript + Tailwind CSS 4, built with Vite.
 
 ## Setup
 
@@ -22,15 +22,61 @@ pnpm dev        # http://localhost:5173
 
 ```
 src/
+├── app.css               # Tailwind entrypoint (@import 'tailwindcss')
 ├── app.d.ts              # App.Locals / App.PageData typings
 ├── app.html              # HTML shell
 ├── lib/                  # Imported via the `#lib` alias
 │   ├── assets/favicon.svg
 │   └── index.ts
 └── routes/
-    ├── +layout.svelte
+    ├── +layout.svelte    # Imports app.css
     └── +page.svelte
 ```
+
+## Styling with Tailwind
+
+Tailwind v4 is wired in through the `@tailwindcss/vite` plugin (see
+`vite.config.ts`) and loaded once from `src/app.css`:
+
+```css
+@import 'tailwindcss';
+```
+
+`+layout.svelte` imports that file, so utility classes are available in every
+route. There is **no `tailwind.config.js`** — v4 scans your source
+automatically.
+
+### Plugins
+
+The official plugins are installed and registered with `@plugin` in
+`src/app.css`:
+
+```css
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+```
+
+- **`@tailwindcss/forms`** — resets form controls to a consistent baseline, so
+  `<input>`, `<select>` and `<textarea>` look sane without extra classes.
+- **`@tailwindcss/typography`** — adds the `prose` classes for styling
+  rendered HTML (Markdown, CMS content, etc.):
+  `<article class="prose prose-slate">…</article>`.
+
+### Customising the theme
+
+To customise the theme, add an `@theme` block to `src/app.css`:
+
+```css
+@import 'tailwindcss';
+
+@theme {
+	--color-brand-500: oklch(0.72 0.15 250);
+	--font-display: 'Inter', sans-serif;
+}
+```
+
+That generates `bg-brand-500`, `font-display`, and so on. See the
+[Tailwind v4 docs](https://tailwindcss.com/docs) for details.
 
 ## Adding routes
 

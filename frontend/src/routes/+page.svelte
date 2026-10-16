@@ -2,45 +2,20 @@
 	let count = $state(0);
 </script>
 
-<main>
-	<h1>LES</h1>
-	<p>SvelteKit 3 · TypeScript · Vite 8.</p>
+<main class="mx-auto max-w-2xl px-6 py-16 font-sans text-slate-800">
+	<h1 class="text-4xl font-bold tracking-tight text-slate-900">LES</h1>
+	<p class="mt-2 text-slate-600">SvelteKit 3 · TypeScript · Tailwind CSS 4.</p>
 
-	<button onclick={() => count++}>
+	<button
+		type="button"
+		onclick={() => count++}
+		class="mt-8 rounded-lg bg-slate-900 px-4 py-2 font-medium text-white transition hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+	>
 		count is {count}
 	</button>
 
-	<p>
-		Edit <code>src/routes/+page.svelte</code> to get started. Add routes by creating
-		folders under <code>src/routes/</code>.
+	<p class="mt-8 text-sm text-slate-500">
+		Edit <code class="rounded bg-slate-100 px-1.5 py-0.5 text-slate-700">src/routes/+page.svelte</code>
+		to get started.
 	</p>
 </main>
-
-<style>
-	main {
-		max-width: 42rem;
-		margin: 0 auto;
-		padding: 4rem 1.5rem;
-		font-family: system-ui, sans-serif;
-	}
-	h1 {
-		margin: 0 0 0.25rem;
-	}
-	p {
-		color: #444;
-	}
-	button {
-		margin: 1rem 0;
-		padding: 0.5rem 0.9rem;
-		border: 1px solid #ccc;
-		border-radius: 6px;
-		background: #fff;
-		cursor: pointer;
-	}
-	code {
-		background: #f4f4f4;
-		padding: 0.1rem 0.3rem;
-		border-radius: 4px;
-		font-size: 0.9em;
-	}
-</style>
