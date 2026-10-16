@@ -1,11 +1,12 @@
 # LES
 
-A SvelteKit 3 app with TypeScript and Vite.
+A SvelteKit 3 app with TypeScript and Vite, and a Flask backend.
 
 ## Requirements
 
 - Node 22+
 - [pnpm](https://pnpm.io/)
+- Python 3
 
 ## Getting started
 
@@ -13,6 +14,14 @@ A SvelteKit 3 app with TypeScript and Vite.
 cd frontend
 pnpm install
 pnpm dev        # http://localhost:5173
+```
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+flask run       # http://127.0.0.1:5000
 ```
 
 ## Scripts
@@ -40,6 +49,9 @@ frontend/
 ├── static/                 # Served as-is at the root
 ├── tsconfig.json
 └── vite.config.ts
+backend/
+├── app.py
+└── requirements.txt
 ```
 
 ## SvelteKit 3 notes
