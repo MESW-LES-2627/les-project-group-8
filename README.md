@@ -1,6 +1,7 @@
 # LES
 
-A SvelteKit 3 app with TypeScript and Vite, and a Flask backend.
+A SvelteKit 3 frontend with TypeScript, Tailwind CSS 4 and Vite, plus a Flask
+backend.
 
 ## Requirements
 
@@ -38,6 +39,7 @@ flask run       # http://127.0.0.1:5000
 ```
 frontend/
 ├── src/
+│   ├── app.css             # Tailwind entrypoint
 │   ├── app.d.ts            # App namespace typings
 │   ├── app.html            # HTML shell
 │   ├── lib/                # Imported via the `#lib` alias

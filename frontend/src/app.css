@@ -1,0 +1,8 @@
+@import 'tailwindcss';
+
+/*
+ * Official plugins. In Tailwind v4 these are registered here (in CSS) rather
+ * than in a JS config file.
+ */
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
