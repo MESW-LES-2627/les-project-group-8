@@ -46,6 +46,18 @@ pnpm deploy     # vite build && wrangler deploy
 
 The Worker config lives in `frontend/wrangler.jsonc`.
 
+### Automatic deploys (GitHub Actions)
+
+Pushing to `main` deploys automatically via `.github/workflows/deploy.yml`. It
+needs two repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+| ------ | ----- |
+| `CLOUDFLARE_API_TOKEN` | API token with **Workers Scripts: Edit** (the "Edit Cloudflare Workers" template works) |
+| `CLOUDFLARE_ACCOUNT_ID` | Your account ID (Workers & Pages overview → Account Details) |
+
+You can also run it manually from the **Actions** tab (`workflow_dispatch`).
+
 ## Scripts (frontend)
 
 | Command           | Description                        |
