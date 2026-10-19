@@ -58,20 +58,25 @@ needs two repository secrets (Settings → Secrets and variables → Actions):
 
 You can also run it manually from the **Actions** tab (`workflow_dispatch`).
 
-### Staging
+### Environments
 
-A separate Worker, `les-frontend-staging`, is deployed from the `staging` branch
-by `.github/workflows/deploy-staging.yml` (or manually from the **Actions** tab).
-It uses the same `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secrets.
+| Environment | Branch    | Worker                 | URL |
+| ----------- | --------- | ---------------------- | --- |
+| Production  | `main`    | `les-frontend`         | https://les-frontend.les-h.workers.dev |
+| Staging     | `staging` | `les-frontend-staging` | https://les-frontend-staging.les-h.workers.dev |
 
-| Environment | Branch    | Worker                 |
-| ----------- | --------- | ---------------------- |
-| Production  | `main`    | `les-frontend`         |
-| Staging     | `staging` | `les-frontend-staging` |
+Both deploy automatically via GitHub Actions (`.github/workflows/deploy.yml` and
+`deploy-staging.yml`) and share the `CLOUDFLARE_API_TOKEN` /
+`CLOUDFLARE_ACCOUNT_ID` repository secrets. Promote a change by merging
+`staging` into `main`.
 
 Staging-only config (for example `PUBLIC_API_URL`) goes under `env.staging` in
 `frontend/wrangler.jsonc`. Wrangler environments inherit `main`, `assets` and
 `compatibility_*`, but **not** `vars` or bindings.
+
+> Pushing that only *creates* a branch at an existing commit produces no file
+> diff, so path-filtered workflows are skipped. Use **Actions → Run workflow**
+> for the first deploy of a new environment.
 
 ## Scripts (frontend)
 
