@@ -8,10 +8,13 @@
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
+	},
+	// Environments inherit `main`, `assets` and `compatibility_*`, but NOT
+	// `vars` or bindings — set staging-only values under `env.staging`.
+	"env": {
+		"staging": {
+			"name": "les-frontend-staging"
+			// "vars": { "PUBLIC_API_URL": "https://<staging-backend>.onrender.com" }
+		}
 	}
-	// Public, non-secret config the frontend reads via $env/dynamic/public.
-	// Point this at the deployed backend Worker.
-	// "vars": {
-	// 	"PUBLIC_API_URL": "https://les-api.<your-subdomain>.workers.dev"
-	// }
 }
