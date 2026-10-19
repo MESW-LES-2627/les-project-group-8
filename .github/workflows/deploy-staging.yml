@@ -2,7 +2,7 @@ name: Deploy staging frontend
 
 on:
   push:
-    branches: [develop]
+    branches: [staging]
     paths:
       - "frontend/**"
       - ".github/workflows/deploy-staging.yml"

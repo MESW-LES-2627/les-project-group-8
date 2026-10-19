@@ -60,14 +60,14 @@ You can also run it manually from the **Actions** tab (`workflow_dispatch`).
 
 ### Staging
 
-A separate Worker, `les-frontend-staging`, is deployed from the `develop` branch
+A separate Worker, `les-frontend-staging`, is deployed from the `staging` branch
 by `.github/workflows/deploy-staging.yml` (or manually from the **Actions** tab).
 It uses the same `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secrets.
 
 | Environment | Branch    | Worker                 |
 | ----------- | --------- | ---------------------- |
 | Production  | `main`    | `les-frontend`         |
-| Staging     | `develop` | `les-frontend-staging` |
+| Staging     | `staging` | `les-frontend-staging` |
 
 Staging-only config (for example `PUBLIC_API_URL`) goes under `env.staging` in
 `frontend/wrangler.jsonc`. Wrangler environments inherit `main`, `assets` and
