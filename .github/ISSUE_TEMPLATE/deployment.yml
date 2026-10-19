@@ -1,0 +1,73 @@
+name: Deployment
+description: Plan and track a change to the staging or production (main) frontend deployment
+title: "[Deploy] "
+labels: ["deployment"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for changes to the Cloudflare Workers deployment setup.
+        Pick **Staging**, **Production**, or **Both**, then fill in the details below.
+
+        - **Staging**: `staging` branch → Worker `les-frontend-staging`
+        - **Production**: `main` branch → Worker `les-frontend`
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: Which deployment does this affect?
+      options:
+        - Staging (`staging` branch → `les-frontend-staging`)
+        - Production (`main` branch → `les-frontend`)
+        - Both
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What is the current situation, and why is this change needed?
+      placeholder: |
+        The frontend is currently deployed to Cloudflare Workers...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What do you propose to change?
+      placeholder: |
+        - Add/update ...
+        - Add/update the workflow ...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      description: Check off items as they are completed, and add or remove items to match this issue.
+      options:
+        - label: Add/update the environment in `frontend/wrangler.jsonc`
+        - label: Add/update the GitHub Actions deploy workflow in `.github/workflows/`
+        - label: Confirm the deploy branch (`staging` / `main`) and Worker name
+        - label: Set environment-specific vars (for example `PUBLIC_API_URL`) under `env.<environment>`
+        - label: Document the environment URL in the README
+
+  - type: textarea
+    id: open-questions
+    attributes:
+      label: Open questions
+      description: Anything that still needs a decision.
+      placeholder: |
+        - Branch name: `develop` vs `staging`?
+        - Does the backend team have a Render staging service?
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Links, screenshots, related issues, or anything else.
