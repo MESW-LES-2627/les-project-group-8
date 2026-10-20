@@ -1,0 +1,43 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> pick this repo.
+# Creates one free web service per environment, mirroring the frontend
+# Workers (main -> production, staging -> staging).
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: les-backend
+    runtime: python
+    plan: free
+    region: frankfurt
+    branch: main
+    rootDir: backend # only changes under backend/ trigger a deploy
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass # wait for backend-ci.yml to go green
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13"
+      - key: SUPABASE_URL
+        sync: false # prompted on first Blueprint sync; set in the dashboard
+      - key: SUPABASE_KEY
+        sync: false
+
+  - type: web
+    name: les-backend-staging
+    runtime: python
+    plan: free
+    region: frankfurt
+    branch: staging
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
