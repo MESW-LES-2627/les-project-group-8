@@ -2,17 +2,12 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from pool_api.domain import (
-    GUEST_USER_ID,
-    NewPool,
-    Pool,
-    PoolStatus,
-    UserSummary,
-    ValidationError,
-)
+from pools.models import Pool, PoolStatus, UserSummary
+from pools.service import GUEST_USER, parse_new_pool
+from shared.errors import ValidationError
 
 NOW = datetime(2026, 10, 19, 12, 0, tzinfo=timezone.utc)
-GUEST = UserSummary(id=GUEST_USER_ID, name="Guest User")
+GUEST = GUEST_USER
 
 
 def make_payload(**overrides):
@@ -36,14 +31,15 @@ def make_pool(deadline, winning_outcome_id=None):
         decider=GUEST,
         options=(),
         winning_outcome_id=winning_outcome_id,
+        created_at=NOW,
     )
 
 
 class TestNewPoolValidation:
     def test_valid_payload_is_normalised(self):
-        pool = NewPool.from_payload(
+        pool = parse_new_pool(
             make_payload(name="  Final  ", options=[" Yes ", "No"]),
-            creator_id=GUEST_USER_ID,
+            creator=GUEST,
             now=NOW,
         )
         assert pool.name == "Final"
@@ -51,27 +47,24 @@ class TestNewPoolValidation:
         assert pool.deadline == datetime(2026, 11, 1, 20, 0, tzinfo=timezone.utc)
 
     def test_decider_defaults_to_creator(self):
-        pool = NewPool.from_payload(make_payload(), creator_id="abc", now=NOW)
-        assert pool.decider_id == "abc"
+        creator = UserSummary(id="abc", name="Ana")
+        pool = parse_new_pool(make_payload(), creator=creator, now=NOW)
+        assert pool.decider == creator
 
     @pytest.mark.parametrize("payload", [None, [], "x"])
     def test_rejects_non_object_body(self, payload):
         with pytest.raises(ValidationError, match="JSON object"):
-            NewPool.from_payload(payload, creator_id=GUEST_USER_ID, now=NOW)
+            parse_new_pool(payload, creator=GUEST, now=NOW)
 
     @pytest.mark.parametrize("field", ["name", "statement"])
     @pytest.mark.parametrize("value", [None, "", "   ", 42])
     def test_rejects_empty_text_fields(self, field, value):
         with pytest.raises(ValidationError, match="cannot be empty"):
-            NewPool.from_payload(
-                make_payload(**{field: value}), creator_id=GUEST_USER_ID, now=NOW
-            )
+            parse_new_pool(make_payload(**{field: value}), creator=GUEST, now=NOW)
 
     def test_rejects_overlong_name(self):
         with pytest.raises(ValidationError, match="at most 120"):
-            NewPool.from_payload(
-                make_payload(name="x" * 121), creator_id=GUEST_USER_ID, now=NOW
-            )
+            parse_new_pool(make_payload(name="x" * 121), creator=GUEST, now=NOW)
 
     @pytest.mark.parametrize(
         "options",
@@ -79,23 +72,17 @@ class TestNewPoolValidation:
     )
     def test_rejects_bad_options(self, options):
         with pytest.raises(ValidationError, match="exactly 2 unique"):
-            NewPool.from_payload(
-                make_payload(options=options), creator_id=GUEST_USER_ID, now=NOW
-            )
+            parse_new_pool(make_payload(options=options), creator=GUEST, now=NOW)
 
     @pytest.mark.parametrize("deadline", ["2026-10-19T12:00:00Z", "2020-01-01T00:00:00Z"])
     def test_rejects_past_or_present_deadline(self, deadline):
         with pytest.raises(ValidationError, match="in the future"):
-            NewPool.from_payload(
-                make_payload(deadline=deadline), creator_id=GUEST_USER_ID, now=NOW
-            )
+            parse_new_pool(make_payload(deadline=deadline), creator=GUEST, now=NOW)
 
     @pytest.mark.parametrize("deadline", ["tomorrow", "2026-13-01T00:00:00Z"])
     def test_rejects_malformed_deadline(self, deadline):
         with pytest.raises(ValidationError, match="ISO-8601"):
-            NewPool.from_payload(
-                make_payload(deadline=deadline), creator_id=GUEST_USER_ID, now=NOW
-            )
+            parse_new_pool(make_payload(deadline=deadline), creator=GUEST, now=NOW)
 
 
 class TestPoolStatus:

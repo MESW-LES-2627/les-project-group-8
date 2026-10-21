@@ -1,4 +1,6 @@
-from pool_api.domain import GUEST_USER_ID
+from pools.service import GUEST_USER
+
+GUEST_USER_ID = GUEST_USER.id
 
 
 def test_health(client):

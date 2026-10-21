@@ -1,24 +1,19 @@
-import uuid
 from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from app import GUEST_USER, GUEST_USER_ID, InMemoryStore, create_app
-
-
-class InMemoryPoolRepository(InMemoryStore):
-    """Test double so API tests run without Supabase."""
-    pass
+from app import create_app
+from tests.fakes import FakePoolRepository
 
 
 @pytest.fixture
 def repo():
-    return InMemoryPoolRepository()
+    return FakePoolRepository()
 
 
 @pytest.fixture
 def client(repo):
-    app = create_app(store=repo)
+    app = create_app(pool_repo=repo)
     app.testing = True
     return app.test_client()
 
