@@ -4,8 +4,9 @@ A SvelteKit 3 frontend with TypeScript, Tailwind CSS 4 and Vite, plus a Flask
 backend.
 
 The **frontend** is built for and deployed to **Cloudflare Workers**. The
-**backend** runs as a plain Flask app locally; its deployment is still to be
-decided.
+**backend** is a Flask modular monolith backed by Supabase, deployed to
+**Render** (`render.yaml`). See [docs/architecture.md](docs/architecture.md)
+for how it is organized and why.
 
 ## Requirements
 
@@ -29,9 +30,20 @@ pnpm dev        # http://localhost:5173
 cd backend
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-flask run       # http://127.0.0.1:5000
+pip install -r requirements-dev.txt
+cp .env.example .env   # then fill in the values below
+flask run              # http://127.0.0.1:5000/api/health
+pytest -v              # acceptance tests, no database needed
 ```
+
+| Variable | Value |
+| -------- | ----- |
+| `SUPABASE_URL` | Project URL (Supabase → Project Settings → API) |
+| `SUPABASE_KEY` | The **`service_role`** key. The publishable key is blocked by row-level security. Never expose it to the frontend |
+
+The app refuses to start if either variable is missing. Endpoints are described
+in [docs/iterations/0/openapi.yaml](docs/iterations/0/openapi.yaml), and tests
+in [docs/iterations/0/i00.d004-testing.md](docs/iterations/0/i00.d004-testing.md).
 
 ## Deploying the frontend
 
@@ -108,7 +120,12 @@ frontend/
 ├── tsconfig.json
 └── vite.config.ts          # Uses @sveltejs/adapter-cloudflare
 backend/
-├── app.py
+├── app.py                  # create_app(): wires modules together
+├── shared/                 # Supabase client, errors, input checks
+├── users/                  # models, service, repository, routes
+├── pools/                  # models, service, repository, routes
+├── migrations/             # SQL run in the Supabase SQL editor
+├── tests/acceptance/       # one test per user-story acceptance criterion
 └── requirements.txt
 ```
 
