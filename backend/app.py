@@ -29,6 +29,13 @@ def get_supabase_client() -> Client:
 
 sb: Client = get_supabase_client()
 
+GUEST_USER_ID = "00000000-0000-0000-0000-000000000001"
+GUEST_USER = {"id": GUEST_USER_ID, "name": "Guest User"}
+
+@app.get("/api/health")
+def health():
+    return jsonify(status="ok")
+
 @app.post("/api/pools")
 def create_pool():
     payload = request.get_json(silent=True)
@@ -48,14 +55,7 @@ def create_pool():
 
     pool_id = res.data
 
-    return jsonify({pool_id}), 201
-
-@app.get("/api/health")
-def health():
-    return jsonify(status="ok")
-
-GUEST_USER_ID = "00000000-0000-0000-0000-000000000001"
-GUEST_USER = {"id": GUEST_USER_ID, "name": "Guest User"}
+    return jsonify({"pool_id": pool_id}), 201
 
 _POOL_SELECT = (
     "id, name, statement, deadline, winning_outcome_id, created_at,"
