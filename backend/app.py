@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from supabase import create_client, Client
 
 load_dotenv()
@@ -33,14 +33,14 @@ GUEST_USER_ID: str = "00000000-0000-0000-0000-000000000001"
 GUEST_USER: dict = {"id": GUEST_USER_ID, "name": "Guest User"}
 
 @app.get("/api/health")
-def health():
+def health() -> Response:
     return jsonify(status="ok")
 
 @app.post("/api/pools")
 def create_pool():
-    payload = request.get_json(silent=True)
+    payload: dict = require_value(request.get_json(silent=True), "Request body")
     try:
-        validated = validate_pool_payload(payload)
+        validated: dict = validate_pool_payload(payload)
     except ValueError as err:
         return jsonify(error=str(err)), 400
 
