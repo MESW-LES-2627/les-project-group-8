@@ -9,7 +9,7 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
-	// Read at runtime via `$app/env/private` (declared in src/env.ts).
+	// Read at runtime via `$env/dynamic/private` or `platform.env`.
 	"vars": { "API_URL": "https://les-backend.onrender.com" },
 	// Environments inherit `main`, `assets` and `compatibility_*`, but NOT
 	// `vars` or bindings — set staging-only values under `env.staging`.

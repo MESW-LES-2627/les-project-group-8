@@ -30,20 +30,12 @@ pnpm dev        # http://localhost:5173
 
 ```
 src/
-├── app.css               # Tailwind entrypoint (@import 'tailwindcss')
-├── app.d.ts              # App.Locals / App.PageData typings
-├── app.html              # HTML shell
-├── env.ts                # Private/public environment variable definitions
-├── lib/                  # Imported via the `#lib` alias
-│   ├── assets/favicon.svg
-│   ├── components/PoolCard.svelte
-│   ├── server/api.ts     # Backend API proxy helper
-│   ├── types.ts          # Shared TypeScript contract types
-│   └── index.ts
+├── app.css               # Tailwind styles (@import 'tailwindcss')
+├── app.html              # HTML shell & inline favicon
+├── env.ts                # Environment variable definitions ($app/env/private)
 └── routes/
-    ├── +layout.svelte    # Imports app.css
-    ├── +page.server.ts   # Server-side data load & actions
-    └── +page.svelte
+    ├── +page.server.ts   # Server-side data load, form actions & API proxy
+    └── +page.svelte      # Page UI & components
 ```
 
 ## Styling with Tailwind
@@ -55,9 +47,8 @@ Tailwind v4 is wired in through the `@tailwindcss/vite` plugin (see
 @import 'tailwindcss';
 ```
 
-`+layout.svelte` imports that file, so utility classes are available in every
-route. There is **no `tailwind.config.js`** — v4 scans your source
-automatically.
+`+page.svelte` imports that file, so utility classes are available. There is
+**no `tailwind.config.js`** — v4 scans your source automatically.
 
 ### Plugins
 
@@ -105,8 +96,6 @@ layouts all work as usual. See the [Svelte docs](https://svelte.dev/docs/kit).
 
 This project runs SvelteKit 3 with Svelte 5:
 
-- The lib alias is **`#lib/...`** (not `$lib/...`), and imports include the
-  **file extension**, e.g. `#lib/assets/favicon.svg`.
 - Config lives in **`vite.config.ts`** — there is no `svelte.config.js`.
 - Environment variables are declared in `src/env.ts` and
   imported from `$app/env/public` or `$app/env/private`.

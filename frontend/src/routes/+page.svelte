@@ -1,7 +1,8 @@
 <script lang="ts">
+	import '../app.css';
 	import { enhance } from '$app/forms';
-	import PoolCard from '#lib/components/PoolCard.svelte';
 	import type { PageProps } from './$types';
+	import type { PoolStatus } from './+page.server';
 
 	let { data, form }: PageProps = $props();
 
@@ -14,6 +15,22 @@
 	let createdId = $derived(form && 'created' in form ? form.created : null);
 	let values = $derived(form && 'values' in form ? form.values : undefined);
 	let error = $derived(form && 'error' in form ? form.error : undefined);
+
+	const statusStyles: Record<PoolStatus, string> = {
+		OPEN: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+		LOCKED: 'bg-amber-50 text-amber-700 border-amber-200',
+		RESOLVED: 'bg-sky-50 text-sky-700 border-sky-200'
+	};
+
+	function formatDeadline(deadline: string, localTime: boolean): string {
+		return (
+			new Intl.DateTimeFormat('en-GB', {
+				dateStyle: 'medium',
+				timeStyle: 'short',
+				timeZone: localTime ? undefined : 'UTC'
+			}).format(new Date(deadline)) + (localTime ? '' : ' UTC')
+		);
+	}
 </script>
 
 <svelte:head>
@@ -178,7 +195,40 @@
 				{:else}
 					<div id="pool-list" class="mt-6 grid gap-4 xl:grid-cols-2">
 						{#each result.items as pool (pool.id)}
-							<PoolCard {pool} localTime={hydrated} highlight={pool.id === createdId} />
+							<article
+								id="pool-{pool.id}"
+								class="rounded-xl border bg-white p-6 shadow-xs transition hover:shadow-sm
+									{pool.id === createdId ? 'border-orange-500 ring-2 ring-orange-500/20' : 'border-slate-200'}"
+							>
+								<header class="flex items-start justify-between gap-4">
+									<h3 class="text-lg font-semibold text-slate-900">{pool.name}</h3>
+									<span
+										class="shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wide {statusStyles[
+											pool.status
+										]}"
+									>
+										{pool.status}
+									</span>
+								</header>
+
+								<p class="mt-2 text-slate-600">{pool.statement}</p>
+
+								<ul class="mt-5 grid grid-cols-2 gap-3">
+									{#each pool.options as option (option.id)}
+										<li
+											class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-800
+												{pool.winning_outcome_id === option.id ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold' : ''}"
+										>
+											{option.label}
+										</li>
+									{/each}
+								</ul>
+
+								<footer class="mt-5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+									<span>by <span class="font-medium text-slate-700">{pool.creator.name}</span></span>
+									<time datetime={pool.deadline}>Locks {formatDeadline(pool.deadline, hydrated)}</time>
+								</footer>
+							</article>
 						{/each}
 					</div>
 				{/if}
@@ -186,4 +236,3 @@
 		</section>
 	</div>
 </main>
-
