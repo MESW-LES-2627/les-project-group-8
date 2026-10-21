@@ -2,38 +2,12 @@
   import "../app.css";
   import { enhance } from "$app/forms";
   import type { PageProps } from "./$types";
-  import type { PoolStatus } from "./+page.server";
 
-  let { data, form }: PageProps = $props();
+  let { form }: PageProps = $props();
 
   let submitting = $state(false);
-
-  // Avoids SSR hydration mismatch: render UTC on the server, local time after mounting.
-  let hydrated = $state(false);
-  $effect(() => {
-    hydrated = true;
-  });
-
-  // ID of the pool created in the latest form action, used to highlight it in the list.
-  let createdId = $derived(form && "created" in form ? form.created : null);
   let values = $derived(form && "values" in form ? form.values : undefined);
   let error = $derived(form && "error" in form ? form.error : undefined);
-
-  const statusStyles: Record<PoolStatus, string> = {
-    OPEN: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    LOCKED: "bg-amber-50 text-amber-700 border-amber-200",
-    RESOLVED: "bg-sky-50 text-sky-700 border-sky-200",
-  };
-
-  function formatDeadline(deadline: string, localTime: boolean): string {
-    return (
-      new Intl.DateTimeFormat("en-GB", {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: localTime ? undefined : "UTC",
-      }).format(new Date(deadline)) + (localTime ? "" : " UTC")
-    );
-  }
 </script>
 
 <svelte:head>
