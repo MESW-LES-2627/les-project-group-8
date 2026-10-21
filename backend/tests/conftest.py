@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+"""Every test gets a fresh app wired to in-memory fake repositories (no Supabase needed)."""
 
 import pytest
 
@@ -12,29 +12,12 @@ def user_repo():
 
 
 @pytest.fixture
-def repo():
+def pool_repo():
     return FakePoolRepository()
 
 
 @pytest.fixture
-def client(user_repo, repo):
-    app = create_app(user_repo=user_repo, pool_repo=repo)
+def client(user_repo, pool_repo):
+    app = create_app(user_repo=user_repo, pool_repo=pool_repo)
     app.testing = True
     return app.test_client()
-
-
-@pytest.fixture
-def creator(client):
-    return client.post("/api/users", json={"name": "Ana"}).get_json()
-
-
-@pytest.fixture
-def valid_payload(creator):
-    deadline = datetime.now(timezone.utc) + timedelta(days=7)
-    return {
-        "creator_id": creator["id"],
-        "name": "Champions League Final",
-        "statement": "Real Madrid wins in 90 minutes.",
-        "deadline": deadline.isoformat().replace("+00:00", "Z"),
-        "options": ["Yes, they win", "No, draw or loss"],
-    }
