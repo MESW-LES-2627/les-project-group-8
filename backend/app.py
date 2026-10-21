@@ -29,8 +29,8 @@ def get_supabase_client() -> Client:
 
 sb: Client = get_supabase_client()
 
-GUEST_USER_ID = "00000000-0000-0000-0000-000000000001"
-GUEST_USER = {"id": GUEST_USER_ID, "name": "Guest User"}
+GUEST_USER_ID: str = "00000000-0000-0000-0000-000000000001"
+GUEST_USER: dict = {"id": GUEST_USER_ID, "name": "Guest User"}
 
 @app.get("/api/health")
 def health():
@@ -76,17 +76,18 @@ def validate_pool_payload(payload: dict, now: datetime | None = None) -> dict:
         raise ValueError("Field 'statement' must be at most 500 characters.")
 
     options = payload.get("options")
-    if not isinstance(options, list) or len(options) != 2:
-        raise ValueError("A pool must have exactly 2 unique, non-empty outcomes.")
+    AT_LEAST_TWO_OUTCOMES_MESSAGE = "A pool must have at least two non-empty outcomes."
+    if not isinstance(options, list) or len(options) <= 1:
+        raise ValueError(AT_LEAST_TWO_OUTCOMES_MESSAGE)
     cleaned_options = []
     seen = set()
     for opt in options:
         if not isinstance(opt, str) or not opt.strip():
-            raise ValueError("A pool must have exactly 2 unique, non-empty outcomes.")
+            raise ValueError(AT_LEAST_TWO_OUTCOMES_MESSAGE)
         opt_stripped = opt.strip()
         folded = opt_stripped.casefold()
         if folded in seen:
-            raise ValueError("A pool must have exactly 2 unique, non-empty outcomes.")
+            raise ValueError(AT_LEAST_TWO_OUTCOMES_MESSAGE)
         seen.add(folded)
         cleaned_options.append(opt_stripped)
 
