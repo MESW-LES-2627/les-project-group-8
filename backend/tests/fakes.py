@@ -1,9 +1,21 @@
-"""In-memory test double for the pool repository. Used only by tests, never by the app."""
+"""In-memory test doubles for the repositories. Used only by tests, never by the app."""
 
 import uuid
 from datetime import datetime, timezone
 
 from pools.models import NewPool, Outcome, Pool
+from users.models import User
+
+
+class FakeUserRepository:
+    def __init__(self):
+        self.users: dict[str, User] = {}
+
+    def add(self, user: User) -> None:
+        self.users[user.id] = user
+
+    def get(self, user_id: str) -> User | None:
+        return self.users.get(user_id)
 
 
 class FakePoolRepository:

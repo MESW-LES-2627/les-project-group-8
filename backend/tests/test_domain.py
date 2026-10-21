@@ -3,11 +3,11 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from pools.models import Pool, PoolStatus, UserSummary
-from pools.service import GUEST_USER, parse_new_pool
+from pools.service import parse_new_pool
 from shared.errors import ValidationError
 
 NOW = datetime(2026, 10, 19, 12, 0, tzinfo=timezone.utc)
-GUEST = GUEST_USER
+GUEST = UserSummary(id="00000000-0000-0000-0000-000000000001", name="Guest User")
 
 
 def make_payload(**overrides):

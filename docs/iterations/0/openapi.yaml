@@ -2,8 +2,8 @@ openapi: 3.0.3
 info:
   title: Friendly Pool App API
   description: >
-    Iteration 0 API contract for the thin vertical slice (creating and listing pools
-    with two outcomes using a pre-seeded guest user).
+    Iteration 0 API contract for the thin vertical slice: create a user (name only),
+    then create and list pools with two outcomes created by that user.
   version: 0.1.0
 
 servers:
@@ -34,6 +34,41 @@ paths:
                     type: string
                     example: ok
 
+  /users:
+    post:
+      summary: Create a user
+      description: Creates a user with only a name. The backend generates the id.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSummary'
+        '400':
+          description: Validation error (missing, empty, or too long name).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyName:
+                  value:
+                    error: "Field 'name' cannot be empty."
+        '500':
+          description: Server or database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /pools:
     get:
       summary: List all pools
@@ -58,8 +93,8 @@ paths:
     post:
       summary: Create a new pool
       description: >
-        Creates a pool with two possible outcomes. For Iteration 0, the backend
-        automatically sets creator and decider to the pre-seeded Guest User.
+        Creates a pool with two possible outcomes. The creator must be an existing
+        user; for Iteration 0 the backend sets the decider to the creator.
       operationId: createPool
       requestBody:
         required: true
@@ -75,12 +110,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Pool'
         '400':
-          description: Validation error (e.g., missing fields, past deadline, or not exactly 2 unique outcomes).
+          description: Validation error (e.g., unknown creator, missing fields, past deadline, or not exactly 2 unique outcomes).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
+                unknownCreator:
+                  value:
+                    error: "Field 'creator_id' must be the id of an existing user."
                 wrongOutcomeCount:
                   value:
                     error: "A pool must have exactly 2 unique, non-empty outcomes."
@@ -100,14 +138,32 @@ paths:
 
 components:
   schemas:
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Display name. Leading and trailing spaces are removed.
+          example: "Ana"
+
     CreatePoolRequest:
       type: object
       required:
+        - creator_id
         - name
         - statement
         - deadline
         - options
       properties:
+        creator_id:
+          type: string
+          format: uuid
+          description: Id of an existing user (returned by POST /users).
+          example: "3f2b8c1e-4d5a-4e6f-9a7b-8c9d0e1f2a3b"
         name:
           type: string
           minLength: 1

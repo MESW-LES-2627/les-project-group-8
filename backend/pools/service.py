@@ -2,11 +2,11 @@
 
 from datetime import datetime, timezone
 
-from shared.errors import ValidationError
+from shared.errors import NotFoundError, ValidationError
+from shared.validation import require_json_object, required_text
+from users.service import UserService
 
 from .models import NewPool, Pool, UserSummary
-
-GUEST_USER = UserSummary(id="00000000-0000-0000-0000-000000000001", name="Guest User")
 
 MAX_NAME_LENGTH = 120
 MAX_STATEMENT_LENGTH = 500
@@ -14,38 +14,36 @@ OUTCOMES_PER_POOL = 2
 
 
 class PoolService:
-    def __init__(self, repository):
+    def __init__(self, repository, users: UserService):
         self._repository = repository
+        self._users = users
 
     def list_pools(self) -> list[Pool]:
         return self._repository.list_pools()
 
-    def create_pool(self, payload: dict) -> Pool:
-        new_pool = parse_new_pool(payload, creator=GUEST_USER)
+    def create_pool(self, payload) -> Pool:
+        payload = require_json_object(payload)
+        new_pool = parse_new_pool(payload, creator=self._find_creator(payload.get("creator_id")))
         return self._repository.create_pool(new_pool)
+
+    def _find_creator(self, creator_id) -> UserSummary:
+        try:
+            user = self._users.get_user(creator_id)
+        except NotFoundError:
+            raise ValidationError("Field 'creator_id' must be the id of an existing user.")
+        return UserSummary(id=user.id, name=user.name)
 
 
 def parse_new_pool(payload, creator: UserSummary, now: datetime | None = None) -> NewPool:
-    if not isinstance(payload, dict):
-        raise ValidationError("Request body must be a JSON object.")
+    payload = require_json_object(payload)
     return NewPool(
-        name=_required_text(payload, "name", MAX_NAME_LENGTH),
-        statement=_required_text(payload, "statement", MAX_STATEMENT_LENGTH),
+        name=required_text(payload, "name", MAX_NAME_LENGTH),
+        statement=required_text(payload, "statement", MAX_STATEMENT_LENGTH),
         deadline=_future_deadline(payload.get("deadline"), now or datetime.now(timezone.utc)),
         options=_options(payload.get("options")),
         creator=creator,
         decider=creator,
     )
-
-
-def _required_text(payload: dict, field: str, max_length: int) -> str:
-    value = payload.get(field)
-    if not isinstance(value, str) or not value.strip():
-        raise ValidationError(f"Field '{field}' cannot be empty.")
-    value = value.strip()
-    if len(value) > max_length:
-        raise ValidationError(f"Field '{field}' must be at most {max_length} characters.")
-    return value
 
 
 def _options(raw) -> tuple[str, ...]:
