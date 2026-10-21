@@ -21,3 +21,5 @@ venv/
 
 # Wrangler local state (frontend)
 .wrangler/
+
+.idea
