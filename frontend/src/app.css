@@ -6,3 +6,15 @@
  */
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@theme {
+	--color-svelte: #ff3e00;
+	--color-svelte-hover: #ea3600;
+}
+
+@layer base {
+	body {
+		@apply min-h-screen bg-slate-50 font-sans text-slate-800 antialiased;
+	}
+}
+

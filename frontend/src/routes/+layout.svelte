@@ -8,7 +8,8 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>LES</title>
+	<title>Friendly Pools</title>
 </svelte:head>
 
 {@render children()}
+
