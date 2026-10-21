@@ -57,13 +57,6 @@ def create_pool():
 
     return jsonify({"pool_id": pool_id}), 201
 
-_POOL_SELECT = (
-    "id, name, statement, deadline, winning_outcome_id, created_at,"
-    " creator:users!creator_id(id, name),"
-    " decider:users!decider_id(id, name),"
-    " outcomes(id, label)"
-)
-
 def validate_pool_payload(payload: dict, now: datetime | None = None) -> dict:
     if not isinstance(payload, dict):
         raise ValueError("Request body must be a JSON object.")
