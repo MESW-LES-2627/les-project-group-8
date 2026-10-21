@@ -1,3 +1,4 @@
-"""Flask application factory."""
+"""Pool domain and persistence modules.
 
-from app import create_app, app
+Import the Flask entry point from app; importing domain types has no app side effects.
+"""

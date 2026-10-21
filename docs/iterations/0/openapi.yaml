@@ -112,22 +112,28 @@ components:
           type: string
           minLength: 1
           maxLength: 120
-          description: Title of the pool.
+          description: Title of the pool. Must contain non-whitespace text; surrounding whitespace is trimmed after length validation.
           example: "Champions League Final"
         statement:
           type: string
           minLength: 1
           maxLength: 500
-          description: The exact prediction statement being judged.
+          description: The exact prediction statement being judged. Must contain non-whitespace text; surrounding whitespace is trimmed after length validation.
           example: "Real Madrid wins in 90 minutes."
         deadline:
           type: string
           format: date-time
-          description: ISO-8601 UTC timestamp when the pool locks. Must be in the future.
+          description: >
+            RFC 3339 / ISO-8601 timestamp with an explicit timezone (Z or an
+            offset such as +01:00). Must be in the future. The backend normalizes
+            accepted values to UTC. Date-only and timezone-less values are rejected.
           example: "2026-11-01T20:00:00Z"
         options:
           type: array
-          description: Exactly two distinct outcome labels for the MVP vertical slice.
+          description: >
+            Exactly two non-blank outcome labels. Length limits apply to submitted
+            strings. Surrounding whitespace is trimmed, and labels must be distinct
+            after trimming and Unicode case folding (for example Yes and yes are duplicates).
           minItems: 2
           maxItems: 2
           uniqueItems: true

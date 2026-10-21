@@ -15,9 +15,10 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from supabase import create_client
 
+from pool_api.domain import GUEST_USER_ID, NewPool, ValidationError, compute_status, utc_timestamp
+
 load_dotenv()
 
-GUEST_USER_ID = "00000000-0000-0000-0000-000000000001"
 GUEST_USER = {"id": GUEST_USER_ID, "name": "Guest User"}
 
 _POOL_SELECT = (
@@ -28,23 +29,8 @@ _POOL_SELECT = (
 )
 
 
-def compute_status(deadline_str: str, winning_outcome_id: str | None = None, now: datetime | None = None) -> str:
-    if winning_outcome_id:
-        return "RESOLVED"
-    now_dt = now or datetime.now(timezone.utc)
-    try:
-        dl = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
-        if dl.tzinfo is None:
-            dl = dl.replace(tzinfo=timezone.utc)
-        return "OPEN" if dl > now_dt else "LOCKED"
-    except Exception:
-        return "LOCKED"
-
-
 def format_pool(row: dict, now: datetime | None = None) -> dict:
-    deadline = str(row["deadline"])
-    if not deadline.endswith("Z") and "+" not in deadline:
-        deadline = f"{deadline}Z"
+    deadline = utc_timestamp(datetime.fromisoformat(str(row["deadline"]).replace("Z", "+00:00")))
     outcomes = row.get("outcomes") or []
     return {
         "id": str(row["id"]),
@@ -57,62 +43,6 @@ def format_pool(row: dict, now: datetime | None = None) -> dict:
         "decider": row.get("decider") or GUEST_USER,
         "options": [{"id": str(o["id"]), "label": o["label"]} for o in outcomes],
         "created_at": row.get("created_at") or datetime.now(timezone.utc).isoformat(),
-    }
-
-
-def validate_pool_payload(payload: dict, now: datetime | None = None) -> dict:
-    if not isinstance(payload, dict):
-        raise ValueError("Request body must be a JSON object.")
-
-    name = payload.get("name")
-    if not isinstance(name, str) or not name.strip():
-        raise ValueError("Field 'name' cannot be empty.")
-    name = name.strip()
-    if len(name) > 120:
-        raise ValueError("Field 'name' must be at most 120 characters.")
-
-    statement = payload.get("statement")
-    if not isinstance(statement, str) or not statement.strip():
-        raise ValueError("Field 'statement' cannot be empty.")
-    statement = statement.strip()
-    if len(statement) > 500:
-        raise ValueError("Field 'statement' must be at most 500 characters.")
-
-    options = payload.get("options")
-    if not isinstance(options, list) or len(options) != 2:
-        raise ValueError("A pool must have exactly 2 unique, non-empty outcomes.")
-    cleaned_options = []
-    seen = set()
-    for opt in options:
-        if not isinstance(opt, str) or not opt.strip():
-            raise ValueError("A pool must have exactly 2 unique, non-empty outcomes.")
-        opt_stripped = opt.strip()
-        folded = opt_stripped.casefold()
-        if folded in seen:
-            raise ValueError("A pool must have exactly 2 unique, non-empty outcomes.")
-        seen.add(folded)
-        cleaned_options.append(opt_stripped)
-
-    raw_deadline = payload.get("deadline")
-    if not isinstance(raw_deadline, str):
-        raise ValueError("Field 'deadline' must be an ISO-8601 string.")
-    try:
-        dl_dt = datetime.fromisoformat(raw_deadline.replace("Z", "+00:00"))
-        if dl_dt.tzinfo is None:
-            dl_dt = dl_dt.replace(tzinfo=timezone.utc)
-    except Exception:
-        raise ValueError("Field 'deadline' is not a valid ISO-8601 timestamp.")
-
-    now_dt = now or datetime.now(timezone.utc)
-    if dl_dt <= now_dt:
-        raise ValueError("Field 'deadline' must be in the future.")
-
-    normalized_deadline = dl_dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-    return {
-        "name": name,
-        "statement": statement,
-        "deadline": normalized_deadline,
-        "options": cleaned_options,
     }
 
 
@@ -129,7 +59,10 @@ class InMemoryStore:
         self.pools: list[dict] = []
 
     def list_pools(self) -> list[dict]:
-        return list(reversed(self.pools))
+        return [
+            {**pool, "status": compute_status(pool["deadline"], pool["winning_outcome_id"])}
+            for pool in reversed(self.pools)
+        ]
 
     def create_pool(self, data: dict) -> dict:
         pool = {
@@ -137,7 +70,7 @@ class InMemoryStore:
             "name": data["name"],
             "statement": data["statement"],
             "deadline": data["deadline"],
-            "status": "OPEN",
+            "status": compute_status(data["deadline"]),
             "winning_outcome_id": None,
             "creator": GUEST_USER,
             "decider": GUEST_USER,
@@ -179,8 +112,8 @@ def create_app(store=None) -> Flask:
     def create_pool():
         payload = request.get_json(silent=True)
         try:
-            validated = validate_pool_payload(payload)
-        except ValueError as err:
+            validated = NewPool.from_payload(payload).to_payload()
+        except ValidationError as err:
             return jsonify(error=str(err)), 400
 
         if app.store is not None:

@@ -1,3 +1,8 @@
+from datetime import datetime, timedelta, timezone
+
+import pytest
+
+from app import format_pool
 from pool_api.domain import GUEST_USER_ID
 
 
@@ -67,3 +72,62 @@ def test_repository_failure_returns_json_500(client, repo, valid_payload):
 
     assert response.status_code == 500
     assert response.get_json() == {"error": "Internal server error."}
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"options": ["a" * 101, "No"]},
+        {"deadline": "2099-01-01"},
+        {"deadline": "2099-01-01T12:00:00"},
+        {"options": ["Straße", " STRASSE "]},
+    ],
+)
+def test_invalid_contract_data_is_rejected_before_storage(client, repo, valid_payload, overrides):
+    response = client.post("/api/pools", json={**valid_payload, **overrides})
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+    assert repo.pools == []
+
+
+def test_create_pool_normalises_input_and_uses_guest(client, valid_payload):
+    response = client.post(
+        "/api/pools",
+        json={
+            **valid_payload,
+            "name": "  Final  ",
+            "options": [" Yes ", "No"],
+            "deadline": "2099-01-01T15:00:00-05:00",
+            "creator_id": "another-user",
+            "decider_id": "another-decider",
+        },
+    )
+    assert response.status_code == 201
+    body = response.get_json()
+    assert body["name"] == "Final"
+    assert body["deadline"] == "2099-01-01T20:00:00Z"
+    assert [option["label"] for option in body["options"]] == ["Yes", "No"]
+    assert body["creator"]["id"] == body["decider"]["id"] == GUEST_USER_ID
+
+
+def test_list_recomputes_status_when_deadline_has_passed(client, repo, valid_payload):
+    client.post("/api/pools", json=valid_payload)
+    repo.pools[0]["deadline"] = (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat()
+
+    response = client.get("/api/pools")
+    assert response.get_json()[0]["status"] == "LOCKED"
+
+
+def test_database_pool_with_negative_offset_is_formatted_as_utc():
+    now = datetime(2026, 10, 21, 20, tzinfo=timezone.utc)
+    pool = format_pool(
+        {
+            "id": "p1",
+            "name": "Final",
+            "statement": "Home team wins.",
+            "deadline": "2026-10-21T15:00:00-05:00",
+        },
+        now=now,
+    )
+    assert pool["deadline"] == "2026-10-21T20:00:00Z"
+    assert pool["status"] == "LOCKED"
