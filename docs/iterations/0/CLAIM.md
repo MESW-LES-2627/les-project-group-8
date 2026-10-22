@@ -9,6 +9,6 @@
 - Vision: [i00.d001-vision.md](i00.d001-vision.md)
 - Retrospective: TBD
 - AI log: [i00.d005-ai-log.md](i00.d005-ai-log.md)
-- stories in this increment: TBD
+- stories in this increment: US2 and US3 of [i00.d003-user-stories.md](i00.d003-user-stories.md)
 - how to run the tests: TBD
 - retrospective: team artefacts someone will be asked to open: TBD
