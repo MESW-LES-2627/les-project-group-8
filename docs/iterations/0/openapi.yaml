@@ -24,7 +24,7 @@ paths:
       operationId: healthCheck
       responses:
         '200':
-          description: The Flask process responds.
+          description: Service is healthy.
           content:
             application/json:
               schema:
@@ -165,10 +165,8 @@ components:
           type: string
           format: uuid
           description: >
-            Required id of an existing user. The Iteration 0 frontend sends the
-            pre-seeded Guest User id shown below. Alternatively, a user can be
-            created with POST /users. The backend does not default the creator.
-          example: "00000000-0000-0000-0000-000000000001"
+            Required id of an existing user. (returned by POST /users).
+            example: "3f2b8c1e-4d5a-4e6f-9a7b-8c9d0e1f2a3b"
         name:
           type: string
           minLength: 1

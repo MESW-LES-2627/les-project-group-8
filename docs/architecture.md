@@ -54,18 +54,10 @@ flowchart LR
 ## Dependency rules
 
 1. **Inside a module, calls go one way:** `routes -> service -> repository`. A repository never calls a service, and a service never touches Flask's `request`.
-2. **Cross-module business behavior goes through services.** `PoolService` asks `UserService.get_user()` to validate the creator and never imports `users.repository`. The pool repository's read projection joins `users` to obtain creator/decider summaries; that is response mapping, not cross-module service logic.
+2. **Cross-module business behavior goes through services.** `PoolService` asks `UserService.get_user()` to validate the creator and never imports `users.repository`. The pool repository's read projection joins `users` to obtain creator/decider summaries. That is response mapping, not cross-module service logic.
 3. **`shared/` depends on no module.** Modules depend on `shared/`, never the other way around.
 4. **`app.py` wires application-wide services and repositories.** Services receive their repository (and other services) through the constructor. Routes and services can still construct request-scoped model objects. Constructor injection lets tests swap the database for a fake.
 
-## Iteration 0 demonstration
-
-The canonical scope is [MVP: Thin Vertical Slice](iterations/0/i00.d002-mvp.md#thin-vertical-slice-iteration-0).
-For that journey, the frontend sends the pre-seeded Guest User's `creator_id`.
-`PoolService` validates the user and sets the decider to the creator. The
-`POST /api/users` capability is available and tested, but no user-creation screen
-is required for the guest-based demonstration. `/api/health` checks Flask
-availability only; database persistence needs a separate create/list check.
 
 ## Request flow: creating a pool
 
@@ -132,9 +124,6 @@ If any step raises `ValidationError` or `NotFoundError`, the error handlers in `
 - **Authentication.** Any client can create users and pools, which is acceptable for the Iteration 0 prototype.
 - **Outcome order.** `GET /api/pools` does not guarantee that the two outcomes come back in the order they were created.
 
-Known contract and integration gaps from the local review are recorded in
-[testing and verification limits](iterations/0/i00.d004-testing.md#review-findings-and-verification-still-required).
-They must be checked separately from the architectural decisions above.
 
 ## Known configuration issue
 
