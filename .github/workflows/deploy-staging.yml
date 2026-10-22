@@ -16,6 +16,9 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: 'frontend-staging'
+      url: 'https://les-frontend-staging.les-h.workers.dev'
     defaults:
       run:
         working-directory: frontend
