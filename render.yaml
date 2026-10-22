@@ -12,7 +12,7 @@ services:
     branch: main
     rootDir: backend # only changes under backend/ trigger a deploy
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    startCommand: gunicorn "app:create_app()" --bind 0.0.0.0:$PORT
     healthCheckPath: /api/health
     autoDeployTrigger: checksPass # wait for backend-ci.yml to go green
     envVars:
@@ -31,7 +31,7 @@ services:
     branch: staging
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    startCommand: gunicorn "app:create_app()" --bind 0.0.0.0:$PORT
     healthCheckPath: /api/health
     autoDeployTrigger: checksPass
     envVars:
