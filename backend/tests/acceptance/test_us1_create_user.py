@@ -3,7 +3,7 @@
 import pytest
 
 
-def test_ac1_1_user_is_created_with_id_and_trimmed_name(client, user_repo):
+def test_user_is_created_with_id_and_trimmed_name(client, user_repo):
     # Given a name with surrounding spaces
     payload = {"name": "  Ana  "}
 
@@ -18,7 +18,7 @@ def test_ac1_1_user_is_created_with_id_and_trimmed_name(client, user_repo):
 
 
 @pytest.mark.parametrize("payload", [{}, {"name": ""}, {"name": "   "}, {"name": 42}])
-def test_ac1_2_empty_name_is_rejected(client, user_repo, payload):
+def test_empty_name_is_rejected(client, user_repo, payload):
     # Given an empty or blank name
     # When I create a user
     response = client.post("/api/users", json=payload)
@@ -29,7 +29,7 @@ def test_ac1_2_empty_name_is_rejected(client, user_repo, payload):
     assert user_repo.users == {}
 
 
-def test_ac1_3_name_longer_than_80_characters_is_rejected(client, user_repo):
+def test_name_longer_than_80_characters_is_rejected(client, user_repo):
     # Given a name longer than 80 characters
     payload = {"name": "x" * 81}
 

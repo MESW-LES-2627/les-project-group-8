@@ -7,7 +7,7 @@ from pools.models import Pool, UserSummary
 from tests.acceptance.steps import create_user, pool_payload
 
 
-def test_ac3_1_list_is_empty_when_there_are_no_pools(client):
+def test_list_is_empty_when_there_are_no_pools(client):
     # Given no pools exist
     # When I list the pools
     response = client.get("/api/pools")
@@ -17,7 +17,7 @@ def test_ac3_1_list_is_empty_when_there_are_no_pools(client):
     assert response.get_json() == []
 
 
-def test_ac3_2_newest_pool_comes_first(client):
+def test_newest_pool_comes_first(client):
     # Given two pools created one after the other
     ana = create_user(client)
     client.post("/api/pools", json=pool_payload(ana["id"], name="First"))
@@ -30,7 +30,7 @@ def test_ac3_2_newest_pool_comes_first(client):
     assert [pool["name"] for pool in response.get_json()] == ["Second", "First"]
 
 
-def test_ac3_3_pool_past_its_deadline_is_locked(client, pool_repo):
+def test_pool_past_its_deadline_is_locked(client, pool_repo):
     # Given a pool whose deadline has passed and has no winner
     # (the API refuses past deadlines, so it is placed straight into the repository)
     now = datetime.now(timezone.utc)

@@ -7,7 +7,7 @@ import pytest
 from tests.acceptance.steps import create_user, iso, pool_payload
 
 
-def test_ac2_1_pool_is_created_open_with_creator_as_decider(client, pool_repo):
+def test_pool_is_created_open_with_creator_as_decider(client, pool_repo):
     # Given an existing user and valid pool data
     ana = create_user(client, "Ana")
     payload = pool_payload(ana["id"])
@@ -28,7 +28,7 @@ def test_ac2_1_pool_is_created_open_with_creator_as_decider(client, pool_repo):
     assert [p.id for p in pool_repo.pools] == [pool["id"]]
 
 
-def test_ac2_2_deadline_is_returned_in_utc(client):
+def test_deadline_is_returned_in_utc(client):
     # Given a deadline with a timezone offset
     ana = create_user(client)
     payload = pool_payload(ana["id"], deadline="2030-06-01T20:00:00+01:00")
@@ -42,7 +42,7 @@ def test_ac2_2_deadline_is_returned_in_utc(client):
 
 
 @pytest.mark.parametrize("creator_id", [None, "", "not-a-uuid", "00000000-0000-0000-0000-000000000999"])
-def test_ac2_3_unknown_creator_is_rejected(client, pool_repo, creator_id):
+def test_unknown_creator_is_rejected(client, pool_repo, creator_id):
     # Given a creator_id that is not an existing user
     payload = pool_payload(creator_id)
 
@@ -59,7 +59,7 @@ def test_ac2_3_unknown_creator_is_rejected(client, pool_repo, creator_id):
     "options",
     [None, [], ["Yes"], ["Yes", "No", "Maybe"], ["Yes", ""], ["Yes", "yes "]],
 )
-def test_ac2_4_pool_without_exactly_two_unique_outcomes_is_rejected(client, pool_repo, options):
+def test_pool_without_exactly_two_unique_outcomes_is_rejected(client, pool_repo, options):
     # Given fewer or more than two outcomes, an empty one, or two equal ones
     ana = create_user(client)
 
@@ -73,7 +73,7 @@ def test_ac2_4_pool_without_exactly_two_unique_outcomes_is_rejected(client, pool
 
 
 @pytest.mark.parametrize("days_from_now", [0, -1, -365])
-def test_ac2_5_deadline_not_in_the_future_is_rejected(client, pool_repo, days_from_now):
+def test_deadline_not_in_the_future_is_rejected(client, pool_repo, days_from_now):
     # Given a deadline that is not in the future
     ana = create_user(client)
     deadline = iso(datetime.now(timezone.utc) + timedelta(days=days_from_now))
@@ -88,7 +88,7 @@ def test_ac2_5_deadline_not_in_the_future_is_rejected(client, pool_repo, days_fr
 
 
 @pytest.mark.parametrize("deadline", ["tomorrow", "2030-13-01T00:00:00Z", 1234])
-def test_ac2_6_malformed_deadline_is_rejected(client, pool_repo, deadline):
+def test_malformed_deadline_is_rejected(client, pool_repo, deadline):
     # Given a deadline that is not a valid ISO-8601 timestamp
     ana = create_user(client)
 
@@ -112,7 +112,7 @@ def test_ac2_6_malformed_deadline_is_rejected(client, pool_repo, deadline):
     ],
     ids=["empty-name", "blank-name", "long-name", "missing-statement", "long-statement"],
 )
-def test_ac2_7_empty_or_too_long_text_is_rejected(client, pool_repo, field, value, error):
+def test_empty_or_too_long_text_is_rejected(client, pool_repo, field, value, error):
     # Given an empty name or statement, or one that is too long
     ana = create_user(client)
 
@@ -125,7 +125,7 @@ def test_ac2_7_empty_or_too_long_text_is_rejected(client, pool_repo, field, valu
     assert pool_repo.pools == []
 
 
-def test_ac2_8_body_that_is_not_json_is_rejected(client):
+def test_body_that_is_not_json_is_rejected(client):
     # Given a request body that is not JSON
     # When I create a pool
     response = client.post("/api/pools", data="not json")
