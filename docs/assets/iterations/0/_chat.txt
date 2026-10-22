@@ -1,0 +1,664 @@
+[02/10/2026, 15:49:20] Lab: ‎Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them.
+[02/10/2026, 15:49:20] Lab: ‎You created group “Lab”
+[02/10/2026, 15:49:50] Denis Dunaev: ‎You added Denis Dunaev
+[02/10/2026, 15:50:43] Pedro Lunet 🥔 (FEUP(: ‎Pedro Lunet 🥔 (FEUP( joined using a group link
+[02/10/2026, 15:50:43] Lab: ‎Anyone in this group can invite new members using a group link
+[02/10/2026, 16:07:15] Denis Dunaev: https://discord.gg/x7vv8ZTHn
+[02/10/2026, 16:20:52] Pedro Lunet 🥔 (FEUP(: hello@pedrolunet.dev
+[02/10/2026, 16:20:57] João Luiz Cerqueira: joaolfcerqueira@gmail.com
+[02/10/2026, 16:21:04] Denis Dunaev: denisdunaevnn@gmail.com
+[02/10/2026, 16:21:57] negarpoormehdi: ‎João Luiz Cerqueira added negarpoormehdi
+[02/10/2026, 16:27:57] Alef Keuffer: https://938ed554-74cf-45cd-a814-103e90edfe2a-00-1o8o7jw3j5q80.kirk.replit.dev/r/CNYKHD
+[02/10/2026, 16:33:09] Alef Keuffer: https://friends-betting-rooms--alefkeuffer.replit.app/r/3KBRF3
+[02/10/2026, 18:13:14] negarpoormehdi: hi guys, how are you? 
+my name is Negar.
+my visa process takes a lot of time, so unfortunately , I can only help you remotely. 😢😢😢
+[02/10/2026, 18:14:02] negarpoormehdi: I have experience in a Flutter mobile applications and Angular web application.
+[02/10/2026, 18:52:25] Denis Dunaev: Hi, I'm Denis. We'll figure it out, no worries
+[02/10/2026, 19:23:24] negarpoormehdi: thank you 🥺
+[02/10/2026, 19:35:54] Alef Keuffer: Hey Negar! I'm Alef. I'm sure we'll be able to help!
+[02/10/2026, 19:53:47] negarpoormehdi: thanks🥹
+[06/10/2026, 14:07:43] João Luiz Cerqueira: What’s up guys
+[06/10/2026, 14:07:57] João Luiz Cerqueira: We have to have 3 ideas and pitch them for 5 minutes on Friday
+[06/10/2026, 14:08:14] João Luiz Cerqueira: So we need 2 more ideas besides the betting app
+[06/10/2026, 14:34:26] negarpoormehdi: hi, can you explain what kind of app do we need to create?
+[06/10/2026, 14:42:46] Denis Dunaev: Hello, we need to come up with a project idea that will involve work all of us. The project can be just about anything, but it shouldn’t be too simple. Besides you, our team consists of 3 backend developers and 1 frontend developer. So it should be a solution with a slight emphasis on the backend, since there are a few more of us on that side. Two of the backend developers (me and João) have restrictions on using frameworks in the project, because this project will also count toward another course (object-oriented design).
+[06/10/2026, 16:17:48] negarpoormehdi: i got it. 
+thank you for explaining it 🥹
+[08/10/2026, 09:22:28] Denis Dunaev: Hey, my idea for project is a location-based dating and social discovery application focused on personality and shared interests rather than photos. Users can see anonymous, approximately located profiles nearby and learn basic facts, interests, and compatibility information before deciding to send a “Bump.” If the other person accepts, both users can gradually reveal more information, access a more precise shared location, start chatting, and receive suggestions for nearby activities or meeting places. The system can also detect privacy-safe “crossed paths” encounters and use them as an additional matching signal. A key feature is progressive location disclosure, where exact location is only shared after mutual consent. The project involves the work of all of us, which is also a giant plus
+[08/10/2026, 09:24:13] Denis Dunaev: Let's all choose one very strong idea per person before 6:00 PM today, then we'll choose the 3 most interesting ones, what do you think?
+[08/10/2026, 09:39:44] Alef Keuffer: I don't understand a few points.
+
+- why share a precise location? Is it a live location? If they want to meet, they could just arrange with each other at a time and a place no?
+- why "crossed paths" is an additional matching signal?
+-
+[08/10/2026, 09:43:13] negarpoormehdi: hi guys, I have an idea, it's side skills marketplace
+[08/10/2026, 09:43:40] negarpoormehdi: it is to build a platform where people can monetize skills they have alongside their main job, even if they don't want to do them full-time.
+
+For example, I work as a frontend developer, but I'm also interested in pottery. Someone who owns a pottery workshop might occasionally need a person who knows pottery but doesn't want to work as a full-time employee. Through our platform, they can find each other, discuss the job, schedule, and payment, and arrange the work.
+
+The same idea could apply to almost anything: baking, photography, teaching, music, graphic design, woodworking, video editing, etc.
+
+So essentially, the platform connects people who have part-time or side skills with people or businesses that need those skills on a flexible basis.
+[08/10/2026, 09:44:00] negarpoormehdi: it's kinda like linkdin
+[08/10/2026, 09:46:34] Denis Dunaev: The idea is to make dating easier and faster without objectifying a person's appearance
+Someone went out for a walk, they want to meet new people who have common interests, and the more often their paths cross, the more these people have in common (not always, but one of the factors)
+[08/10/2026, 10:41:26] Denis Dunaev: Damn, that idea sounds really good. In Russia, we have a few similar apps where people post jobs they need done-like fixing something around the house or looking for a foreign language tutor, for example. But your idea appeals to me more because I prefer the app’s positioning as a paid hobby rather than freelance work in any area of life
+[08/10/2026, 10:44:30] Denis Dunaev: I found it a bit ironic when the instructor talked about how one of the students’ projects was a service that showed gas stations nearby with the lowest fuel prices. It’s just that a fuel crisis had begun in Russia due to attacks on oil refineries, and literally the next day, several services appeared that show which gas stations have gasoline, how many cars are in line to fill up, the price, and so on hahah
+[08/10/2026, 12:17:00] negarpoormehdi: ‎negarpoormehdi created the username ⁦@negarpoormehdi⁩
+[08/10/2026, 13:41:04] Denis Dunaev: So, we have one idea from three people, we are waiting for a response from two more, and then we will choose the three strongest and most interesting ones.
+The betting app is Alef's idea, if I remember correctly
+[08/10/2026, 14:22:16] João Luiz Cerqueira: It was mine
+[08/10/2026, 14:22:37] João Luiz Cerqueira: Let’s put it all in a shared docs
+[08/10/2026, 14:22:49] João Luiz Cerqueira: I’m just having lunch and I will do this
+[08/10/2026, 14:40:07] Denis Dunaev: Oh, right, sorry
+[08/10/2026, 16:28:56] João Luiz Cerqueira: https://docs.google.com/document/d/12-1k_CLcfXgM0mKwRQdiDLC81gp0rGaIsVq4aN5l_QY/edit?usp=sharing
+[08/10/2026, 16:37:14] Pedro Lunet 🥔 (FEUP(: just added mine
+[08/10/2026, 17:21:44] negarpoormehdi: exactly
+[09/10/2026, 09:07:06] Denis Dunaev: I added another idea to the file is an AI-powered personalized city guide. I'm getting ideas from my old notes hahaha. The user chooses a topic, for example 18th-century architecture, historic churches, viewpoints, local legends, etc., together with the available time and preferred walking distance. The app then generates an optimized route through relevant places in the city. When the user reaches each location, it provides an AI-generated explanation of its history, architecture, and interesting facts. The route could also adapt dynamically if the user skips a place, changes the available time, or wants to explore a different topic.
+[09/10/2026, 10:13:16] Denis Dunaev: https://docs.google.com/spreadsheets/d/1J2mdBj0l8PKW71Jb9Ox1J5sE_tKilvhSCfB7fWYaJJs/edit?gid=0#gid=0
+[09/10/2026, 10:14:34] Denis Dunaev: Guys, choose 3 ideas you like the most
+Those who get the most in total, those are the ones we will choose
+Please do this before our class today
+[09/10/2026, 13:34:50] Alef Keuffer: Shouldn't we vote ranked? Instead of one vote three times?
+[09/10/2026, 13:35:58] Alef Keuffer: I voted on two topics. But I abstained my third vote
+[09/10/2026, 13:39:35] Denis Dunaev: It seems to me or you didn't vote in the table
+[09/10/2026, 13:40:32] Denis Dunaev: We can vote a second time and sort the most interesting ones among the top 3
+[09/10/2026, 13:41:21] Denis Dunaev: But as I understand it, we just have to bring 3 ideas, and the teacher chooses one of these 3, right?
+[09/10/2026, 13:42:21] Pedro Lunet 🥔 (FEUP(: I think we can present the one we want, and we only.go the others if it it rejected
+[09/10/2026, 13:42:24] Pedro Lunet 🥔 (FEUP(: im not sure tho
+[09/10/2026, 13:43:46] Denis Dunaev: Mb mb idk
+[09/10/2026, 13:44:00] Denis Dunaev: We have class at 223, right?
+[09/10/2026, 13:44:09] Denis Dunaev: It's just closed here for now
+[09/10/2026, 13:45:37] Denis Dunaev: I can save us all a seat in the left front corner btw
+The same place where Alef and I sat during the last lesson
+[09/10/2026, 19:31:06] negarpoormehdi: hi guys, what happened in class?🫠 
+which idea did you choose?
+[09/10/2026, 20:23:02] Alef Keuffer: Today we pitched our ideas. The idea chosen was the pools and prediction with friends
+[10/10/2026, 10:44:59] negarpoormehdi: great 👍🏻
+[12/10/2026, 20:20:34] João Luiz Cerqueira: guys, apparently we should have an MVP by friday. Should we create the repo on github ourselves? does anyone know how this MVP is supposed to be?
+[12/10/2026, 20:25:46] Alef Keuffer: The professor said we would be given a repo
+[12/10/2026, 21:12:24] Pedro Lunet 🥔 (FEUP(: I was invited to an org, but there no repo there
+[12/10/2026, 21:26:43] João Luiz Cerqueira: is it this LES 2627? I also got invited but i have group D repo
+[12/10/2026, 21:28:53] Pedro Lunet 🥔 (FEUP(: ok I have one too, when I checked today it wasn't there
+[12/10/2026, 21:28:58] Pedro Lunet 🥔 (FEUP(: thats it I think
+[12/10/2026, 21:29:02] João Luiz Cerqueira: they created their repo publicly
+[12/10/2026, 21:29:09] João Luiz Cerqueira: so we should create our own?
+[12/10/2026, 21:29:24] João Luiz Cerqueira: i also remember the teacher saying we would be given a repo
+[12/10/2026, 21:29:25] Alef Keuffer: Have any of you received an assignment invite? It should be like Requirements Engineering class I think.
+‎[12/10/2026, 21:29:32] Alef Keuffer: Anyways, some of us are in a team already ‎<attached: 00000070-PHOTO-2026-10-12-21-29-31.jpg>
+‎[12/10/2026, 21:29:33] Alef Keuffer: Anyways, some of us are in a team already ‎<attached: 00000071-PHOTO-2026-10-12-21-29-32.jpg>
+[12/10/2026, 21:29:45] Alef Keuffer: Team H, group 8
+‎[12/10/2026, 21:30:31] Alef Keuffer: But there's not corresponding assignment in Classroom50 ‎<attached: 00000073-PHOTO-2026-10-12-21-30-31.jpg>
+‎[12/10/2026, 21:30:32] Alef Keuffer: But there's not corresponding assignment in Classroom50 ‎<attached: 00000074-PHOTO-2026-10-12-21-30-31.jpg>
+‎[12/10/2026, 21:30:49] Alef Keuffer: This is how it looks for Requirements Engineering ‎<attached: 00000075-PHOTO-2026-10-12-21-30-49.jpg>
+‎[12/10/2026, 21:30:50] Alef Keuffer: This is how it looks for Requirements Engineering ‎<attached: 00000076-PHOTO-2026-10-12-21-30-50.jpg>
+[12/10/2026, 21:31:52] João Luiz Cerqueira: i cant even find this screen
+[12/10/2026, 21:31:54] João Luiz Cerqueira: where is this
+[12/10/2026, 21:32:10] João Luiz Cerqueira: this github clasroom change is so confusing
+[12/10/2026, 21:32:41] Alef Keuffer: Go to this link https://classroom50.org. You should get an overview of everything
+[12/10/2026, 21:33:54] João Luiz Cerqueira: ah ok didnt know about this website
+[12/10/2026, 21:38:53] Alef Keuffer: I'm going to send an email to Nuno asking about the repo
+[12/10/2026, 21:39:02] João Luiz Cerqueira: good idea
+[12/10/2026, 21:43:43] Alef Keuffer: Email sent
+[13/10/2026, 17:13:17] Pedro Lunet 🥔 (FEUP(: shoudl we discuss stack?
+[13/10/2026, 17:29:10] Alef Keuffer: Sure. A fullstack app can be done in Next.js. That's one suggestion. Anyone with strong opinions?
+[13/10/2026, 17:38:39] João Luiz Cerqueira: We will have to wait until tomorrow because me and @⁨Denis Dunaev⁩ need approval from the OOD design about stack
+[13/10/2026, 17:39:54] João Luiz Cerqueira: I was already gonna try to convince him about the full stack framework that Joao Pedro asked, it’s called sveltekit
+[13/10/2026, 17:40:27] João Luiz Cerqueira: Otherwise we will have to do frontend and backed separate
+[13/10/2026, 17:59:21] Pedro Lunet 🥔 (FEUP(: i do like it ahah, both for fe and be. No issue if its smth else tho, even if its a monorepo with smth fro frontend and another thing for be. I just think it shouldn’t be smth very specific since we all have to do both fe and be. IMO svelte is like react but better and easier. and the be is ts. About Nextjs, ive used and i dont love tbh, but my biggest concerns are on the out of the box available ways to deploy it that is basically only vercel (not the bets imo)
+[13/10/2026, 19:42:45] Alef Keuffer: I don't know a lot about Svelte. What are the out-of-the-box ways available to deploy? What ways did you have in mind?
+[13/10/2026, 19:53:03] Pedro Lunet 🥔 (FEUP(: they have out of the box adapters to cloudflare, netlify,node, bun, ssg and vercel
+[13/10/2026, 19:53:25] Pedro Lunet 🥔 (FEUP(: personally I like cloudflare, mostly because their free tiers are basically production level already
+[13/10/2026, 20:10:22] Alef Keuffer: Ok, I'm good with that, we have someone who understands the technology and is comfortable with deployment in it. So you were thinking of using SvelteKit, choosing the full stack option?
+[13/10/2026, 23:56:04] João Luiz Cerqueira: It depends on the teacher tomorrow
+[13/10/2026, 23:56:18] João Luiz Cerqueira: I think he is gonna tell us to use something more low level
+[14/10/2026, 10:39:07] Denis Dunaev: Yes, so we're not choosing anything specific yet, let's consult with the teacher first
+[14/10/2026, 16:20:42] Pedro Lunet 🥔 (FEUP(: yeah! at the end of the day we shoudl use sth thats easy to learn or that everyone already knows, and that widely know for agents to be able to help us, we get no bonus points for using a complex stack
+‎[14/10/2026, 17:04:37] Denis Dunaev: We need to do this type of shi with @⁨João Luiz Cerqueira⁩ ‎<attached: 00000099-PHOTO-2026-10-14-17-04-37.jpg>
+[14/10/2026, 17:52:55] Alef Keuffer: 😂 can't see anything
+[14/10/2026, 17:54:12] Denis Dunaev: Even if you see it, it won't make it any clearer😂
+[14/10/2026, 18:04:05] Alef Keuffer: https://docs.google.com/document/d/1GsP8gSHFjhjsgGocIxHzyHRRs4QAY9ni0IulB9fs9Nw/edit?usp=drivesdk
+[14/10/2026, 18:05:43] Alef Keuffer: Guys I made this document so we can asynchronously discuss the app. We can communicate by putting names on tabs and responding with significant things using subtabs. Anyways, I just put there some things I had in my mind to get your opinions
+[14/10/2026, 18:13:58] João Luiz Cerqueira: OK, the teacher is kinda worried about us using sveltekit
+[14/10/2026, 18:14:29] João Luiz Cerqueira: Searching by ourselves we thought we could use some python framework
+[14/10/2026, 18:15:13] João Luiz Cerqueira: like falcon or flask
+[14/10/2026, 18:15:22] João Luiz Cerqueira: both are very very simple to understand
+[14/10/2026, 18:17:45] João Luiz Cerqueira: flask is very popular and simple
+[14/10/2026, 18:33:18] ‎You: ‎You pinned a message
+[14/10/2026, 18:17:59] João Luiz Cerqueira: you guys probably used it before
+[14/10/2026, 18:24:44] Alef Keuffer: I'll still add more stuff there
+[14/10/2026, 18:24:51] Alef Keuffer: Haha never used but can learn
+[14/10/2026, 19:17:39] negarpoormehdi: Hi guys, how are you?
+
+I wanted to let you know that my visa process has been taking up a lot of my time and causing me quite a bit of stress lately. Because of that, I might not be able to keep up with the project, stay updated on everything, or focus as much as I’d like to for the time being.
+
+I’ll do my best to get more involved as soon as things settle down a bit and my workload becomes more manageable.
+
+In the meantime, if there’s any specific task assigned to me, I’d really appreciate it if you could let me know. I’ll make sure to work on it as soon as I can.
+
+Thanks for understanding! ❤️
+[15/10/2026, 20:52:19] João Luiz Cerqueira: https://render.com
+[15/10/2026, 20:52:39] João Luiz Cerqueira: Guys this cloud service has a free plan for low usage
+[15/10/2026, 20:53:02] João Luiz Cerqueira: And has a very simple CD integration with GitHub
+[15/10/2026, 20:53:24] João Luiz Cerqueira: We can use this to host the website
+[15/10/2026, 21:05:55] Pedro Lunet 🥔 (FEUP(: I've used it once, I think they "sleep" it until a request is made in the free plan
+[15/10/2026, 21:06:22] Pedro Lunet 🥔 (FEUP(: so u need to wait for like 1 minute before its working if u haven't used it in an hour or so
+[15/10/2026, 21:06:31] Pedro Lunet 🥔 (FEUP(: that might be an issue to the backend I think
+[15/10/2026, 21:16:08] João Luiz Cerqueira: yeah we gotta wake it up before the teacher tests t
+[15/10/2026, 21:16:11] João Luiz Cerqueira: it
+[15/10/2026, 21:16:14] João Luiz Cerqueira: hahaha
+[16/10/2026, 09:46:21] Alef Keuffer: Can you say concretely what are the requirements from the Object Oriented Design? For example, what’s the reason for fullstack frameworks not being allowed?
+[16/10/2026, 09:58:16] João Luiz Cerqueira: I dont think the problem is the framework being fullstack. In the case of Sveltekit , the folder strcuture defines the routing urls. Therefore our design choices are limited and standardized in the Domain Driven Design aspect. But also the teacher doesnt allow frameworks that have built in database or ORMs, and other languages that make the code design too stiff like this
+[16/10/2026, 10:01:03] João Luiz Cerqueira: and also has to  be object oriented of course
+[16/10/2026, 10:01:18] Pedro Lunet 🥔 (FEUP(: imo,.if u guys like thos python ones u said yesterday, and they are allowed, let's just use them, and choose smth for the fe
+[16/10/2026, 10:01:37] Pedro Lunet 🥔 (FEUP(: can we use orms tho? or only the built in ones are not allowed?
+[16/10/2026, 10:06:34] João Luiz Cerqueira: No we can’t
+‎[16/10/2026, 10:06:43] João Luiz Cerqueira: ‎<attached: 00000130-STICKER-2026-10-16-10-06-43.webp>
+[16/10/2026, 10:09:19] Pedro Lunet 🥔 (FEUP(: yey I love writing dbs directly in SQL (I dont btw
+[16/10/2026, 10:09:27] Pedro Lunet 🥔 (FEUP(: we should so the whole project in assembly
+[16/10/2026, 10:16:02] João Luiz Cerqueira: Chatgpt is really good at it at least
+[16/10/2026, 14:13:59] João Luiz Cerqueira: Guys which classroom are you at
+[16/10/2026, 14:14:15] João Luiz Cerqueira: Sigarra changed to B117 but there is almost no one here
+[16/10/2026, 14:14:16] Denis Dunaev: 223
+[16/10/2026, 14:14:35] Denis Dunaev: 223 we are here
+[16/10/2026, 14:14:37] João Luiz Cerqueira: The teacher is there ?
+‎[16/10/2026, 14:55:40] Denis Dunaev: ‎<attached: 00000139-PHOTO-2026-10-16-14-55-40.jpg>
+[16/10/2026, 15:14:19] João Luiz Cerqueira: https://classroom50.org/MESW-LES-2627/les/assignments/project/submission
+[16/10/2026, 15:36:33] João Luiz Cerqueira: Supabase DB password:
+!4ohlbNZLtNkwD
+[16/10/2026, 16:01:10] Alef Keuffer: temporary: https://kroki.io/c4plantuml/svg/eNqdVt9v4kYQfvdfMaVSRa5J6VXXF4TQEUNat4T4MCEP0Qkt9gRWMbu-3TW5tOr_3pm1DYRyuVPzEHlnZ79vfu23fCdVmpcZQi981wnfLUKtHH52_SBw0uUIybN1uIHaDEMpVkZs4AIu0TmpVnAn3RqujESV2SCI0Vit2qVFcw6tKa7KXBi4pWWL1gN48I7wtNaQGhQO7TkUwjiZyoJXINU5aAMGrc63tF6isz-1zoIqjrYoCsI5xQ13uIRBUXiePNdPtiaz4BoyeBIrCvCcWLaSljtm5cgoKDDC11I5yDCVGbnuqRejz65ty0IshUXiSOpP5rsWioAziLV1K4PJhzFkwvntCrV0a1REJZzUCgqjt4zO4MEU87pcVW5UK8uYv89mcUIOvO93DrinKDLbuTOSK8ZM8AOsiSinJXPxeQ6iA7Mwpv-DOGKq99ZRwuUmD-yjVJQ8NTLNhbUD54xclg6jVKtE_oXwc7CmCCGVJs0xCLyXbyP8HQD9_Qgy68LtbTSE-_jPj7WN81Big11ICFCtajNuhMyPbFVDsoVwXRjS10xuMPinYaIGv0rkZ_MIMUObGllwhU9xabPYI13tkOpGn9yjcrnSdjmaxH82eLmmJr0M_Vuyuildqjf4amY07ydj4dt3lJa0iyepFBkoRK1zFGrPFe9H-3_xcStfLcoBQV0c4kZVbvblqomH08HVzH8Nwlk0H_nPeDQZRpPfFsNRGCXRzcQbp6PkZjwfDf0iHEzC0XhMqwb4P5Q1QTSZR7P61CAMR3GzIPBxNKkQ_PC23rbg4gJab1p-xLqNCEH_C_sidXSlbDMm5Md2dntT-zVNJSzSSCGVPeF02I0uXdVThC99jkSR_N-TlvHdPbjGlUSHFS-hfU2d99feYOqEWuXNME51qbJQG0b55VeuF2VOOvxSwrkSPBhBsD9_WowrzWzV6PeJZN-LmFSSNRraSTw4-8hwthDQ6yVbzEmPOzAnSev34ftcrtZumZfVxbq_opl-ZBmDBM0WjT8qCklH42e3Jk3tgPfZnSUZRn8ddkK8U-wDmfYZZUuG2dkYQhtKjnSPk6X-9H2YXS6ChbZX5rOATbzFYXR5dGc-wA78kdxMKq-zgDfZiTjo9pIkfyiRSkQotGBJ_nJTN4VW9GgcNPW4CvvOf2tr3_rWHjTvGHLXMTbRSd_ZsXiuS27IQsH3etW5S2pQQYrkbL9fH6PXhx6jBNOSXqdnuJYZvUpPwmDVMt7u9Wb6EbllCVrLD-Jc5DLzb2ODQ_EiXJaWkiMxG-uVTBnW8SN-LdI12T1g7nd6Pb5wY_mA6TO9VzAt6SVsoIb8Pg7S1ANxJtC-mV5X06fNhg6X7Pu1UYHhZT0tVMCqDL77nFEX5tTVB-6rwU8lWmcPfaoguxCpLSVOv2mavOiOUc42qBzYlQPq7oakA7dF5hVgozPMbcDbL8aJJkChR9nN0r98xhIw
+[16/10/2026, 16:50:37] João Luiz Cerqueira: https://miro.com/welcomeonboard/bEhRb2w2MDVJTklSSXBvNjNob3o1alhuNFk1cHl3OTFuMmN1S29qNHhVYlJNNEhFVk55dnNuTkREdFZOQ0NjNE1mc0lTK2ZuWXlhUjZYQkhxQ1QzRHg5eVR0bytHOHNRSVN2NVl3b21BV0ptQ2hCeGRZTi9NemxYU2pWY2gzV1Z3VHhHVHd5UWtSM1BidUtUYmxycDRnPT0hdjE=?share_link_id=547826490768
+[18/10/2026, 17:22:33] Alef Keuffer: Olá pessoal, só para fazer um ponto de situação. Amanhã vou terminar os modelos e as tabelas e depois pedir feedback de vocês. @⁨Pedro Lunet 🥔 (FEUP(⁩  conseguiste fazer deploy?
+[18/10/2026, 19:43:41] Pedro Lunet 🥔 (FEUP(: i just deployed the frontend on cloudflare. i was trying to find alternatives for backend but i dotn seem to find a good one, cloudflare would work, but because of the supabase bundle, it is basically on the 64mb limit they have for python workers, so its risky. i dont want to mess with tht flask structure you guys need to follow so maybe its best for @⁨João Luiz Cerqueira⁩ and @⁨Denis Dunaev⁩ to take a look at it
+[18/10/2026, 20:36:24] Alef Keuffer: Ah I forgot it was English in this group 😬. Sorry Denis, I was contacting other groups in Portuguese
+[18/10/2026, 20:36:31] Alef Keuffer: Hi everyone, just wanted to give you an update. Tomorrow I'll finish the models and tables, and then I'll ask for your feedback. Pedro Lunet were you able to deploy it? ‎<This message was edited>
+[19/10/2026, 09:21:28] João Luiz Cerqueira: .
+[19/10/2026, 09:21:44] João Luiz Cerqueira: Im gonna take a look at the options
+[19/10/2026, 09:22:23] João Luiz Cerqueira: I think vite has a free deploy also
+[19/10/2026, 09:33:37] Pedro Lunet 🥔 (FEUP(: vite for backend?
+[19/10/2026, 10:08:31] João Luiz Cerqueira: vite has an easy free cloud service as well
+[19/10/2026, 10:08:39] João Luiz Cerqueira: you can deploy backend
+[19/10/2026, 10:09:24] João Luiz Cerqueira: but not python right
+[19/10/2026, 10:09:30] João Luiz Cerqueira: i think java script only
+[19/10/2026, 10:09:43] João Luiz Cerqueira: ok i will try rende
+[19/10/2026, 10:09:45] João Luiz Cerqueira: render
+[19/10/2026, 10:10:20] João Luiz Cerqueira: another thing, we might need to be comunicating more on github and also creating tasks via the issues window
+[19/10/2026, 10:10:40] João Luiz Cerqueira: the introduction slide said that this will be evaluated
+[19/10/2026, 10:49:06] João Luiz Cerqueira: he also asks for staging environment
+[19/10/2026, 11:57:30] João Luiz Cerqueira: did you deploy a staging environment also @⁨Pedro Lunet 🥔 (FEUP(⁩ ?
+[19/10/2026, 11:58:35] Pedro Lunet 🥔 (FEUP(: i can do that
+[19/10/2026, 12:05:50] Pedro Lunet 🥔 (FEUP(: how do we wand to do this? have a staging and a prod branch
+[19/10/2026, 12:05:59] Pedro Lunet 🥔 (FEUP(: or having just one main branch that deplous to staging
+[19/10/2026, 12:06:12] Pedro Lunet 🥔 (FEUP(: and we manually trigger prod deploys with tags or smth?
+[19/10/2026, 12:06:58] João Luiz Cerqueira: i think the first option is more organized
+[19/10/2026, 12:07:58] João Luiz Cerqueira: Do i need the professor to give access to the repo to deploy with render? cant i just use github actions like you? Lets see if he accepts the request, but i am blocked rn waiting for this
+[19/10/2026, 12:10:21] Pedro Lunet 🥔 (FEUP(: its easier for them to give u acces, and I think they do if we ask, i just used actions as a workaround
+[19/10/2026, 12:10:48] João Luiz Cerqueira: Im gonna email him them
+[19/10/2026, 12:10:51] João Luiz Cerqueira: then*
+[19/10/2026, 12:11:11] Pedro Lunet 🥔 (FEUP(: ill set this up rn
+[19/10/2026, 12:38:19] João Luiz Cerqueira: they gave the access]
+[19/10/2026, 12:57:09] João Luiz Cerqueira: https://les-project-group-h.onrender.com/
+[19/10/2026, 12:57:13] João Luiz Cerqueira: this is the backend url
+[19/10/2026, 12:57:27] João Luiz Cerqueira: im gonna create stage branch now
+[19/10/2026, 12:57:46] Pedro Lunet 🥔 (FEUP(: im doing it already
+[19/10/2026, 12:57:48] Pedro Lunet 🥔 (FEUP(: give me a sec
+[19/10/2026, 12:58:04] Pedro Lunet 🥔 (FEUP(: im just pushing my changes
+[19/10/2026, 12:58:27] João Luiz Cerqueira: ah yes true
+[19/10/2026, 12:58:29] João Luiz Cerqueira: sorry
+[19/10/2026, 13:00:45] Pedro Lunet 🥔 (FEUP(: done!
+[19/10/2026, 13:01:59] João Luiz Cerqueira: wow i really liked your issues template, how do you set this up
+[19/10/2026, 13:04:13] Pedro Lunet 🥔 (FEUP(: it was just my agent ahshhas
+[19/10/2026, 13:04:35] Pedro Lunet 🥔 (FEUP(: but we can have templates if you want, we just need to put it on the .github folder
+[19/10/2026, 13:05:12] João Luiz Cerqueira: I mean if we use the agents we wont really need templates
+[19/10/2026, 13:05:17] João Luiz Cerqueira: i just never used it for this
+[19/10/2026, 13:05:18] João Luiz Cerqueira: will try
+[19/10/2026, 13:05:34] Pedro Lunet 🥔 (FEUP(: yeah but they will also follwo them so its good
+[19/10/2026, 13:05:40] João Luiz Cerqueira: oh
+[19/10/2026, 13:05:54] Pedro Lunet 🥔 (FEUP(: i can set ot up give me a sec
+[19/10/2026, 13:19:30] Pedro Lunet 🥔 (FEUP(: done
+[19/10/2026, 14:04:19] Pedro Lunet 🥔 (FEUP(: we should request admin access to the repo, rn we dont have much control
+[19/10/2026, 14:04:25] Pedro Lunet 🥔 (FEUP(: i cant even change the defualt branch to staging
+[19/10/2026, 14:05:57] Alef Keuffer: Guys, I created a pull request. But it's set to main. Do you want me to change to `staging`? It's documentation and I see `staging` is 3 commits behind `main`
+
+Please, if you have time, provide feedback.
+
+https://github.com/MESW-LES-2627/les-project-group-8/pull/9
+[19/10/2026, 14:09:17] Alef Keuffer: Among the most important things we should agree on are, and, thus, where feedback is most valuable,, in order of priority:
+
+1. Thin vertical slice for (Iteration 0)
+2. ⁠Data models ‎<This message was edited>
+[19/10/2026, 14:09:58] João Luiz Cerqueira: Create to staging first awayls
+[19/10/2026, 14:10:02] João Luiz Cerqueira: The PRs
+[19/10/2026, 14:11:07] Pedro Lunet 🥔 (FEUP(: yeah, when we have admin we can make it the default branch
+[19/10/2026, 14:12:43] Alef Keuffer: updated
+[19/10/2026, 14:12:55] João Luiz Cerqueira: We have to put staging up to date with main then if it’s 3 commits behind
+[19/10/2026, 14:13:23] João Luiz Cerqueira: Maybe we were messing with it at the same time
+‎[19/10/2026, 14:22:14] Alef Keuffer: FEUP Lab Engenharia de Software — Friendly Betting App MVP Contract - Google Gemini.pdf • ‎12 pages ‎<attached: 00000202-FEUP Lab Engenharia de Software — Friendly Betting App MVP Contract - Google Gemini.pdf>
+[19/10/2026, 14:22:59] Alef Keuffer: Take a look to see if it makes sense. If it is compatible with the requirements of DOO
+[19/10/2026, 14:23:25] Alef Keuffer: If it does make sense, I will add the openapi spec to the documentation
+[19/10/2026, 14:23:43] Alef Keuffer: Of course, it's better to before looking at this, see the Data Model in the PR.
+[19/10/2026, 14:46:00] João Luiz Cerqueira: We can’t use SQLAlchemy
+[19/10/2026, 14:46:07] João Luiz Cerqueira: It’s an ORM
+[19/10/2026, 14:48:58] Alef Keuffer: ok
+[19/10/2026, 14:49:01] João Luiz Cerqueira: Also, just to understand, we are doing the 2 option outcome just to make it simple right ? Cause in the vision we don’t really map open question bets, multiple choice, drop down, whatever type of answer we would like
+[19/10/2026, 14:49:15] João Luiz Cerqueira: I think this would be part of the core
+[19/10/2026, 14:49:50] Alef Keuffer: To make it simple, yes. I put the multi-select and other outcome options in out of scope (saved for vision) ‎<This message was edited>
+‎[19/10/2026, 14:50:30] Alef Keuffer: 😂 ‎<attached: 00000212-PHOTO-2026-10-19-14-50-29.jpg>
+[19/10/2026, 14:51:23] João Luiz Cerqueira: cope
+[19/10/2026, 14:51:39] Alef Keuffer: What was that thing you showed where you crafted sql queries in Python? ‎<This message was edited>
+[19/10/2026, 14:52:05] João Luiz Cerqueira: it was just the supabase api library for flask
+[19/10/2026, 14:52:25] João Luiz Cerqueira: i dont think this is in the vision
+[19/10/2026, 14:52:31] João Luiz Cerqueira: cant find it
+[19/10/2026, 14:53:23] João Luiz Cerqueira: 6. **User input outcome**: Allowing users to input their own outcome. 
+is it this?
+[19/10/2026, 14:54:12] Alef Keuffer: Yeah
+[19/10/2026, 14:54:34] Alef Keuffer: I haven't written the visio yet . If you look at the vision document, it's empty
+[19/10/2026, 14:55:07] João Luiz Cerqueira: I think we should take some things out of the vision, like money, weighted bets and custom rewards, cause this is really reaching, and like focus on making the bet customizable as the vision
+[19/10/2026, 14:55:25] Alef Keuffer: But the vision is not needed to implement
+[19/10/2026, 14:55:26] João Luiz Cerqueira: cause after we finish the MVP we will have to take things from the vision
+[19/10/2026, 14:55:36] Alef Keuffer: If we finish the mvp
+[19/10/2026, 14:55:49] João Luiz Cerqueira: i think its quite simple rn
+[19/10/2026, 14:55:51] João Luiz Cerqueira: no??
+[19/10/2026, 14:55:58] João Luiz Cerqueira: i believe we will
+[19/10/2026, 14:56:11] Alef Keuffer: It is. We should just add things to the vision. Later we can pick and choose which ones to implement
+[19/10/2026, 14:56:17] Alef Keuffer: We don't need to remove things
+[19/10/2026, 14:56:24] João Luiz Cerqueira: ok
+‎[19/10/2026, 14:58:03] Alef Keuffer: Gemini ‎<attached: 00000231-PHOTO-2026-10-19-14-58-02.jpg>
+[19/10/2026, 14:58:23] João Luiz Cerqueira: whats up with him bro
+[19/10/2026, 14:58:31] João Luiz Cerqueira: all funny
+[19/10/2026, 14:59:10] João Luiz Cerqueira: i think this db schema is too simplified and might be a nightmare to expand to other kinds of output besides 2 choices
+[19/10/2026, 14:59:17] João Luiz Cerqueira: but we can do it
+‎[19/10/2026, 15:00:28] Alef Keuffer: ‎<attached: 00000236-PHOTO-2026-10-19-15-00-28.jpg>
+[19/10/2026, 15:01:55] Alef Keuffer: I'm sharing the updated convo for review
+
+https://share.gemini.google/v57CAcqyKFZu
+[19/10/2026, 15:02:55] Alef Keuffer: Now there's `db.py` which uses supabase’s python library to manipulate the database and `app.py` which implements the endpoints.
+[19/10/2026, 15:13:57] Alef Keuffer: By the way, I don't know if you guys already use this, but I recommend using stacked pull requests.
+
+https://docs.github.com/en/pull-requests/get-started/about-stacked-prs
+[19/10/2026, 19:01:17] Alef Keuffer: Guys I didn't get comments on the PR. Do you want something changed? It's documentation only so it won't break things, but it's still good to have some feedback so we can open issues later related to proposed changes
+[19/10/2026, 19:30:31] Alef Keuffer: merged
+[19/10/2026, 19:39:26] Alef Keuffer: It's probably a good idea to use something like git-auto-pull extension if you can.
+https://marketplace.visualstudio.com/items?itemName=ChaitanyaPRamod.git-auto-pull
+[20/10/2026, 10:51:26] Alef Keuffer: Guys, I created a Gmail account for the group, so we can manage for example the render deployment. It’s feup.les.group.8@gmail.com. Here is the password for the account: https://vault.bitwarden.eu/#/send/2LVXZoAs3kKJnLTpAKH6bQ/5TdcLLwgEbAJRAGwO5Alow
+
+To view the link the password is `les.group.8`.
+
+I recommend you add a passkey in your device by going to https://myaccount.google.com/u/2/signinoptions/passkeys.
+
+I might have to approve your login the first time, but if you have a passkey it shouldn't be necessary. So that's why I'm recommending
+[20/10/2026, 11:00:16] Pedro Lunet 🥔 (FEUP(: we need to divide stuff right? what are the next steps?
+‎[20/10/2026, 11:12:25] Alef Keuffer: For the frontend we need an interface just for the requirements of the MVP. Something like this. Allow the creation of a bet. Might not need a user yet. Very simple just to have something. Once we have that, we can expand; ‎<attached: 00000245-PHOTO-2026-10-20-11-12-24.jpg>
+‎[20/10/2026, 11:12:26] Alef Keuffer: For the frontend we need an interface just for the requirements of the MVP. Something like this. Allow the creation of a bet. Might not need a user yet. Very simple just to have something. Once we have that, we can expand; ‎<attached: 00000246-PHOTO-2026-10-20-11-12-25.jpg>
+[20/10/2026, 11:12:51] Alef Keuffer: For the backend. We need to deploy and write the code to handle requests
+‎[20/10/2026, 11:17:05] Alef Keuffer: I'm playing with supabase to understand the code a little better ‎<attached: 00000248-PHOTO-2026-10-20-11-17-04.jpg>
+‎[20/10/2026, 11:17:06] Alef Keuffer: I'm playing with supabase to understand the code a little better ‎<attached: 00000249-PHOTO-2026-10-20-11-17-05.jpg>
+[20/10/2026, 11:34:40] Pedro Lunet 🥔 (FEUP(: ill pick this up rn, hopefully ill have smth in an hour or so
+[20/10/2026, 11:35:24] Pedro Lunet 🥔 (FEUP(: btw dont forget to work from staging branch, its not the default branch yet, we need to ask for admin on the repo to do that
+[20/10/2026, 11:50:51] Alef Keuffer: no problem. I didn't commit this because I didn't want to jump ahead and program the frontend
+[20/10/2026, 11:54:41] Alef Keuffer: @⁨Pedro Lunet 🥔 (FEUP(⁩ Do you have a problem with me pr and merging this stuff and you can change it later?
+[20/10/2026, 11:55:09] Alef Keuffer: Or you gonna plan on working on the frontend soon?
+[20/10/2026, 11:58:04] Pedro Lunet 🥔 (FEUP(: i was working on it know, but i ca push and ill look at it if you want
+[20/10/2026, 12:07:47] Alef Keuffer: sure, if you can push it great, that way I can have an idea 🙂
+‎[20/10/2026, 12:09:18] Alef Keuffer: Just to keep everyone updated. I'm currently testing the flask deployment on render. Seeing if I can have something working ‎<attached: 00000257-PHOTO-2026-10-20-12-09-17.jpg>
+‎[20/10/2026, 12:09:19] Alef Keuffer: Just to keep everyone updated. I'm currently testing the flask deployment on render. Seeing if I can have something working ‎<attached: 00000258-PHOTO-2026-10-20-12-09-18.jpg>
+‎[20/10/2026, 12:10:44] Alef Keuffer: We can't create a separate database for staging unless we upgrade supabase. So the decision will be to use the same for now (and probably for the entire project) ‎<attached: 00000259-PHOTO-2026-10-20-12-10-43.jpg>
+‎[20/10/2026, 12:10:45] Alef Keuffer: We can't create a separate database for staging unless we upgrade supabase. So the decision will be to use the same for now (and probably for the entire project) ‎<attached: 00000260-PHOTO-2026-10-20-12-10-44.jpg>
+[20/10/2026, 12:19:14] João Luiz Cerqueira: You deployed yourself on render?
+[20/10/2026, 12:19:17] Alef Keuffer: Flask should be deployed now. You can test this with `curl https://les-backend-staging.onrender.com/api/health` you should get `{"status":"ok”}`
+[20/10/2026, 12:19:23] Alef Keuffer: yes
+[20/10/2026, 12:19:29] João Luiz Cerqueira: Hahaha I did this also
+[20/10/2026, 12:19:33] Alef Keuffer: hahahah
+[20/10/2026, 12:20:36] João Luiz Cerqueira: Did you change anything on the backend ?
+[20/10/2026, 12:21:18] João Luiz Cerqueira: We have to somehow document these decisions
+[20/10/2026, 12:21:30] João Luiz Cerqueira: So we can read and pickup what you guys did
+[20/10/2026, 12:21:33] João Luiz Cerqueira: For the sprint review
+[20/10/2026, 12:22:37] Alef Keuffer: I did not document for now because I don't think they are decisions that will stick. I was trying to do a kind of MVP for backend deployment haha. Just get something that can handle some requests
+[20/10/2026, 12:23:23] João Luiz Cerqueira: I did this yesterday brooo
+[20/10/2026, 12:23:29] João Luiz Cerqueira: I will delete mine tho
+[20/10/2026, 12:23:34] João Luiz Cerqueira: You have a db schema already
+[20/10/2026, 12:23:55] João Luiz Cerqueira: Just be careful about pushing a bunch of stuff
+[20/10/2026, 12:24:17] Alef Keuffer: ahhh true I forgot about it completely. Sorry
+[20/10/2026, 13:14:20] Alef Keuffer: @⁨Pedro Lunet 🥔 (FEUP(⁩ according to the documentation, the cloudflare deployment now is for `main`. Is there a way to have something for `staging`? Also, I have the impression you said using github actions was a workaround because you didn't have admin permissions to connect cloudflare to the repo. Is that right?
+[20/10/2026, 13:15:33] Pedro Lunet 🥔 (FEUP(: its already deployed for both products and staging, as its written on the actions file. ideally we will not use actions, bur for now its the only way yes
+[20/10/2026, 13:15:57] Alef Keuffer: ok, I will send an email to ask for admin permissions. Is that ok with you?
+[20/10/2026, 13:17:19] Alef Keuffer: Does it require admin permissions or can you submit an access request?
+[20/10/2026, 13:18:53] Pedro Lunet 🥔 (FEUP(: id have to check it, it's not a priority for now tho
+[20/10/2026, 13:18:58] Pedro Lunet 🥔 (FEUP(: its deployed, its working
+[20/10/2026, 15:11:07] João Luiz Cerqueira: I also don’t see why we would change from actions since is setup
+[20/10/2026, 15:11:57] Pedro Lunet 🥔 (FEUP(: yeah agreed
+[20/10/2026, 17:25:12] João Luiz Cerqueira: @⁨Alef Keuffer⁩ how is the DB now ?
+[20/10/2026, 17:25:19] João Luiz Cerqueira: Maybe we can stick to your design
+[20/10/2026, 17:25:28] João Luiz Cerqueira: And already start the backend development
+[20/10/2026, 17:33:16] Alef Keuffer: the DB is up
+[20/10/2026, 17:33:35] Alef Keuffer: you should be able to inspect it on supabase
+[20/10/2026, 17:33:48] Alef Keuffer: @⁨Pedro Lunet 🥔 (FEUP(⁩ do you plan on pushing changes today?
+[20/10/2026, 17:34:14] Pedro Lunet 🥔 (FEUP(: I probably won't
+[20/10/2026, 17:34:32] Pedro Lunet 🥔 (FEUP(: but my changes dont affetc the backend eitherway
+[20/10/2026, 17:42:59] Alef Keuffer: ok. I was asking more to create a timeline, because we'll need time to familiarize ourselves with everyone else's code. Ideally, we should have everything done by the end of Wednesday. That way, we can spend Thursday understanding everything and linking stuff up the `CLAIM.md`.
+[20/10/2026, 17:44:06] Alef Keuffer: Tomorrow I have classes, but after 13:00 I can work on the project.
+[20/10/2026, 18:07:41] João Luiz Cerqueira: Ok I can do that also
+[20/10/2026, 18:08:03] Pedro Lunet 🥔 (FEUP(: I'll have time tonight and tomorrow morning, I'll work on the fe
+[20/10/2026, 18:26:53] João Luiz Cerqueira: So from what i looked in the schema, a pool has a single question?
+[20/10/2026, 18:27:02] João Luiz Cerqueira: isnt it a pool has multiple questions
+[20/10/2026, 18:27:09] João Luiz Cerqueira: and each question has multiple outcmes?
+[20/10/2026, 18:31:38] João Luiz Cerqueira: its like the pool is the question
+[20/10/2026, 18:32:52] Alef Keuffer: Yes, now a pool is just the question.
+[20/10/2026, 18:37:30] João Luiz Cerqueira: oh i thought this was a mistake and i updated it
+[20/10/2026, 18:38:01] João Luiz Cerqueira: i also noticed that before there was no table to add other guests to a pool so i created it also
+[20/10/2026, 18:38:52] Alef Keuffer: yeah, there was none because for the MVP on friday we only want to show the bet creation. We don't care about login functionality or even about having other participants. We only need a bet with the creator
+[20/10/2026, 18:39:33] Alef Keuffer: like this interface and after clicking create pool this should be reflected on the database. This would be enough for the requirements for friday
+[20/10/2026, 18:42:12] João Luiz Cerqueira: you think its better to undo what i did then? the users_pool table wont make a difference, but the other table i created will make it so we have to create a pool and then a question
+[20/10/2026, 18:43:28] Alef Keuffer: i think it's better to undo if you can because it would add more complexity when we don’t need it. After this iteration we're gonna have time because of FEUP week or something like that, so we can introduce your idea at that point
+[20/10/2026, 18:46:33] João Luiz Cerqueira: its not like a LOT of complexity, its just a question table that has a relationship with pool table
+[20/10/2026, 18:47:11] Alef Keuffer: But we won't just add the table. We'll add the apis, the frontend with the corresponding functionality, etc
+[20/10/2026, 18:47:26] Pedro Lunet 🥔 (FEUP(: we dot  have to ‎<This message was edited>
+[20/10/2026, 18:47:36] Pedro Lunet 🥔 (FEUP(: we can just have the table
+[20/10/2026, 18:47:52] Pedro Lunet 🥔 (FEUP(: imo the db should as close to the final one as possible even if we dont use everything
+[20/10/2026, 18:48:38] Alef Keuffer: ok. We just need to write this decision then in case the professor asks
+[20/10/2026, 18:49:36] João Luiz Cerqueira: i dont know, I kinda agree with alef, we have to stop at some point. Cause the point here is not to be effective. We have to stop at some point because if we do it further its gonna need a lot of thinking and its gonna be way harder to understand
+[20/10/2026, 18:50:16] João Luiz Cerqueira: for example, just by what I did here we cant create questions without creating a pool before, so I just added a business rule that will require more implementation effort for the vertical slice
+[20/10/2026, 18:50:36] João Luiz Cerqueira: so yes im considering the rollback, its not like we can ignore a very complex schema
+[20/10/2026, 18:51:56] João Luiz Cerqueira: so what do you think?
+[20/10/2026, 18:55:06] Alef Keuffer: I have the opinion that we should try to not be overly ambitious now if we don't need to hehe. If we can get away with (that is, not harm our grade) less work, we should take this path. I say this especially because it's due on friday
+[20/10/2026, 18:58:26] Pedro Lunet 🥔 (FEUP(: im ok with that
+[20/10/2026, 19:03:16] João Luiz Cerqueira: ok, so I dont think its smart to undo all the work i did rn, so maybe for the MVP we can just show a pool creation instead of a pool with questions
+[20/10/2026, 19:03:18] João Luiz Cerqueira: hahahaha
+[20/10/2026, 19:03:33] Alef Keuffer: Ah one thing @⁨Pedro Lunet 🥔 (FEUP(⁩ . There is a `README.md` at the root of the repo and one `frontend/README.md`. They have overlap in what they describe. Do you want me to move things related to the frontend from the root `README.md` to the `frontend/README.md`? Or do you prefer doing that during your work
+[20/10/2026, 19:03:33] João Luiz Cerqueira: and we say question creation is for the nex iteration
+[20/10/2026, 19:04:11] Alef Keuffer: Wait, you think it's complicated to undo? Because I can do it.
+[20/10/2026, 19:04:34] Alef Keuffer: undo the table I mean. I don't know if you did other things related to that change haha
+[20/10/2026, 19:40:36] João Luiz Cerqueira: Not I just didn’t want to throw my work away
+[20/10/2026, 19:40:40] João Luiz Cerqueira: 😭😭
+[20/10/2026, 19:41:19] Alef Keuffer: Hahahaha but we can save it for later
+‎[20/10/2026, 19:42:00] Alef Keuffer: But if you really want to keep things, don't forget to update the documentation. We still have this for the vertical slice ‎<attached: 00000328-PHOTO-2026-10-20-19-41-59.jpg>
+[20/10/2026, 19:42:00] João Luiz Cerqueira: Put it on a secret file
+[20/10/2026, 19:42:24] João Luiz Cerqueira: Ok we can undo it I will keep the Sql
+‎[20/10/2026, 19:42:27] Alef Keuffer: and this doc ‎<attached: 00000331-PHOTO-2026-10-20-19-42-26.jpg>
+[20/10/2026, 19:42:26] João Luiz Cerqueira: Secret
+‎[20/10/2026, 19:42:28] Alef Keuffer: and this doc ‎<attached: 00000333-PHOTO-2026-10-20-19-42-28.jpg>
+[20/10/2026, 19:42:49] Alef Keuffer: and the `001_init.sql`
+[20/10/2026, 19:44:19] Alef Keuffer: if you can, text something here when you undo it just so we can know it changed since it's not gonna show up on github
+[20/10/2026, 20:10:49] João Luiz Cerqueira: pronto, dei rollback
+[21/10/2026, 08:53:16] Denis Dunaev: sent pr, made some changes in staging @⁨Alef Keuffer⁩ ‎<This message was edited>
+[21/10/2026, 09:47:34] Alef Keuffer: will check it out
+[21/10/2026, 10:06:12] Alef Keuffer: I've added some comments
+[21/10/2026, 10:43:23] João Luiz Cerqueira: guys i think we are REALLY overengineering this for friday
+[21/10/2026, 10:43:28] João Luiz Cerqueira: the code is huge alreadyu
+[21/10/2026, 10:43:38] João Luiz Cerqueira: and has so much AI slop on the backend on satging
+[21/10/2026, 10:43:42] João Luiz Cerqueira: staging
+[21/10/2026, 10:45:33] João Luiz Cerqueira: and then a 400 line Pull request
+[21/10/2026, 10:45:39] João Luiz Cerqueira: with a bunch o regex
+[21/10/2026, 10:45:48] João Luiz Cerqueira: this is not it for this week guys
+[21/10/2026, 10:47:49] João Luiz Cerqueira: this is gonna be straight up impossible to explain
+[21/10/2026, 10:47:56] João Luiz Cerqueira: and the code is SO unorganized
+[21/10/2026, 10:48:02] Pedro Lunet 🥔 (FEUP(: @⁨Alef Keuffer⁩ where is this u said u would push? i want to start working on it
+[21/10/2026, 10:48:17] João Luiz Cerqueira: with so many tests
+[21/10/2026, 10:48:23] João Luiz Cerqueira: wtf
+[21/10/2026, 10:48:57] João Luiz Cerqueira: we have to step back, do a simple file structure, no tests no business logic
+[21/10/2026, 10:49:07] João Luiz Cerqueira: just CRUD for the tables
+[21/10/2026, 10:49:15] João Luiz Cerqueira: and then we start implementing other things
+[21/10/2026, 10:49:37] João Luiz Cerqueira: we have started so fucking advanced, if they look at the PRs they are gonna question it a lot
+[21/10/2026, 10:49:50] Pedro Lunet 🥔 (FEUP(: i havent seen or touhed the be yet, but i totally agree with this
+[21/10/2026, 10:50:06] João Luiz Cerqueira: your brain is gonna explain when you see it
+[21/10/2026, 10:50:21] Pedro Lunet 🥔 (FEUP(: tbf, it would with any backend ahsjahj, but yeah i get it
+[21/10/2026, 10:51:03] Pedro Lunet 🥔 (FEUP(: ill only have until until 16/ 16:30 to work on this today, dotn knw how much that will affect the fe
+[21/10/2026, 10:51:43] Pedro Lunet 🥔 (FEUP(: but yeah this week is just to prove ou stack and workflow work so no need to do more thatn we need fr. i have some frined that already did the sprint review, ill ask them for feedback
+[21/10/2026, 10:52:34] Pedro Lunet 🥔 (FEUP(: “eles tambem perguntam muito sobre uso de ai, mas estao 100% ok se disserem que foi vibe coded”
+especialmente o prototipo
+[21/10/2026, 10:53:11] Pedro Lunet 🥔 (FEUP(: ele quer é ver guidelines que asseguram que:
+
+- o planeamento foi feito conscientemente e faz sentido
+- ⁠o codigo gerado cumpre o que foi planeado
+[21/10/2026, 10:53:11] Pedro Lunet 🥔 (FEUP(: entao cenas tipo tests de acceptence e muita documentação sobre uso de ai e como fizeram para confirmar o gerado
+[21/10/2026, 10:53:11] Pedro Lunet 🥔 (FEUP(: ate documentar coisas como onde o ai errou e como isso afetou as pipelines de verificação e tudo
+[21/10/2026, 10:53:11] Pedro Lunet 🥔 (FEUP(: ele quer que o processo esteja claro e o planeamento seja feito com cabeça
+[21/10/2026, 10:56:09] João Luiz Cerqueira: I think we really should avoid commits like @⁨Alef Keuffer⁩ did yesterday, with a random name and 700 lines
+[21/10/2026, 10:57:26] João Luiz Cerqueira: and also i think he commited the .env
+[21/10/2026, 10:57:31] Denis Dunaev: I completely agree, it will be even easier to fail us during the assessment, because it is obvious that we simply won’t be able to explain this whole slop
+[21/10/2026, 10:58:39] Alef Keuffer: I said I wouldn't push because I thought you were doing your own changes
+[21/10/2026, 10:58:54] Pedro Lunet 🥔 (FEUP(: okok ill just start it from scratch now
+[21/10/2026, 11:02:38] Alef Keuffer: but I can push now if you want so you don't have to work from scratch. Which way do you prefer?
+[21/10/2026, 11:02:50] Pedro Lunet 🥔 (FEUP(: no dont do it, ill do from scrat h
+[21/10/2026, 11:03:54] João Luiz Cerqueira: what else are you gonna push bro😭😭
+[21/10/2026, 11:04:15] João Luiz Cerqueira: we have so much overengineering to fix here
+[21/10/2026, 11:04:18] João Luiz Cerqueira: chill guys
+[21/10/2026, 11:05:37] Pedro Lunet 🥔 (FEUP(: ill start building the frontend rn, ill keep it as simple as possible with one or to routes.
+
+we only want pool creation and participation for now right?
+[21/10/2026, 11:06:37] Alef Keuffer: But DOO requires you to overengineer no?
+[21/10/2026, 11:07:17] Alef Keuffer: It's the `.env.example` not `.env`
+[21/10/2026, 11:09:46] Pedro Lunet 🥔 (FEUP(: u cant put the credentias there tho
+[21/10/2026, 11:09:58] Pedro Lunet 🥔 (FEUP(: thats the same as pushing the env
+[21/10/2026, 11:11:39] Alef Keuffer: but I didn't put credentials there, just the publishable SUPABASE_KEY. But that is not a secret key.
+[21/10/2026, 11:12:45] João Luiz Cerqueira: lets not merge denis PR, and i will try to make the code way more organized
+[21/10/2026, 11:15:30] Denis Dunaev: It is advisable to remove the largest part of the slop and leave only what is really necessary, otherwise it will be simply impossible to work with it or explain it
+[21/10/2026, 11:16:24] Denis Dunaev: Because in the Alef branch it's already some kind of horror haha ‎<This message was edited>
+[21/10/2026, 11:18:02] João Luiz Cerqueira: The feature in the sprint review is gonna be create a pool and answer the pool, or only to create the pool? we dont really need users right?
+[21/10/2026, 11:18:35] Pedro Lunet 🥔 (FEUP(: we can do anon users, so we keep track of things, but no login and ath stuff
+[21/10/2026, 11:18:45] João Luiz Cerqueira: we have a hardcoded guest user here hahaha
+[21/10/2026, 11:19:55] João Luiz Cerqueira: maybe a guest user endpoint will be necessary cause we need to have a user to create the pool and the user is hardcoded that might not look good
+[21/10/2026, 11:20:21] João Luiz Cerqueira: the user is only name and ID anyways
+[21/10/2026, 11:21:30] Alef Keuffer: only create pool
+[21/10/2026, 11:22:54] Alef Keuffer: The backend is just one file `app.py` with `create_pool` as the most important function. It's very simple.
+[21/10/2026, 11:21:12] Pedro Lunet 🥔 (FEUP(: yeah, we can jsut do anon or with name, and that way it will be very easy to make them “auth” users later, cuz supabase only takes the id i think
+[21/10/2026, 11:24:22] Alef Keuffer: but of course, I accept the restructuring suggestion
+[21/10/2026, 11:25:24] João Luiz Cerqueira: whats the in memory store class
+[21/10/2026, 11:26:39] Denis Dunaev: The issue is not that, but that the file structure has grown without the need for it
+[21/10/2026, 11:28:07] João Luiz Cerqueira: I think the opposite, we can structure the files better and maybe the code will be more explainable, and do it creating issues, to commits, to PRs more iteratively, so we can show and explain
+[21/10/2026, 11:30:49] Alef Keuffer: was a fallback in case you can't connect to supabase, but can be removed
+[21/10/2026, 11:31:57] João Luiz Cerqueira: so thats somethings that are kind of AI slop that we should remove for example
+[21/10/2026, 12:08:28] Pedro Lunet 🥔 (FEUP(: just opended this PR
+
+https://github.com/MESW-LES-2627/les-project-group-8/pull/20
+
+its big cuz its setting up frontend environment also.
+[21/10/2026, 12:08:44] João Luiz Cerqueira: i opened multiple
+[21/10/2026, 12:09:13] Pedro Lunet 🥔 (FEUP(:
+‎[21/10/2026, 12:09:14] Pedro Lunet 🥔 (FEUP(: it adds 2 routes, a home rout that shows the pools that are already created, and a route to create a new pool with a form ‎<attached: 00000402-PHOTO-2026-10-21-12-09-14.jpg>
+‎[21/10/2026, 12:09:14] Pedro Lunet 🥔 (FEUP(: ‎<attached: 00000403-PHOTO-2026-10-21-12-09-14.jpg>
+‎[21/10/2026, 12:09:15] Pedro Lunet 🥔 (FEUP(: it adds 2 routes, a home rout that shows the pools that are already created, and a route to create a new pool with a form ‎<attached: 00000404-PHOTO-2026-10-21-12-09-15.jpg>
+[21/10/2026, 12:09:22] Pedro Lunet 🥔 (FEUP(: no styling for noe, just to make things work
+[21/10/2026, 12:11:36] João Luiz Cerqueira: my PRs are iterative, i did them all on top of each other, so if you wanna see step by step you go from the oldest one to the newest
+[21/10/2026, 12:11:46] João Luiz Cerqueira: im checking all of them rn also
+[21/10/2026, 12:12:14] Pedro Lunet 🥔 (FEUP(: ill take a look, dont trust me that much tho aahsa
+[21/10/2026, 12:27:44] Pedro Lunet 🥔 (FEUP(: looked at all 4, lgtm. only thing i'd change is on #18: .env.example has the publishable key, maybe we shoudl just replace it a placeholder
+[21/10/2026, 12:28:40] João Luiz Cerqueira: Yes but this publishable key apparently doesn’t work
+[21/10/2026, 12:28:53] João Luiz Cerqueira: Because of RLS config
+[21/10/2026, 12:28:56] Pedro Lunet 🥔 (FEUP(: yeah it has some restrictions
+[21/10/2026, 12:28:59] João Luiz Cerqueira: In supabase
+[21/10/2026, 12:28:59] Pedro Lunet 🥔 (FEUP(: exactly
+[21/10/2026, 12:29:07] João Luiz Cerqueira: But yeah we have to remove anyways
+[21/10/2026, 12:29:16] Pedro Lunet 🥔 (FEUP(: locally im using the secret key ther eisntad
+[21/10/2026, 12:29:35] Pedro Lunet 🥔 (FEUP(: other than that all look goos to me, makes things simpler thank god
+[21/10/2026, 12:29:53] Pedro Lunet 🥔 (FEUP(: if I was able to kinda understand it, it shoudl be fine ahhasha
+[21/10/2026, 12:30:08] João Luiz Cerqueira: I think I’m gonna tweak some things in the AI report, I had to correct so much stuff and I asked the AI to do the report
+[21/10/2026, 12:30:15] João Luiz Cerqueira: But it was so dishonest
+[21/10/2026, 12:30:21] João Luiz Cerqueira: I can add a bunch more mistakes
+[21/10/2026, 12:30:23] João Luiz Cerqueira: It dod
+[21/10/2026, 12:30:43] João Luiz Cerqueira: Not necessarily mistakes but like decisions and overengineering
+[21/10/2026, 12:31:36] Pedro Lunet 🥔 (FEUP(: yeah i get it ‎<This message was edited>
+[21/10/2026, 12:33:55] Pedro Lunet 🥔 (FEUP(: i think we shoudl wait for this to get merged, then ill tweak the froentedn, since it wont be working anymore, but it shoudl be easy
+[21/10/2026, 12:35:15] João Luiz Cerqueira: I also could understand the frontend quite well
+[21/10/2026, 12:36:01] João Luiz Cerqueira: There are some things I dont understand but I’ve actually been watching a lot of videos on svelte to learn
+[21/10/2026, 12:36:10] João Luiz Cerqueira: To be able to explain
+[21/10/2026, 12:36:13] João Luiz Cerqueira: Hahahaha
+[21/10/2026, 12:38:23] Pedro Lunet 🥔 (FEUP(: good good, keeping it as simple as I can for now. should we had more thing on the fe later?
+[21/10/2026, 12:38:31] Pedro Lunet 🥔 (FEUP(: or not for this iteration?
+[21/10/2026, 12:39:05] João Luiz Cerqueira: Not for this iteration
+[21/10/2026, 12:39:37] João Luiz Cerqueira: In the backend, I enforced the pool to have a valid creator in order to be created ‎<This message was edited>
+[21/10/2026, 12:40:18] João Luiz Cerqueira: So we have two options for the front end to use a guest user that we create in the database directly or to have a insert name field before creating a pool which creates the user and then create the pool ‎<This message was edited>
+[21/10/2026, 12:40:55] João Luiz Cerqueira: I think we can go with the first one for now
+[21/10/2026, 12:41:22] João Luiz Cerqueira: Just hardcode the user id in the frontend and pass it to create a pool
+[21/10/2026, 12:56:31] Alef Keuffer: For that you can use stacked PRs
+[21/10/2026, 12:56:51] João Luiz Cerqueira: Did I use ?
+‎[21/10/2026, 12:57:47] Alef Keuffer: I don't think you used ‎<attached: 00000439-PHOTO-2026-10-21-12-57-47.jpg>
+‎[21/10/2026, 12:57:48] Alef Keuffer: I don't think you used ‎<attached: 00000440-PHOTO-2026-10-21-12-57-48.jpg>
+[21/10/2026, 12:57:50] João Luiz Cerqueira: I did use them
+[21/10/2026, 12:58:11] João Luiz Cerqueira: Ah ok you have to click a button and stack th
+[21/10/2026, 12:58:13] João Luiz Cerqueira: Them
+[21/10/2026, 12:58:18] João Luiz Cerqueira: Never tried this
+[21/10/2026, 12:58:20] João Luiz Cerqueira: Will try
+[21/10/2026, 12:59:07] Alef Keuffer: are you at FEUP?
+[21/10/2026, 12:59:22] João Luiz Cerqueira: No
+[21/10/2026, 12:59:26] João Luiz Cerqueira: Will go soon
+[21/10/2026, 12:59:34] João Luiz Cerqueira: Like at 2pm I have classes
+[21/10/2026, 13:01:47] Alef Keuffer: Ah ok. It was just in case you were I'm also here and we could meet. No problem
+[21/10/2026, 13:21:05] Pedro Lunet 🥔 (FEUP(: it is doing that already, it always uses the guest user
+[21/10/2026, 14:01:03] Pedro Lunet 🥔 (FEUP(: @⁨João Luiz Cerqueira⁩ did u end up making thse change you wnted to on your prs?
+[21/10/2026, 14:09:19] Denis Dunaev: wait, he is on his way to our today's lesson
+[21/10/2026, 20:01:30] negarpoormehdi: hi guys, how are you? 
+is there anything i can do in order to participate 🫠
+sorry i’m really busy for my visa process 😭 
+i appreciate your hard work, please is there anything i can do, tell me 😭
+[22/10/2026, 10:38:54] João Luiz Cerqueira: whats up guuys
+[22/10/2026, 10:39:10] João Luiz Cerqueira: can i merge the backend? i wanted this to be running as for today
+[22/10/2026, 10:39:26] João Luiz Cerqueira: is everyone on pair?
+[22/10/2026, 10:47:42] Pedro Lunet 🥔 (FEUP(: all.good for mw
+[22/10/2026, 10:47:53] Pedro Lunet 🥔 (FEUP(: let me.know when its done so I can fix the fe to work with it
+[22/10/2026, 11:23:31] negarpoormehdi: hi guys, we will have presentation tomorrow? 
+@all
+[22/10/2026, 11:23:37] João Luiz Cerqueira: yes
+[22/10/2026, 11:24:06] negarpoormehdi: can i join online with you?
+[22/10/2026, 11:25:40] negarpoormehdi: one of my friends had their presentation yesterday, i asked him what’s the questions should we prepare for, and he’ll send it
+[22/10/2026, 11:42:08] negarpoormehdi: guys, 
+tbh, I’ve been really busy dealing with my visa process lately, and I still am. I have my VFS appointment next week. I’m sorry I haven’t been able to be as active in the team as I would have liked, but honestly, I was also hoping for a bit more support and understanding from you guys.
+I don’t have much information about the classes or the project schedule, and I’d really appreciate it if you could keep me more updated. We could also have our meetings online so I can stay in the loop. I only found out that there was a presentation because of a friend who had theirs yesterday.
+[22/10/2026, 11:44:00] negarpoormehdi: If you’re okay with it, I’d really appreciate it if we could hold our meetings online, so I can better understand what’s happening with the team and the project.
+From my three years of work experience, I’ve learned that one of the most important parts of being a developer is communicating and having regular meetings. It helps everyone stay on the same page and work better as a team.
+i know my situation is a little bit hard so thank you so much for your understanding! ❤️
+[22/10/2026, 11:45:01] João Luiz Cerqueira: yes of course
+[22/10/2026, 11:45:13] João Luiz Cerqueira: do you have experience as frontend or backend more?
+[22/10/2026, 11:46:17] negarpoormehdi: i have experience as frontend more but i am ready to learn backend too 🥹
+[22/10/2026, 11:46:23] João Luiz Cerqueira: does the teacher require that you are part of the presentation? what are the requirements for you in this case?
+[22/10/2026, 11:46:46] João Luiz Cerqueira: will he make questions for you and stuff?
+[22/10/2026, 11:51:05] negarpoormehdi: idk exactly, my friend told me that it is better for me to attend the presentation online, since the teacher may ask questions to all members.
+[22/10/2026, 11:51:29] João Luiz Cerqueira: https://classroom50.org/MESW-LES-2627
+[22/10/2026, 11:51:35] João Luiz Cerqueira: see if you can join this
+[22/10/2026, 11:52:56] Denis Dunaev: I think that she is already there
+[22/10/2026, 11:53:23] negarpoormehdi: yes i am
+[22/10/2026, 11:54:02] João Luiz Cerqueira: so soon im gonna merge the backend changes. The system is simple rn, the goal tomorrow is to be able to understand it a lot, everything is implemented
+[22/10/2026, 11:54:54] João Luiz Cerqueira: if you have any doubts ask, next iteration we are gonna start by dividing user stories and then you can help and pick some tasks
+[22/10/2026, 11:55:23] João Luiz Cerqueira: sorry for not including you so much :(
+[22/10/2026, 11:55:31] João Luiz Cerqueira: everything is so rushed here also
+[22/10/2026, 11:55:38] Pedro Lunet 🥔 (FEUP(: this presentation is basically for u to be able to prove that the stack we chose works for the product
+[22/10/2026, 11:55:47] negarpoormehdi: thank you so much 🥺🥺🥺
+[22/10/2026, 11:55:50] João Luiz Cerqueira: i will make more effort
+[22/10/2026, 11:56:32] negarpoormehdi: it’s ok, thank you for understanding my situation 🥺
+[22/10/2026, 11:56:53] negarpoormehdi: @all 
+Guys, I noticed a few important things from today’s presentation that I think we should prepare for.
+
+First, everyone in the group should participate in the presentation. Interestingly, the professor tends to ask more questions of the person who talks less than the others, so we should all be prepared to explain our work and answer questions.
+
+Also, according to the other group, the professor doesn’t start by asking questions to a specific person. He expects the team to answer questions together, with each person contributing and building on what the others say. So, we should listen to each other and support each other during the presentation.
+
+Here are the questions he asked them:
+
+1. How do you communicate and coordinate with each other, and how do you divide the tasks?
+
+2. Do you use AI? How much do you use it? He doesn’t expect us to avoid AI completely, but he wants to understand how much we rely on it.
+
+3. What is your vision for the project? If the vision isn’t clear or complete enough, he may ask how we plan to improve it and what we want to add.
+
+4. What is your MVP?
+
+5. What is your vertical prototype? What is your tech stack, and why did you choose it? He didn’t ask detailed questions about the code, such as what a specific line does or the purpose of a particular file.
+
+6. What is your definition of done for each sprint?
+
+7. Questions about the "CLAIM.md" file. He said he doesn’t send it just to check whether we can do the work; he wants to understand our approach and reasoning.
+
+8. Many other questions about their project, so we should make sure we understand the whole project, not just our individual tasks.
+[22/10/2026, 11:57:46] negarpoormehdi: these are all questions that teacher asked my friend’s group
+[22/10/2026, 11:59:27] Pedro Lunet 🥔 (FEUP(: I have a PR open that basically implements the frontend, it will need changes when @⁨João Luiz Cerqueira⁩ merges his backend PRs. If you want you can pick it up, shoudl be very easy. Dont know if youve ever worked with svelte but its very simple and the structure is there already, here to help if you need
+[22/10/2026, 12:01:33] negarpoormehdi: thank you so much pedro, no i didn’t work with svelte but i am fast learner🫠🫠
+[22/10/2026, 12:04:32] Pedro Lunet 🥔 (FEUP(: Great, let me know if i can help. as soon as Joao merges his PR's u can pick it up
+[22/10/2026, 12:07:05] negarpoormehdi: thanks 🥹🥹
+[22/10/2026, 13:49:49] João Luiz Cerqueira: guys i pushed to staging. I need some help with the claim.md, vision, ai log, etc
+[22/10/2026, 13:51:19] João Luiz Cerqueira: i dont really see where is the claim.md template
+[22/10/2026, 13:57:27] João Luiz Cerqueira: whats the staging frontenr url
+[22/10/2026, 14:03:21] João Luiz Cerqueira: @⁨negarpoormehdi⁩ you can work on the changes now, everything merged, create a new branch from staging
+[22/10/2026, 14:04:39] Pedro Lunet 🥔 (FEUP(: https://les-frontend-staging.les-h.workers.dev/
+[22/10/2026, 14:04:46] Pedro Lunet 🥔 (FEUP(: i dont think theres one yet…
+[22/10/2026, 14:05:11] Pedro Lunet 🥔 (FEUP(: its not connected to the be either, what is the url?
+[22/10/2026, 14:06:02] João Luiz Cerqueira: yeah but the professors said they would post a claim.md template on moodle i think
+[22/10/2026, 14:06:17] João Luiz Cerqueira: you mean the url for backend staging?
+[22/10/2026, 14:06:21] Pedro Lunet 🥔 (FEUP(: yeah i know, thy just didnt ahahhaa
+[22/10/2026, 14:06:23] Pedro Lunet 🥔 (FEUP(: yeah
+[22/10/2026, 14:06:40] João Luiz Cerqueira: https://les-backend-staging.onrender.com
+‎[22/10/2026, 14:07:02] Pedro Lunet 🥔 (FEUP(: is this normal? ‎<attached: 00000502-PHOTO-2026-10-22-14-07-02.jpg>
+[22/10/2026, 14:07:24] João Luiz Cerqueira: yes, i think there is no blank path like this
+[22/10/2026, 14:07:30] João Luiz Cerqueira: the health check is /health
+[22/10/2026, 14:07:33] João Luiz Cerqueira: hahaha
+‎[22/10/2026, 14:08:06] Pedro Lunet 🥔 (FEUP(: still errors to me ‎<attached: 00000506-PHOTO-2026-10-22-14-08-06.jpg>
+[22/10/2026, 14:08:06] João Luiz Cerqueira: oh maybe render is turning on
+[22/10/2026, 14:08:14] João Luiz Cerqueira: because i tested 5 minutes ago
+[22/10/2026, 14:08:18] João Luiz Cerqueira: and was working
+[22/10/2026, 14:08:42] Pedro Lunet 🥔 (FEUP(: they usually redirect to a page that sya aits turning on, but lets see
+‎[22/10/2026, 14:08:50] João Luiz Cerqueira: ‎<attached: 00000511-PHOTO-2026-10-22-14-08-50.jpg>
+[22/10/2026, 14:08:56] João Luiz Cerqueira: this was my previous test
+[22/10/2026, 14:09:34] João Luiz Cerqueira: oh its /api/health
+[22/10/2026, 14:09:45] João Luiz Cerqueira: https://les-backend-staging.onrender.com/api/health
+[22/10/2026, 14:09:46] Pedro Lunet 🥔 (FEUP(: yeha i see now, also works for me
+[22/10/2026, 14:16:47] negarpoormehdi: thank you, i’ll check it in several hours 🙏🏻
+[22/10/2026, 14:18:00] João Luiz Cerqueira: ok just remember it should be ready by tomorrow 😂
+[22/10/2026, 14:18:16] negarpoormehdi: 👌
+[22/10/2026, 14:19:30] negarpoormehdi: do we have any figma designs for our project, or anything?
+[22/10/2026, 14:20:41] João Luiz Cerqueira: right now the project is supposed to be really simples. @⁨Pedro Lunet 🥔 (FEUP(⁩ can give you information about the task more, but next iterations we will do something better. Dont mind having a very rudimentar result, its supposed to be like this. I really dont know the details but he can explain
+[22/10/2026, 14:24:28] Pedro Lunet 🥔 (FEUP(: yeah, I put little no style at all on purpose, for it to look like a functional wire frame vasically
+[22/10/2026, 14:24:41] Pedro Lunet 🥔 (FEUP(: it just needs to be wired up with the new backend updates really
+[22/10/2026, 14:25:46] João Luiz Cerqueira: the backend has 3 endpoints, to create a user, to create a pool and to get all pools. I think for now we are using a guest user and the create pools and get pools should be working
+[22/10/2026, 14:25:53] negarpoormehdi: can you add me in figma to see the wire frames?
+[22/10/2026, 14:30:53] João Luiz Cerqueira: there is no figma
+[22/10/2026, 14:30:56] João Luiz Cerqueira: yet
+[22/10/2026, 15:04:52] Alef Keuffer: @⁨negarpoormehdi⁩ one thing you could do is cleanup the root `README.md` moving information that is related to the backend to a `backend/README.md` and information that is already contained in `frontend/README.md` or missing from it to it. What do you think? This is something I was thinking of doing. What do you think?
+[22/10/2026, 15:05:26] Alef Keuffer: You could also help us crafting the vision. Right now it's still empty
+[22/10/2026, 15:05:52] João Luiz Cerqueira: the AI log for frontend @⁨Pedro Lunet 🥔 (FEUP(⁩ has to put his experience there
+[22/10/2026, 15:05:58] João Luiz Cerqueira: and you as well alef
+[22/10/2026, 15:06:06] João Luiz Cerqueira: i tried writing mine there
+[22/10/2026, 15:06:19] João Luiz Cerqueira: but i think i will organize it differently
+[22/10/2026, 15:07:21] Alef Keuffer: I will add mine.
+‎[22/10/2026, 15:07:37] Alef Keuffer: This is incorrect. No? ‎<attached: 00000534-PHOTO-2026-10-22-15-07-36.jpg>
+[22/10/2026, 15:09:11] Alef Keuffer: This is something we can add to the ai log where it got wrong if it's the case
+[22/10/2026, 15:11:57] João Luiz Cerqueira: What’s the wrong part about it
+[22/10/2026, 15:13:49] Alef Keuffer: Can we create a user?
+[22/10/2026, 15:14:00] João Luiz Cerqueira: Yes
+[22/10/2026, 15:14:33] Alef Keuffer: Why does it take so long to load https://les-frontend-staging.les-h.workers.dev?
+[22/10/2026, 15:14:48] Alef Keuffer: what is the route?
+‎[22/10/2026, 15:15:08] Alef Keuffer: I don't see user creation here ‎<attached: 00000541-PHOTO-2026-10-22-15-15-08.jpg>
+‎[22/10/2026, 15:15:10] Alef Keuffer: I don't see user creation here ‎<attached: 00000542-PHOTO-2026-10-22-15-15-09.jpg>
+[22/10/2026, 15:15:36] João Luiz Cerqueira: Post api/users
+[22/10/2026, 15:15:46] João Luiz Cerqueira: Cause no one did in the frontend
+[22/10/2026, 15:16:14] João Luiz Cerqueira: Just needs a {“name” :””}
+[22/10/2026, 15:16:16] Alef Keuffer: if no frontend, then no vertical slice
+[22/10/2026, 15:16:24] negarpoormehdi: I’m happy to work on both! I would just like us to have an online meeting first, so I can get a better understanding of the project and how the backend works. That way, I can make sure I don’t duplicate any work when updating the documentation and working on the vision.
+[22/10/2026, 15:17:43] João Luiz Cerqueira: The ideia was for someone to make it or just leave it as a guest user
+[22/10/2026, 15:17:48] João Luiz Cerqueira: Depending on what you wanted
+[22/10/2026, 15:18:02] João Luiz Cerqueira: This wasn’t AI mistake
+[22/10/2026, 15:18:05] João Luiz Cerqueira: I asked for it
+‎[22/10/2026, 15:18:46] Alef Keuffer: Also this is redundant information. We have vertical slice definitions in two places. We need to normalize our docs ‎<attached: 00000552-PHOTO-2026-10-22-15-18-45.jpg>
+[22/10/2026, 15:18:54] João Luiz Cerqueira: Yes
+[22/10/2026, 15:19:34] Alef Keuffer: Guys, do you want to move to Discord or Slack? I feel like we have multiple threads of conversation and it's easy for things to get lost in WhatsApp hehe
+[22/10/2026, 15:19:48] Alef Keuffer: ‎You deleted this message.
+[22/10/2026, 15:20:03] Alef Keuffer: look WhatsApp has our app builtin hehe
+[22/10/2026, 15:20:27] Alef Keuffer: ‎POLL:
+Which do you prefer?
+‎OPTION: Slack (1 vote)
+‎OPTION: Discord (4 votes)
+[22/10/2026, 15:20:39] Alef Keuffer: This only allows one choice now
+[22/10/2026, 15:21:07] Alef Keuffer: The pool is a whatsapp group with multiple polls ‎<This message was edited>
+[22/10/2026, 15:22:03] ‎You: ‎You pinned a message
+[22/10/2026, 15:22:47] João Luiz Cerqueira: @⁨Denis Dunaev⁩ would you be able to help making the documentation consistent?
+‎[22/10/2026, 15:23:10] Alef Keuffer: ‎<attached: 00000562-PHOTO-2026-10-22-15-23-09.jpg>
+[22/10/2026, 15:26:26] Alef Keuffer: https://discord.gg/UCaFzRKdV
+[22/10/2026, 16:50:31] Denis Dunaev: yeah
+[22/10/2026, 16:51:47] Pedro Lunet 🥔 (FEUP(: what exactly do we need to put on the Ai log?
+[22/10/2026, 16:55:21] João Luiz Cerqueira: What you used the ai for, what mistakes it did
+[22/10/2026, 16:55:47] João Luiz Cerqueira: Not mistakes only, decisions you changed, redesigns, assumptions, so basically where you had to intervene
+[22/10/2026, 16:55:54] João Luiz Cerqueira: And I think also how did you verify
+[22/10/2026, 18:28:20] Pedro Lunet 🥔 (FEUP(: just added it\
+[22/10/2026, 22:15:39] João Luiz Cerqueira: Guys should we try to put this on main today ?
+[22/10/2026, 22:15:58] Denis Dunaev: Thanks
+[22/10/2026, 22:17:15] negarpoormehdi: guys, can I work on user creatation front?
+[22/10/2026, 22:21:52] Alef Keuffer: Just merge and see if it works
