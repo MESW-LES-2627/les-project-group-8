@@ -6,8 +6,14 @@ SvelteKit 3 + TypeScript + Tailwind CSS 4, built with Vite.
 
 ```bash
 pnpm install
+cp .env.example .env  # Set API_URL to the running Flask backend (default :5000)
 pnpm dev        # http://localhost:5173
 ```
+
+`API_URL` is server-only and excludes the `/api` suffix. For example:
+`API_URL=http://127.0.0.1:5000`. If Flask uses port 5001, change this value to
+`http://127.0.0.1:5001` too. The browser submits to SvelteKit, server-side code in
+`src/lib/server/api.ts` calls Flask. Supabase credentials belong to the backend.
 
 ## Scripts
 
@@ -27,10 +33,15 @@ src/
 ├── app.html              # HTML shell
 ├── lib/                  # Imported via the `#lib` alias
 │   ├── assets/favicon.svg
+│   ├── components/       # PoolForm, PoolCard, StatusBadge
+│   ├── server/api.ts     # Server-to-server Flask calls
+│   ├── types.ts
 │   └── index.ts
 └── routes/
     ├── +layout.svelte    # Imports app.css
-    └── +page.svelte
+    ├── +page.svelte        # Pool listing
+    ├── +page.server.ts     # Loads pools from Flask
+    └── pools/new/          # Creation page and server action
 ```
 
 ## Styling with Tailwind
@@ -101,6 +112,10 @@ This project is on SvelteKit 3, which differs from v2 in a couple of ways:
 
 ## Deploying
 
-`vite.config.ts` uses `@sveltejs/adapter-auto`, which picks an adapter from the
-deploy platform. If yours isn't auto-detected, install the matching adapter
-(e.g. `@sveltejs/adapter-node`) and set it in `vite.config.ts`.
+`vite.config.ts` uses `@sveltejs/adapter-cloudflare`. GitHub Actions deploys the
+production Worker from `main` and the staging Worker from `staging`.
+`wrangler.jsonc` defines a server-only `API_URL` for each environment, pointing
+to the corresponding Flask service on Render.
+
+See the root [deployment instructions](../README.md#environments) for environment
+URLs and repository configuration.

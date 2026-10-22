@@ -12,7 +12,7 @@ for how it is organized and why.
 
 - Node 22+
 - [pnpm](https://pnpm.io/)
-- Python 3
+- Python 3.13 recommended (the version used by CI and Render)
 
 ## Getting started
 
@@ -21,6 +21,7 @@ for how it is organized and why.
 ```bash
 cd frontend
 pnpm install
+cp .env.example .env  # API_URL must match the local flask port
 pnpm dev        # http://localhost:5173
 ```
 
@@ -44,6 +45,13 @@ pytest -v              # acceptance tests, no database needed
 The app refuses to start if either variable is missing. Endpoints are described
 in [docs/iterations/0/openapi.yaml](docs/iterations/0/openapi.yaml), and tests
 in [docs/iterations/0/i00.d004-testing.md](docs/iterations/0/i00.d004-testing.md).
+
+The default local API URL is `http://127.0.0.1:5000`. If port 5000 is occupied, run `flask run --port 5001` and set
+`API_URL=http://127.0.0.1:5001` in `frontend/.env`.
+
+The first-deadline demonstration uses the pre-seeded Guest User. The frontend
+should send its `creator_id` when creating a pool. See the agreed
+[Iteration 0 scope](docs/iterations/0/i00.d002-mvp.md#thin-vertical-slice-iteration-0).
 
 ## Deploying the frontend
 
@@ -82,7 +90,7 @@ Both deploy automatically via GitHub Actions (`.github/workflows/deploy.yml` and
 `CLOUDFLARE_ACCOUNT_ID` repository secrets. Promote a change by merging
 `staging` into `main`.
 
-Staging-only config (for example `PUBLIC_API_URL`) goes under `env.staging` in
+Staging-only config (for example the server-only `API_URL`) goes under `env.staging` in
 `frontend/wrangler.jsonc`. Wrangler environments inherit `main`, `assets` and
 `compatibility_*`, but **not** `vars` or bindings.
 

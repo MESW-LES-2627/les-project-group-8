@@ -1,11 +1,12 @@
--- Atomic pool creation + deterministic outcome order.
--- Run after 001_unit.sql (Supabase dashboard -> SQL Editor).
+-- Unused alternative: atomic pool creation + deterministic outcome order.
+-- The current backend uses direct table requests and does not call this function.
+-- If adopting this alternative later, run after 001_init.sql.
 
 ALTER TABLE outcomes ADD COLUMN IF NOT EXISTS position SMALLINT NOT NULL DEFAULT 0;
 
 -- Inserts a pool and its outcomes in a single transaction and returns the
--- new pool id. Called by the backend via supabase.rpc('create_pool', ...).
--- Business-rule validation happens in the backend (pool_api/domain.py).
+-- new pool id. A future adapter could call supabase.rpc('create_pool', ...).
+-- Current business-rule validation lives in pools/service.py.
 CREATE OR REPLACE FUNCTION create_pool(
   p_name TEXT,
   p_statement TEXT,
