@@ -1,0 +1,48 @@
+﻿@startuml
+left to right direction
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 18
+skinparam ArrowColor #334155
+skinparam ArrowFontSize 14
+skinparam component {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #0F172A
+}
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #94A3B8
+  FontStyle bold
+}
+skinparam nodesep 45
+skinparam ranksep 45
+
+title Pools — UML Component Diagram
+
+actor "User" as User
+
+package "Pools" {
+  package "Frontend (SvelteKit)" {
+    component "Web UI" as UI
+    component "Web Application\nServer actions / page data" as Web
+    UI ..> Web : <<use>>
+  }
+
+  package "Backend (Flask)" {
+    component "REST API" as API
+  }
+
+  component "Notification\nPool User notifications" as Notification <<planned>>
+}
+
+User -right-> UI : uses
+component "Supabase\nData API + PostgreSQL" as Supabase <<external system>> #EFF6FF
+Web ..> API : <<use>>\nHTTP / JSON
+API ..> Supabase : <<use>>\nHTTPS
+API ..> Notification : <<use>>\nrequests reminder
+Notification -[norank]-> User : User notification
+
+@enduml
