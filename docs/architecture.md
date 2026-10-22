@@ -107,21 +107,7 @@ If any step raises `ValidationError` or `NotFoundError`, the error handlers in `
 
 - **Chosen:** `supabase-py`, which calls Supabase's REST API. It is a query builder, not an ORM: there are no mapped classes, no lazy loading, and no automatic saving.
 - **Why:** it was already set up on Render and needs no new secret.
-- **Cost:** two inserts (the pool, then its outcomes) cannot share a database transaction. If the outcomes insert fails, `create_pool` deletes the pool it just created. A crash in between could still leave a pool with no outcomes. Raw SQL with `psycopg` would solve this, and it is the first thing to change if it becomes a problem.
-
-### 3. No in-memory fallback in the app
-
-- **Before:** if Supabase was not configured, the app quietly stored pools in memory and lost them on restart.
-- **Now:** the app refuses to start without `SUPABASE_URL` and `SUPABASE_KEY`, so a misconfigured deployment fails loudly instead of losing data.
-- **The in-memory store still exists, but only as a test double** in `tests/fakes.py`.
-
-### 4. An unknown `creator_id` is a 400, not a 404
-
-The URL `/api/pools` exists; what is wrong is a field in the request body. A 404 would suggest the endpoint itself is missing.
-
-### 5. No database changes
-
-The tables from `backend/migrations/001_init.sql` are used as they are. The backend generates user ids (`users.id` has no default), and `is_guest` keeps its default.
+- **Cost:** two inserts (the pool, then its outcomes) cannot share a database transaction. If the outcomes insert fails, `create_pool` deletes the pool it just created. A crash in between could still leave a pool with no outcomes. Raw SQL with `psycopg` would solve this, and it is the first thing to change if it becomes a problem. We will probably change this next iteration.
 
 ## Adding a module in a later iteration (e.g. picks)
 
