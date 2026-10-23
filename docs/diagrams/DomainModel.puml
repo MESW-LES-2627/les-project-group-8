@@ -163,9 +163,4 @@ note right of Result
   Corrections trigger score recalculation.
 end note
 
-legend bottom
-  - private attribute | + public operation | / derived value
-  *-- composition | <|-- generalization | ..> dependency
-  Conceptual product vision model; independent of the current implementation.
-endlegend
 @enduml
