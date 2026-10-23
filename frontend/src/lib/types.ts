@@ -24,6 +24,7 @@ export interface Pool {
 }
 
 export interface CreatePoolInput {
+	creator_id: string;
 	name: string;
 	statement: string;
 	deadline: string;

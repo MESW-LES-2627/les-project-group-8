@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { GUEST_USER_ID } from '../../../lib/constants';
 import { ApiError, createPool } from '../../../lib/server/api';
 import type { CreatePoolInput } from '../../../lib/types';
 
@@ -77,6 +78,7 @@ function validate(values: {
 	return {
 		errors,
 		input: {
+			creator_id: GUEST_USER_ID,
 			name: values.name,
 			statement: values.statement,
 			deadline,
