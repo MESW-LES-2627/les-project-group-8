@@ -2,8 +2,10 @@ openapi: 3.0.3
 info:
   title: Friendly Pool App API
   description: >
-    Iteration 0 API contract for the thin vertical slice: create a user (name only),
-    then create and list pools with two outcomes created by that user.
+    Iteration 0 API contract for creating and listing pools with two outcomes
+    and an existing creator. The agreed UI demonstration uses the pre-seeded
+    Guest User. POST /users is an additional capability for creating named users;
+    it is not a required step in the guest-based demonstration.
   version: 0.1.0
 
 servers:
@@ -18,7 +20,7 @@ paths:
   /health:
     get:
       summary: Health check
-      description: Returns service status to verify deployment and readiness.
+      description: Confirms that Flask responds. Does not query Supabase or verify database readiness.
       operationId: healthCheck
       responses:
         '200':
@@ -162,8 +164,9 @@ components:
         creator_id:
           type: string
           format: uuid
-          description: Id of an existing user (returned by POST /users).
-          example: "3f2b8c1e-4d5a-4e6f-9a7b-8c9d0e1f2a3b"
+          description: >
+            Required id of an existing user. (returned by POST /users).
+            example: "3f2b8c1e-4d5a-4e6f-9a7b-8c9d0e1f2a3b"
         name:
           type: string
           minLength: 1

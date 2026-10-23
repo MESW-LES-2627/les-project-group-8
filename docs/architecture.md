@@ -25,10 +25,10 @@ backend/
 
 | File | Responsibility | Knows about |
 | :--- | :--- | :--- |
-| `routes.py` | HTTP only: read the request, call the service, turn the result into JSON | Flask, its own service |
+| `routes.py` | HTTP only: read the request, call the service, turn the result into JSON | Flask, its own service and models |
 | `service.py` | Business rules: validation, defaults (decider = creator), talking to other modules | its own repository, other modules' services |
 | `repository.py` | Database access with `supabase-py`. Rows are turned into dataclasses by hand | Supabase, its own models |
-| `models.py` | Plain dataclasses (`User`, `Pool`, `Outcome`...), plus rules that only need the data itself (`Pool.status()`) | nothing |
+| `models.py` | Plain dataclasses (`User`, `Pool`, `Outcome`...), plus rules that only need the data itself (`Pool.status()`) | Python standard library |
 
 ```mermaid
 flowchart LR
@@ -54,9 +54,10 @@ flowchart LR
 ## Dependency rules
 
 1. **Inside a module, calls go one way:** `routes -> service -> repository`. A repository never calls a service, and a service never touches Flask's `request`.
-2. **Between modules, only services talk.** `PoolService` asks `UserService.get_user()` for the creator. The pools module never reads the `users` table and never imports `users.repository`.
+2. **Cross-module business behavior goes through services.** `PoolService` asks `UserService.get_user()` to validate the creator and never imports `users.repository`. The pool repository's read projection joins `users` to obtain creator/decider summaries. That is response mapping, not cross-module service logic.
 3. **`shared/` depends on no module.** Modules depend on `shared/`, never the other way around.
-4. **Only `app.py` creates objects.** Services receive their repository (and other services) through the constructor. That is what lets the tests swap the database for a fake.
+4. **`app.py` wires application-wide services and repositories.** Services receive their repository (and other services) through the constructor. Routes and services can still construct request-scoped model objects. Constructor injection lets tests swap the database for a fake.
+
 
 ## Request flow: creating a pool
 
@@ -107,7 +108,7 @@ If any step raises `ValidationError` or `NotFoundError`, the error handlers in `
 
 - **Chosen:** `supabase-py`, which calls Supabase's REST API. It is a query builder, not an ORM: there are no mapped classes, no lazy loading, and no automatic saving.
 - **Why:** it was already set up on Render and needs no new secret.
-- **Cost:** two inserts (the pool, then its outcomes) cannot share a database transaction. If the outcomes insert fails, `create_pool` deletes the pool it just created. A crash in between could still leave a pool with no outcomes. Raw SQL with `psycopg` would solve this, and it is the first thing to change if it becomes a problem. We will probably change this next iteration.
+- **Cost:** the current direct table requests execute separately. If the outcomes insert fails, `create_pool` attempts to delete the pool it just created. A crash or failed deletion can still leave incomplete data; this is compensating cleanup, not an atomic transaction. Atomic creation would require a separate implementation change, such as a transaction over a SQL connection or a database function. That change is deferred beyond the current implementation.
 
 ## Adding a module in a later iteration (e.g. picks)
 
@@ -122,6 +123,7 @@ If any step raises `ValidationError` or `NotFoundError`, the error handlers in `
 - **`002_create_pool_fn.sql`** (a stored procedure for atomic pool creation) is not used by the code. See decision 2.
 - **Authentication.** Any client can create users and pools, which is acceptable for the Iteration 0 prototype.
 - **Outcome order.** `GET /api/pools` does not guarantee that the two outcomes come back in the order they were created.
+
 
 ## Known configuration issue
 
