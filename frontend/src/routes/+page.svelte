@@ -1,21 +1,47 @@
 <script lang="ts">
-	let count = $state(0);
+	import PoolCard from '../lib/components/PoolCard.svelte';
+	import type { PageProps } from './$types';
+
+	let { data }: PageProps = $props();
 </script>
 
-<main class="mx-auto max-w-2xl px-6 py-16 font-sans text-slate-800">
-	<h1 class="text-4xl font-bold tracking-tight text-slate-900">LES</h1>
-	<p class="mt-2 text-slate-600">SvelteKit 3 · TypeScript · Tailwind CSS 4.</p>
+<svelte:head>
+	<title>Pools · LES</title>
+</svelte:head>
 
-	<button
-		type="button"
-		onclick={() => count++}
-		class="mt-8 rounded-lg bg-slate-900 px-4 py-2 font-medium text-white transition hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+<div class="flex items-end justify-between gap-4">
+	<div>
+		<h1 class="text-3xl font-bold tracking-tight">Pools</h1>
+		<p class="mt-1 text-sm text-neutral-600">
+			Create a prediction pool and see who gets it right.
+		</p>
+	</div>
+	<a
+		href="/pools/new"
+		class="border border-black bg-black px-4 py-2 text-sm font-bold text-white hover:bg-white hover:text-black"
 	>
-		count is {count}
-	</button>
+		New pool
+	</a>
+</div>
 
-	<p class="mt-8 text-sm text-slate-500">
-		Edit <code class="rounded bg-slate-100 px-1.5 py-0.5 text-slate-700">src/routes/+page.svelte</code>
-		to get started.
+{#if data.created}
+	<p class="mt-6 border border-black bg-neutral-100 px-3 py-2 text-sm font-bold">Pool created.</p>
+{/if}
+
+{#if data.loadError}
+	<p role="alert" class="mt-6 border border-black px-3 py-2 text-sm">
+		Could not load pools: {data.loadError}
 	</p>
-</main>
+{/if}
+
+{#if data.pools.length === 0}
+	<p class="mt-10 border border-dashed border-neutral-400 p-8 text-center text-sm text-neutral-600">
+		No pools yet. Create the first one.
+	</p>
+{:else}
+	<div class="mt-8 grid gap-4">
+		{#each data.pools as pool (pool.id)}
+			<PoolCard {pool} />
+		{/each}
+	</div>
+{/if}

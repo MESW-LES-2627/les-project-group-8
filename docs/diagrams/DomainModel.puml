@@ -1,0 +1,166 @@
+@startuml VisaoDoAplicativo
+' Conceptual product vision model; independent of the current database or MVP.
+!pragma layout smetana
+top to bottom direction
+skinparam monochrome true
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 45
+skinparam ranksep 65
+skinparam defaultFontName SansSerif
+hide circle
+title Prediction Pool Application Vision — Class Diagram
+
+class User {
+  -name: String
+  -email: String
+  +createPool(): Pool
+  +join(pool: Pool): Participation
+}
+
+class Pool {
+  -title: String
+  -description: String
+  -recurring: Boolean
+  +addRound(): Round
+  +customizeTheme(): void
+  +calculateScores(): void
+}
+
+class Participation {
+  -joinedAt: DateTime
+  /totalPoints: Decimal
+  +submitPrediction(question: Question): Prediction
+  +viewLeaderboard(): Leaderboard
+}
+
+class Round {
+  -name: String
+  -number: Integer
+  -predictionDeadline: DateTime
+  +acceptsPredictions(at: DateTime): Boolean
+  +calculateScores(): void
+}
+
+abstract class Question {
+  -prompt: String
+  -maximumPoints: Decimal
+  +validateAnswer(value: String): Boolean
+}
+
+class MultipleChoiceQuestion {
+  +validateAnswer(value: String): Boolean
+}
+
+class OpenEndedQuestion {
+  +validateAnswer(value: String): Boolean
+}
+
+class NumericalQuestion {
+  -unit: String
+  +validateAnswer(value: String): Boolean
+}
+
+class ListSelectionQuestion {
+  -minimumSelections: Integer
+  -maximumSelections: Integer
+  +validateAnswer(value: String): Boolean
+}
+
+class Outcome {
+  -label: String
+  -order: Integer
+}
+
+class Prediction {
+  -submittedAt: DateTime
+  -numericalValue: Decimal [0..1]
+  -textValue: String [0..1]
+  /earnedPoints: Decimal
+  +update(): void
+}
+
+class Result {
+  -recordedAt: DateTime
+  -numericalValue: Decimal [0..1]
+  -textValue: String [0..1]
+  +correct(): void
+}
+
+class Template {
+  -name: String
+  -description: String
+  +createPool(organizer: User): Pool
+}
+
+class Leaderboard {
+  -generatedAt: DateTime
+  +points(participation: Participation): Decimal
+  +position(participation: Participation): Integer
+  +positionChange(participation: Participation): Integer
+}
+
+class Statistics {
+  +accuracy(participation: Participation): Decimal
+  +answerFrequency(question: Question): Map
+  +performanceByRound(participation: Participation): Map
+}
+
+User "1" -- "0..*" Pool : organizes >
+User "1" -- "0..*" Participation : has >
+Pool "1" *-- "0..*" Participation : memberships
+Pool "0..1" *-- "1..*" Round : rounds
+Round "1" *-- "1..*" Question : questions
+Question <|-- MultipleChoiceQuestion
+Question <|-- NumericalQuestion
+Question <|-- OpenEndedQuestion
+Question <|-- ListSelectionQuestion
+MultipleChoiceQuestion "0..1" *-- "2..*" Outcome : alternatives
+ListSelectionQuestion "0..1" *-- "1..*" Outcome : items
+Participation "1" *-- "0..*" Prediction : predictions
+Question "1" -- "0..*" Prediction : receives <
+Prediction "0..*" -- "0..*" Outcome : selects >
+Question "1" *-- "0..1" Result : correct answer
+Result "0..*" -- "0..*" Outcome : correct outcomes >
+User "1" -- "0..*" Result : records >
+Template "0..1" -- "0..*" Pool : used to create >
+Template "0..1" *-- "1..*" Round : predefined rounds
+Pool "1" -- "1..*" Leaderboard : leaderboards
+Round "0..1" -- "0..1" Leaderboard : optional scope
+Pool "1" -- "1" Statistics : metrics
+Leaderboard ..> Prediction : calculated from
+Statistics ..> Prediction : analyzes
+Statistics ..> Result : compares
+
+note left of Participation
+  One participation per user and pool.
+  Organizer and participant are roles;
+  the organizer may also participate.
+end note
+
+note right of Round
+  {xor} Each round belongs to exactly one
+  pool or template, never both.
+  One-time pool: one round.
+  Recurring pool: multiple rounds.
+end note
+
+note left of Template
+  Optional starting point with predefined rounds
+  and questions (e.g. Premier League or Oscars).
+  Creating a pool copies this structure;
+  the resulting pool can be customized independently.
+end note
+
+note left of Prediction
+  At most one prediction per participation and question.
+  Both must belong to the same pool.
+end note
+
+note right of Result
+  Recorded by the pool organizer.
+  Corrections trigger score recalculation.
+end note
+
+@enduml
