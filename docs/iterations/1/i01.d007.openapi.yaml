@@ -1,0 +1,293 @@
+openapi: 3.0.3
+info:
+  title: Friendly Pool App API
+  description: >
+    Iteration 0 API contract for creating and listing pools with two outcomes
+    and an existing creator. The agreed UI demonstration uses the pre-seeded
+    Guest User. POST /users is an additional capability for creating named users;
+    it is not a required step in the guest-based demonstration.
+  version: 0.1.0
+
+servers:
+  - url: http://127.0.0.1:5000/api
+    description: Local Flask development server
+  - url: https://les-backend-staging.onrender.com/api
+    description: Staging server on Render
+  - url: https://les-backend.onrender.com/api
+    description: Production server on Render
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Confirms that Flask responds. Does not query Supabase or verify database readiness.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /users:
+    post:
+      summary: Create a user
+      description: Creates a user with only a name. The backend generates the id.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSummary'
+        '400':
+          description: Validation error (missing, empty, or too long name).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyName:
+                  value:
+                    error: "Field 'name' cannot be empty."
+        '500':
+          description: Server or database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /pools:
+    get:
+      summary: List all pools
+      description: Fetches all created pools from the database, ordered by newest first.
+      operationId: listPools
+      responses:
+        '200':
+          description: A list of pools.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pool'
+        '500':
+          description: Server or database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create a new pool
+      description: >
+        Creates a pool with two possible outcomes. The creator must be an existing
+        user; for Iteration 0 the backend sets the decider to the creator.
+      operationId: createPool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePoolRequest'
+      responses:
+        '201':
+          description: Pool created and saved to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pool'
+        '400':
+          description: Validation error (e.g., unknown creator, missing fields, past deadline, or not exactly 2 unique outcomes).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unknownCreator:
+                  value:
+                    error: "Field 'creator_id' must be the id of an existing user."
+                wrongOutcomeCount:
+                  value:
+                    error: "A pool must have exactly 2 unique, non-empty outcomes."
+                pastDeadline:
+                  value:
+                    error: "Field 'deadline' must be in the future."
+                emptyFields:
+                  value:
+                    error: "Field 'name' cannot be empty."
+        '500':
+          description: Server or database error.
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Display name. Leading and trailing spaces are removed.
+          example: "Ana"
+
+    CreatePoolRequest:
+      type: object
+      required:
+        - creator_id
+        - name
+        - statement
+        - deadline
+        - options
+      properties:
+        creator_id:
+          type: string
+          format: uuid
+          description: >
+            Required id of an existing user. (returned by POST /users).
+            example: "3f2b8c1e-4d5a-4e6f-9a7b-8c9d0e1f2a3b"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: Title of the pool.
+          example: "Champions League Final"
+        statement:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: The exact prediction statement being judged.
+          example: "Real Madrid wins in 90 minutes."
+        deadline:
+          type: string
+          format: date-time
+          description: ISO-8601 UTC timestamp when the pool locks. Must be in the future.
+          example: "2026-11-01T20:00:00Z"
+        options:
+          type: array
+          description: Exactly two distinct outcome labels for the MVP vertical slice.
+          minItems: 2
+          maxItems: 2
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+          example:
+            - "Yes, they win"
+            - "No, draw or loss"
+
+    Pool:
+      type: object
+      required:
+        - id
+        - name
+        - statement
+        - deadline
+        - status
+        - creator
+        - decider
+        - options
+        - winning_outcome_id
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        name:
+          type: string
+          example: "Champions League Final"
+        statement:
+          type: string
+          example: "Real Madrid wins in 90 minutes."
+        deadline:
+          type: string
+          format: date-time
+          example: "2026-11-01T20:00:00Z"
+        status:
+          type: string
+          description: Derived on the backend from deadline and winning_outcome_id.
+          enum:
+            - OPEN
+            - LOCKED
+            - RESOLVED
+          example: "OPEN"
+        creator:
+          $ref: '#/components/schemas/UserSummary'
+        decider:
+          $ref: '#/components/schemas/UserSummary'
+        options:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            $ref: '#/components/schemas/Outcome'
+        winning_outcome_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Null until the decider resolves the pool.
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp.
+          example: "2026-10-19T20:00:00Z"
+
+    Outcome:
+      type: object
+      required:
+        - id
+        - label
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "11111111-2222-3333-4444-555555555551"
+        label:
+          type: string
+          example: "Yes, they win"
+
+    UserSummary:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "00000000-0000-0000-0000-000000000001"
+        name:
+          type: string
+          example: "Guest User"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "A pool must have exactly 2 unique, non-empty outcomes."
