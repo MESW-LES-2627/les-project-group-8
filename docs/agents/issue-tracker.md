@@ -14,6 +14,28 @@ Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all o
 
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
 
+## Project board
+
+Issues are tracked on the org project **Group 8 — Iteration 1** (number `22`, owner `MESW-LES-2627`). Its `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`.
+
+GitHub's board automation only reacts to issues **linked** to a PR, and `Closes #N` only links when the PR targets `main`. Our feature PRs target `staging`, so nothing moves on its own: **you move the cards.** This needs the `project` scope on `gh` (`gh auth refresh -h github.com -s project`).
+
+| When | Do |
+| :--- | :--- |
+| You start a ticket | Assign it (`gh issue edit <n> --add-assignee @me`) and set it `In progress`. |
+| Its PR into `staging` opens | Set the ticket, and its parent spec, `In review`. List them in the PR body as `Part of #<n>`. |
+| It is verified on staging | Close the ticket (`Item closed` moves it to `Done`). Close the spec once all its tickets are closed. |
+| `staging` is promoted to `main` | The parent story closes, through `Closes #<n>` in the promotion PR (one keyword per issue). |
+
+**Set a status** (option ids: `To do` `f75ad846`, `In progress` `47fc9ee4`, `In review` `1d04f341`, `Done` `98236657`):
+
+```sh
+item=$(gh api graphql -f query='{repository(owner:"MESW-LES-2627",name:"les-project-group-8"){issue(number:<n>){projectItems(first:5){nodes{id project{number}}}}}}' \
+  --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number==22) | .id')
+gh project item-edit --id "$item" --project-id PVT_kwDOFEfeUs4Bpfy- \
+  --field-id PVTSSF_lADOFEfeUs4Bpfy-zhn7L30 --single-select-option-id <option-id>
+```
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; `/triage` reads this flag.)_
