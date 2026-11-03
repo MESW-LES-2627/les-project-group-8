@@ -18,7 +18,18 @@
 			<div class="flex items-center gap-4">
 				{#if data.user}
 					<span class="text-sm font-bold">{data.user.name}</span>
+					<form method="POST" action="/logout">
+						<button
+							type="submit"
+							class="cursor-pointer text-[10px] font-bold uppercase tracking-widest underline"
+						>
+							Log out
+						</button>
+					</form>
 				{:else}
+					<a href="/login" class="text-[10px] font-bold uppercase tracking-widest underline">
+						Log in
+					</a>
 					<a href="/signup" class="text-[10px] font-bold uppercase tracking-widest underline">
 						Sign up
 					</a>
