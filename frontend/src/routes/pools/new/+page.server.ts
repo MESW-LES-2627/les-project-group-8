@@ -1,8 +1,9 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { loginPath } from '../../../lib/redirect';
-import { ApiError, createPool } from '../../../lib/server/api';
-import { endSession } from '../../../lib/server/session';
-import type { CreatePoolInput } from '../../../lib/types';
+import { readField } from '#lib/form.ts';
+import { loginPath } from '#lib/redirect.ts';
+import { ApiError, createPool } from '#lib/server/api.ts';
+import { endSession } from '#lib/server/session.ts';
+import type { CreatePoolInput } from '#lib/types.ts';
 
 type FieldErrors = {
 	name?: string;
@@ -13,8 +14,7 @@ type FieldErrors = {
 };
 
 function read(form: FormData, key: string): string {
-	const value = form.get(key);
-	return typeof value === 'string' ? value.trim() : '';
+	return readField(form, key).trim();
 }
 
 function validate(values: {
@@ -119,6 +119,10 @@ export const actions = {
 				// still-"logged-in" visitor straight home. The half-filled form is lost.
 				await endSession(locals, cookies);
 				redirect(303, loginPath(url));
+			}
+			if (error instanceof ApiError && error.status === 403) {
+				// A valid token, but its Account has no User: logging in again won't help.
+				redirect(303, '/no-user');
 			}
 			if (error instanceof ApiError && error.status === 400) {
 				return fail(400, { error: error.message, values });

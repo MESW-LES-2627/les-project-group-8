@@ -26,7 +26,7 @@ class PoolService:
         if "creator_id" in payload:
             # The old way of choosing who creates a pool; refused so clients notice it is gone.
             raise ValidationError("Field 'creator_id' is not accepted: the creator is the logged-in user.")
-        new_pool = parse_new_pool(payload, creator=UserSummary(id=creator.id, name=creator.name))
+        new_pool = parse_new_pool(payload, creator=UserSummary.of(creator))
         return self._repository.create_pool(new_pool)
 
 

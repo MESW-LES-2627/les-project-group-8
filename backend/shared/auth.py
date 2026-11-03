@@ -4,7 +4,9 @@ Tokens are checked locally against Supabase's public signing keys (ADR 0001).
 """
 
 import os
+from collections.abc import Callable
 from functools import wraps
+from typing import Any
 
 import jwt
 from dotenv import load_dotenv
@@ -14,6 +16,11 @@ from .errors import AuthenticationError, ForbiddenError, NotFoundError
 
 ALGORITHM = "ES256"
 AUDIENCE = "authenticated"
+
+Route = Callable[..., Any]
+# Takes a User id; returns the User or raises NotFoundError. Typed loosely: shared imports no module.
+LoadUser = Callable[[str], Any]
+LoginGuard = Callable[[Route], Route]
 
 
 class TokenVerifier:
@@ -58,13 +65,10 @@ class TokenVerifier:
         return claims["sub"]
 
 
-def create_login_guard(verifier: TokenVerifier, load_user):
-    """Builds `@login_required`: the route runs only for a logged-in User, passed in as `current_user`.
+def create_login_guard(verifier: TokenVerifier, load_user: LoadUser) -> LoginGuard:
+    """Builds `@login_required`: the route runs only for a logged-in User, passed in as `current_user`."""
 
-    `load_user(user_id)` returns the User or raises NotFoundError.
-    """
-
-    def login_required(route):
+    def login_required(route: Route) -> Route:
         @wraps(route)
         def guarded(*args, **kwargs):
             user_id = verifier.user_id(_bearer_token())
