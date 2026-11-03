@@ -164,7 +164,7 @@ Row-level security is **on** for `users`, `pools`, `outcomes` and `picks`, with 
 
 Flask connects with the **secret** key (`SUPABASE_KEY`), which bypasses RLS, and enforces who may do what in its services. So:
 
-- RLS with no policies is deliberate, not an unfinished setup. Don't add policies and don't point Flask at the publishable key: either reopens the back door.
+- RLS with no policies is deliberate, not an unfinished setup. Don't add permissive policies and don't point Flask at the publishable key: either reopens the back door.
 - The secret key only lives in server environments (both Render services, local `backend/.env`), never in the frontend or in git.
 - A new table needs `ALTER TABLE <name> ENABLE ROW LEVEL SECURITY;` in its migration, or it is open to anyone with the publishable key.
 

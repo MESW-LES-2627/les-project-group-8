@@ -3,7 +3,7 @@
 -- Row-level security is enabled with NO policies on purpose: Supabase's REST
 -- API then refuses every direct read and write made with the publishable key
 -- or an Account's token. Flask connects with the secret key, which bypasses
--- RLS. Do not add policies here: any policy reopens the back door.
+-- RLS. Do not add permissive policies here: they reopen the back door.
 
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pools ENABLE ROW LEVEL SECURITY;
