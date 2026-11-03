@@ -43,7 +43,8 @@ src/
 │   ├── assets/favicon.svg
 │   ├── components/       # PoolForm, PoolCard, StatusBadge
 │   ├── server/api.ts     # Server-to-server Flask calls
-│   ├── redirect.ts       # sameSitePath(): only same-site `redirectTo` targets
+│   ├── server/session.ts # endSession(): log this browser out (logout, Flask 401)
+│   ├── redirect.ts       # loginPath() and sameSitePath(): only same-site `redirectTo` targets
 │   ├── types.ts
 │   └── index.ts
 └── routes/
@@ -54,7 +55,7 @@ src/
     ├── signup/             # Sign-up page and server action
     ├── login/              # Login page and server action (`?redirectTo=` support)
     ├── logout/             # POST-only action: signs out, redirects home
-    └── pools/new/          # Creation page and server action
+    └── pools/new/          # Creation page and server action (login required)
 ```
 
 ## Styling with Tailwind

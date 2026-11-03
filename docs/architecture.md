@@ -27,8 +27,8 @@ backend/
 
 | File | Responsibility | Knows about |
 | :--- | :--- | :--- |
-| `routes.py` | HTTP only: read the request, call the service, turn the result into JSON | Flask, its own service and models |
-| `service.py` | Business rules: validation, defaults (decider = creator), talking to other modules | its own repository, other modules' services |
+| `routes.py` | HTTP only: read the request, call the service, turn the result into JSON | Flask, its own service and models; `users.models.User` as the guard's `current_user` |
+| `service.py` | Business rules: validation, defaults (decider = creator), talking to other modules | its own repository, other modules' services; `users.models.User` when a User is passed in (the pool's creator) |
 | `repository.py` | Database access with `supabase-py`. Rows are turned into dataclasses by hand | Supabase, its own models |
 | `models.py` | Plain dataclasses (`User`, `Pool`, `Outcome`...), plus rules that only need the data itself (`Pool.status()`) | Python standard library |
 
@@ -161,7 +161,7 @@ sequenceDiagram
 | Manual row mapping (Data Mapper idea, no ORM) | `_to_pool()` in `pools/repository.py` | The class forbids ORMs; mapping by hand keeps the SQL/table shape out of the models |
 | Dependency injection (by constructor) | `create_app()` in `app.py` | Tests pass fake repositories, and production passes Supabase ones. No framework needed |
 | Application factory | `create_app()` | Each test gets a fresh app; Gunicorn calls `app:create_app()` |
-| Test double (fake) | `tests/fakes.py` | Acceptance tests run without a database (see [testing](iterations/0/i00.d004-testing.md)) |
+| Test double (fake) | `tests/fakes.py` | Acceptance tests run without a database (see [testing](iterations/1/i01.d004-testing.md)) |
 
 ## Decisions and tradeoffs
 
