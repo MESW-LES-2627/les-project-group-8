@@ -8,8 +8,10 @@ The backend is a **modular monolith**: one Flask app, one deployment, split into
 backend/
 ├── app.py             # create_app(): builds everything and registers the routes
 ├── shared/            # code every module uses
+│   ├── auth.py        # token verifier and @login_required guard (see "Who is calling")
 │   ├── db.py          # Supabase client (refuses to start without credentials)
-│   ├── errors.py      # ValidationError -> 400, NotFoundError -> 404, anything else -> 500
+│   ├── errors.py      # ValidationError -> 400, AuthenticationError -> 401, ForbiddenError -> 403,
+│   │                  # NotFoundError -> 404, anything else -> 500
 │   └── validation.py  # small input checks: JSON object, required text
 ├── users/             # people who create pools
 │   ├── models.py
@@ -40,6 +42,7 @@ flowchart LR
     PR[routes] --> PS[service] --> PRepo[repository]
   end
   subgraph sharedModule [shared]
+    AUTH[auth]
     DB[db]
     ERR[errors]
     VAL[validation]
@@ -85,6 +88,36 @@ sequenceDiagram
 
 If any step raises `ValidationError` or `NotFoundError`, the error handlers in `shared/errors.py` turn it into a JSON response. Any other exception becomes a generic `500 {"error": "Internal server error."}`, and the details are only logged.
 
+## Who is calling: token verifier and login guard
+
+A logged-in Account's Supabase access token reaches Flask as `Authorization: Bearer <token>`. `shared/auth.py` has two parts:
+
+- **`TokenVerifier`** checks the token locally (ADR 0001): ES256 signature against a trusted key, `exp` not passed, `aud == "authenticated"`. It returns the token's `sub`, which is the User's id. In production `TokenVerifier.from_env()` trusts the key set at `<SUPABASE_URL>/auth/v1/.well-known/jwks.json`; PyJWT's `PyJWKClient` fetches it on first use and caches it, so requests don't call Supabase. A token with an unknown `kid` (Supabase rotated its key) refetches the set, at most once every 30 seconds.
+- **`create_login_guard(verifier, load_user)`** builds the `@login_required` decorator. It reads the bearer token, verifies it, loads the User through `UserService.get_user()` and calls the route with `current_user=<User>`. `app.py` builds it once and hands it to any blueprint that needs it, so any route can be guarded, not just `/api/me`.
+
+| Request | Response |
+| :--- | :--- |
+| No `Authorization` header, not `Bearer <token>`, or a token that is malformed, expired, for another audience or signed by another key | `401 {"error": "Authentication required."}` |
+| Valid token, but no User with that id | `403` |
+| Valid token for an existing User | the route runs with that User |
+
+`create_app()` takes the verifier as an injectable next to the repositories (`token_verifier=`). Acceptance tests generate a throwaway ES256 key pair, inject `TokenVerifier.for_public_key(<public half>)`, and sign real tokens with the private half (helpers in `tests/acceptance/steps.py`), so the real verification runs without Supabase.
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant Guard as shared/auth.py login_required
+  participant Users as users/service.py
+  participant Route as users/routes.py me()
+
+  Client->>Guard: GET /api/me (Authorization: Bearer token)
+  Guard->>Guard: TokenVerifier.user_id(token) (or 401)
+  Guard->>Users: get_user(sub)
+  Users-->>Guard: User (or NotFoundError -> 403)
+  Guard->>Route: me(current_user=User)
+  Route-->>Client: 200 {id, name}
+```
+
 ## Patterns, and where to find them
 
 | Pattern | Where | Why |
@@ -121,7 +154,7 @@ If any step raises `ValidationError` or `NotFoundError`, the error handlers in `
 
 - **Picks and resolving pools.** The `picks` table exists in `001_init.sql` but no code uses it yet.
 - **`002_create_pool_fn.sql`** (a stored procedure for atomic pool creation) is not used by the code. See decision 2.
-- **Authentication.** Any client can create users and pools, which is acceptable for the Iteration 0 prototype.
+- **Authentication on every write.** Flask can tell who is calling (`GET /api/me`), but creating users and pools is not guarded yet; that follows in #28.
 - **Outcome order.** `GET /api/pools` does not guarantee that the two outcomes come back in the order they were created.
 
 
