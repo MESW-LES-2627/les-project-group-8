@@ -13,5 +13,7 @@ export async function load({ locals }) {
 		}
 	}
 
-	return { user };
+	// Separate from `user`: with a session but no User (Flask down or refusing the token),
+	// /login and /signup redirect home, so the header must still offer Log out.
+	return { user, loggedIn: locals.session !== null };
 }

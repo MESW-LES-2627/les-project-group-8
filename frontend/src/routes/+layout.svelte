@@ -16,8 +16,10 @@
 		<nav class="mx-auto flex w-full max-w-3xl items-center justify-between px-6 py-4">
 			<a href="/" class="font-mono text-sm font-bold uppercase tracking-[0.2em]">LES</a>
 			<div class="flex items-center gap-4">
-				{#if data.user}
-					<span class="text-sm font-bold">{data.user.name}</span>
+				{#if data.loggedIn}
+					{#if data.user}
+						<span class="text-sm font-bold">{data.user.name}</span>
+					{/if}
 					<form method="POST" action="/logout">
 						<button
 							type="submit"
