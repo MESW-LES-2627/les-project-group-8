@@ -1,5 +1,5 @@
 import { API_URL } from '$app/env/private';
-import type { CreatePoolInput, Pool } from '../types';
+import type { CreatePoolInput, Pool, UserSummary } from '../types';
 
 const TIMEOUT_MS = 15_000;
 
@@ -21,11 +21,13 @@ function apiBase(): string {
 	return `${API_URL.replace(/\/+$/, '')}/api`;
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+/** `accessToken` is the logged-in Account's Supabase access token; Flask verifies it (ADR 0001). */
+async function request<T>(path: string, init?: RequestInit, accessToken?: string): Promise<T> {
 	const url = `${apiBase()}${path}`;
 	const headers = new Headers(init?.headers);
 	headers.set('accept', 'application/json');
 	if (init?.body) headers.set('content-type', 'application/json');
+	if (accessToken) headers.set('authorization', `Bearer ${accessToken}`);
 
 	let response: Response;
 	try {
@@ -61,6 +63,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function listPools(): Promise<Pool[]> {
 	return request<Pool[]>('/pools');
+}
+
+/** The User the access token belongs to. */
+export function getMe(accessToken: string): Promise<UserSummary> {
+	return request<UserSummary>('/me', undefined, accessToken);
 }
 
 export function createPool(input: CreatePoolInput): Promise<Pool> {
