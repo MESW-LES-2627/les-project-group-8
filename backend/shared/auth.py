@@ -29,8 +29,8 @@ class TokenVerifier:
 
     @classmethod
     def for_jwks(cls, jwks_url: str) -> "TokenVerifier":
-        """Trusts the published key set. It is fetched once and cached; an unknown `kid` refetches it
-        (at most once every 30 s, PyJWKClient's cooldown, so bogus `kid`s can't flood Supabase)."""
+        """Trusts the published key set. It is cached (refreshed at most every 5 min); an unknown `kid`
+        refetches it, at most once every 30 s (PyJWKClient's cooldown, so bogus `kid`s can't flood Supabase)."""
         client = jwt.PyJWKClient(jwks_url)
         return cls(lambda token: client.get_signing_key_from_jwt(token).key)
 

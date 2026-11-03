@@ -92,13 +92,13 @@ If any step raises `ValidationError` or `NotFoundError`, the error handlers in `
 
 A logged-in Account's Supabase access token reaches Flask as `Authorization: Bearer <token>`. `shared/auth.py` has two parts:
 
-- **`TokenVerifier`** checks the token locally (ADR 0001): ES256 signature against a trusted key, `exp` not passed, `aud == "authenticated"`. It returns the token's `sub`, which is the User's id. In production `TokenVerifier.from_env()` trusts the key set at `<SUPABASE_URL>/auth/v1/.well-known/jwks.json`; PyJWT's `PyJWKClient` fetches it on first use and caches it, so requests don't call Supabase. A token with an unknown `kid` (Supabase rotated its key) refetches the set, at most once every 30 seconds.
+- **`TokenVerifier`** checks the token locally (ADR 0001): ES256 signature against a trusted key, `exp` not passed, `aud == "authenticated"`. It returns the token's `sub`, which is the User's id. In production `TokenVerifier.from_env()` trusts the key set at `<SUPABASE_URL>/auth/v1/.well-known/jwks.json`; PyJWT's `PyJWKClient` fetches it on first use and caches it (refreshed at most every 5 minutes), so requests don't call Supabase. A token with an unknown `kid` (Supabase rotated its key) refetches the set, at most once every 30 seconds. If Supabase can't be reached when the set must be fetched, the request fails with a 500, not a 401: it is our failure, not the caller's.
 - **`create_login_guard(verifier, load_user)`** builds the `@login_required` decorator. It reads the bearer token, verifies it, loads the User through `UserService.get_user()` and calls the route with `current_user=<User>`. `app.py` builds it once and hands it to any blueprint that needs it, so any route can be guarded, not just `/api/me`.
 
 | Request | Response |
 | :--- | :--- |
 | No `Authorization` header, not `Bearer <token>`, or a token that is malformed, expired, for another audience or signed by another key | `401 {"error": "Authentication required."}` |
-| Valid token, but no User with that id | `403` |
+| Valid token, but no User with that id | `403 {"error": "No user exists for this account."}` |
 | Valid token for an existing User | the route runs with that User |
 
 `create_app()` takes the verifier as an injectable next to the repositories (`token_verifier=`). Acceptance tests generate a throwaway ES256 key pair, inject `TokenVerifier.for_public_key(<public half>)`, and sign real tokens with the private half (helpers in `tests/acceptance/steps.py`), so the real verification runs without Supabase.
