@@ -31,14 +31,14 @@ def create_app(user_repo=None, pool_repo=None, token_verifier=None) -> Flask:
     token_verifier = token_verifier or TokenVerifier.from_env()
 
     user_service = UserService(user_repo)
-    pool_service = PoolService(pool_repo, users=user_service)
+    pool_service = PoolService(pool_repo)
     login_required = create_login_guard(token_verifier, user_service.get_user)
 
     @app.get("/api/health")
     def health():
         return jsonify(status="ok")
 
-    app.register_blueprint(create_users_blueprint(user_service, login_required), url_prefix="/api")
-    app.register_blueprint(create_pools_blueprint(pool_service), url_prefix="/api")
+    app.register_blueprint(create_users_blueprint(login_required), url_prefix="/api")
+    app.register_blueprint(create_pools_blueprint(pool_service, login_required), url_prefix="/api")
     register_error_handlers(app)
     return app

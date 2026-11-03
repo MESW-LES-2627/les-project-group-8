@@ -2,9 +2,9 @@
 
 from datetime import datetime, timezone
 
-from shared.errors import NotFoundError, ValidationError
+from shared.errors import ValidationError
 from shared.validation import require_json_object, required_text
-from users.service import UserService
+from users.models import User
 
 from .models import NewPool, Pool, UserSummary
 
@@ -14,24 +14,20 @@ OUTCOMES_PER_POOL = 2
 
 
 class PoolService:
-    def __init__(self, repository, users: UserService):
+    def __init__(self, repository):
         self._repository = repository
-        self._users = users
 
     def list_pools(self) -> list[Pool]:
         return self._repository.list_pools()
 
-    def create_pool(self, payload) -> Pool:
+    def create_pool(self, payload, creator: User) -> Pool:
+        """`creator` is the logged-in User; they also become the decider."""
         payload = require_json_object(payload)
-        new_pool = parse_new_pool(payload, creator=self._find_creator(payload.get("creator_id")))
+        if "creator_id" in payload:
+            # The old way of choosing who creates a pool; refused so clients notice it is gone.
+            raise ValidationError("Field 'creator_id' is not accepted: the creator is the logged-in user.")
+        new_pool = parse_new_pool(payload, creator=UserSummary(id=creator.id, name=creator.name))
         return self._repository.create_pool(new_pool)
-
-    def _find_creator(self, creator_id) -> UserSummary:
-        try:
-            user = self._users.get_user(creator_id)
-        except NotFoundError:
-            raise ValidationError("Field 'creator_id' must be the id of an existing user.")
-        return UserSummary(id=user.id, name=user.name)
 
 
 def parse_new_pool(payload, creator: UserSummary, now: datetime | None = None) -> NewPool:

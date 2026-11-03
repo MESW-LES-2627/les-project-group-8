@@ -4,11 +4,13 @@ from datetime import datetime, timezone
 
 from flask import Blueprint, jsonify, request
 
+from users.models import User
+
 from .models import Pool, UserSummary
 from .service import PoolService
 
 
-def create_pools_blueprint(service: PoolService) -> Blueprint:
+def create_pools_blueprint(service: PoolService, login_required) -> Blueprint:
     blueprint = Blueprint("pools", __name__)
 
     @blueprint.get("/pools")
@@ -16,8 +18,9 @@ def create_pools_blueprint(service: PoolService) -> Blueprint:
         return jsonify([pool_to_json(pool) for pool in service.list_pools()])
 
     @blueprint.post("/pools")
-    def create_pool():
-        pool = service.create_pool(request.get_json(silent=True))
+    @login_required
+    def create_pool(current_user: User):
+        pool = service.create_pool(request.get_json(silent=True), creator=current_user)
         return jsonify(pool_to_json(pool)), 201
 
     return blueprint
