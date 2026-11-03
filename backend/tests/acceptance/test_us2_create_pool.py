@@ -31,8 +31,7 @@ def test_pool_is_created_open_with_creator_as_decider(client, user_repo, pool_re
     assert pool["name"] == payload["name"]
     assert pool["statement"] == payload["statement"]
     assert pool["status"] == "OPEN"
-    assert pool["creator"] == {"id": ana.id, "name": "Ana"}
-    assert pool["decider"] == {"id": ana.id, "name": "Ana"}
+    assert pool["creator"] == pool["decider"] == {"id": ana.id, "name": "Ana"}
     assert pool["winning_outcome_id"] is None
     assert sorted(o["label"] for o in pool["options"]) == sorted(payload["options"])
     assert [p.id for p in pool_repo.pools] == [pool["id"]]
@@ -93,13 +92,13 @@ def test_pool_for_an_account_without_a_user_is_forbidden(client, pool_repo):
     assert pool_repo.pools == []
 
 
-@pytest.mark.parametrize("creator_id", ["mine", "someone-else", None])
-def test_pool_naming_its_creator_is_rejected(client, user_repo, pool_repo, creator_id):
+@pytest.mark.parametrize("named_creator", ["me", "someone-else", "null"])
+def test_pool_naming_its_creator_is_rejected(client, user_repo, pool_repo, named_creator):
     # Given I am logged in as Ana and my request still says who the creator is
     # (my own id, another User's id, or null)
     ana, headers = sign_in(user_repo, name="Ana")
     bruno, _ = sign_in(user_repo, name="Bruno")
-    creator_id = {"mine": ana.id, "someone-else": bruno.id}.get(creator_id)
+    creator_id = {"me": ana.id, "someone-else": bruno.id, "null": None}[named_creator]
 
     # When I create a pool
     response = client.post("/api/pools", json=pool_payload(creator_id=creator_id), headers=headers)

@@ -1,4 +1,4 @@
-"""HTTP layer for users: parse the request, call the service, return JSON.
+"""HTTP layer for users: who the logged-in User is.
 
 Users are never created here: a database trigger creates each one when its Account signs up.
 """
