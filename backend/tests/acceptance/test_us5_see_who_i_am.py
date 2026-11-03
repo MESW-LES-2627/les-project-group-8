@@ -69,3 +69,4 @@ def test_valid_token_without_a_user_is_forbidden(client):
 
     # Then I am refused
     assert response.status_code == 403
+    assert response.get_json() == {"error": "No user exists for this account."}
