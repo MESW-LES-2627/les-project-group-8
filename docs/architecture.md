@@ -128,7 +128,7 @@ The SvelteKit server, not the browser, holds the session (`frontend/src/hooks.se
 
 **Sign-up** (`routes/signup`): the form action trims the name, checks it (1–80 characters) and the password (at least 6) before calling Supabase, then calls `signUp({ email, password, options: { data: { name } } })`. "Confirm email" is off ([ADR 0002](adr/0002-no-email-confirmation-for-the-demo.md)), so Supabase returns a session straight away and the person is logged in. Supabase's `user_already_exists` error becomes "An account with this email already exists."
 
-**Accounts get their User from the database**, not from the app: an `AFTER INSERT` trigger on `auth.users` (`backend/migrations/003a_create_user_on_signup.sql`) inserts the User with the same id, named from the Account's `name` metadata, falling back to the part of the email before `@`. A `CHECK` on `users.name` (trimmed, 1–80 characters) backs up the form's check; if it fails, the whole sign-up fails and no Account is created.
+**Accounts get their User from the database**, not from the app: an `AFTER INSERT` trigger on `auth.users` (`backend/migrations/003a_create_user_on_signup.sql`) inserts the User with the same id, named from the Account's `name` metadata, falling back to the part of the email before `@`. A `CHECK` on `users.name` (trimmed, 1–80 characters) backs up the form's check; if it fails, the whole sign-up fails and no Account is created. This doesn't contradict [ADR 0003](adr/0003-flask-is-the-only-door-to-app-tables.md): the trigger runs inside Postgres as the table owner, not through Supabase's REST API, so RLS still refuses every direct request with the publishable key.
 
 ```mermaid
 sequenceDiagram

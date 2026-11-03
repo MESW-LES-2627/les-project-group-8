@@ -10,7 +10,6 @@ export async function load({ locals }) {
 		} catch {
 			// Flask refused the token (401/403) or is unreachable: show the page
 			// as logged out rather than failing it. The pool list reports outages.
-			user = null;
 		}
 	}
 
