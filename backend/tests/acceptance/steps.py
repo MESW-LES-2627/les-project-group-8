@@ -14,12 +14,6 @@ SIGNING_KEY = ec.generate_private_key(ec.SECP256R1())
 FORGERY_KEY = ec.generate_private_key(ec.SECP256R1())
 
 
-def create_user(client, name="Ana") -> dict:
-    response = client.post("/api/users", json={"name": name})
-    assert response.status_code == 201
-    return response.get_json()
-
-
 def sign_in(user_repo, name="Ana") -> tuple[User, dict]:
     """Seed a User and return it with auth headers carrying a valid token for it."""
     user = User(id=str(uuid.uuid4()), name=name)
@@ -55,9 +49,8 @@ def bearer(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
-def pool_payload(creator_id: str, **overrides) -> dict:
+def pool_payload(**overrides) -> dict:
     payload = {
-        "creator_id": creator_id,
         "name": "Champions League Final",
         "statement": "Real Madrid wins in 90 minutes.",
         "deadline": iso(datetime.now(timezone.utc) + timedelta(days=7)),

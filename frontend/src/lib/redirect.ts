@@ -1,3 +1,8 @@
+/** The login page, set to bring the visitor back to `from` (path and query) afterwards. */
+export function loginPath(from: URL): string {
+	return `/login?redirectTo=${encodeURIComponent(from.pathname + from.search)}`;
+}
+
 /**
  * `target` if it is a path on this site, otherwise `/`. Keeps `?redirectTo=` from
  * sending people to another site after they log in (open redirect): `https://evil.com`,

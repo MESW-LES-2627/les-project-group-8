@@ -12,6 +12,7 @@ class FakeUserRepository:
         self.users: dict[str, User] = {}
 
     def add(self, user: User) -> None:
+        """Seeds a User, standing in for the sign-up trigger (the real repository has no `add`)."""
         self.users[user.id] = user
 
     def get(self, user_id: str) -> User | None:

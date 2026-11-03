@@ -70,9 +70,14 @@ export function getMe(accessToken: string): Promise<UserSummary> {
 	return request<UserSummary>('/me', undefined, accessToken);
 }
 
-export function createPool(input: CreatePoolInput): Promise<Pool> {
-	return request<Pool>('/pools', {
-		method: 'POST',
-		body: JSON.stringify(input)
-	});
+/** Flask makes the token's User the creator and decider. */
+export function createPool(input: CreatePoolInput, accessToken: string): Promise<Pool> {
+	return request<Pool>(
+		'/pools',
+		{
+			method: 'POST',
+			body: JSON.stringify(input)
+		},
+		accessToken
+	);
 }

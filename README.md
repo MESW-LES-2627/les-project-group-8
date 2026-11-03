@@ -43,15 +43,15 @@ pytest -v              # acceptance tests, no database needed
 | `SUPABASE_KEY` | The **secret** key (Supabase → Project Settings → API Keys → Secret keys, `sb_secret_...`). The publishable key is refused by row-level security ([ADR 0003](docs/adr/0003-flask-is-the-only-door-to-app-tables.md)). Never expose it to the frontend or commit it |
 
 The app refuses to start if either variable is missing. Endpoints are described
-in [docs/iterations/0/openapi.yaml](docs/iterations/0/openapi.yaml), and tests
-in [docs/iterations/0/i00.d004-testing.md](docs/iterations/0/i00.d004-testing.md).
+in [docs/iterations/1/i01.d007.openapi.yaml](docs/iterations/1/i01.d007.openapi.yaml), and tests
+in [docs/iterations/1/i01.d004-testing.md](docs/iterations/1/i01.d004-testing.md).
 
 The default local API URL is `http://127.0.0.1:5000`. If port 5000 is occupied, run `flask run --port 5001` and set
 `API_URL=http://127.0.0.1:5001` in `frontend/.env`.
 
-The first-deadline demonstration uses the pre-seeded Guest User. The frontend
-should send its `creator_id` when creating a pool. See the agreed
-[Iteration 0 scope](docs/iterations/0/i00.d002-mvp.md#thin-vertical-slice-iteration-0).
+Creating a pool requires login: Flask makes the logged-in User its creator and
+decider, and refuses a `creator_id` in the request. Users are created only by
+the sign-up trigger (`backend/migrations/003a_create_user_on_signup.sql`).
 
 ## Deploying the frontend
 

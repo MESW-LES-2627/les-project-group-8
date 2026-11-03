@@ -2,11 +2,10 @@ openapi: 3.0.3
 info:
   title: Friendly Pool App API
   description: >
-    Iteration 0 API contract for creating and listing pools with two outcomes
-    and an existing creator. The agreed UI demonstration uses the pre-seeded
-    Guest User. POST /users is an additional capability for creating named users;
-    it is not a required step in the guest-based demonstration.
-  version: 0.1.0
+    Iteration 1 API contract. Browsing pools is public; creating one requires a
+    logged-in User, who becomes its creator and decider. Users are not created
+    through the API: each Account gets its User when it signs up.
+  version: 0.2.0
 
 servers:
   - url: http://127.0.0.1:5000/api
@@ -36,40 +35,24 @@ paths:
                     type: string
                     example: ok
 
-  /users:
-    post:
-      summary: Create a user
-      description: Creates a user with only a name. The backend generates the id.
-      operationId: createUser
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserRequest'
+  /me:
+    get:
+      summary: Who am I
+      description: The logged-in User the access token belongs to.
+      operationId: getMe
+      security:
+        - bearerAuth: []
       responses:
-        '201':
-          description: User created.
+        '200':
+          description: The current User.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserSummary'
-        '400':
-          description: Validation error (missing, empty, or too long name).
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                emptyName:
-                  value:
-                    error: "Field 'name' cannot be empty."
-        '500':
-          description: Server or database error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/NoUserForAccount'
 
   /pools:
     get:
@@ -95,9 +78,12 @@ paths:
     post:
       summary: Create a new pool
       description: >
-        Creates a pool with two possible outcomes. The creator must be an existing
-        user; for Iteration 0 the backend sets the decider to the creator.
+        Creates a pool with two possible outcomes. The logged-in User (from the
+        access token) is the creator and, for now, the decider. The body must not
+        name a creator.
       operationId: createPool
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -112,15 +98,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Pool'
         '400':
-          description: Validation error (e.g., unknown creator, missing fields, past deadline, or not exactly 2 unique outcomes).
+          description: Validation error (e.g., a creator_id in the body, missing fields, past deadline, or not exactly 2 unique outcomes).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                unknownCreator:
+                creatorNamed:
                   value:
-                    error: "Field 'creator_id' must be the id of an existing user."
+                    error: "Field 'creator_id' is not accepted: the creator is the logged-in user."
                 wrongOutcomeCount:
                   value:
                     error: "A pool must have exactly 2 unique, non-empty outcomes."
@@ -130,6 +116,10 @@ paths:
                 emptyFields:
                   value:
                     error: "Field 'name' cannot be empty."
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/NoUserForAccount'
         '500':
           description: Server or database error.
           content:
@@ -139,34 +129,42 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
 components:
-  schemas:
-    CreateUserRequest:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 80
-          description: Display name. Leading and trailing spaces are removed.
-          example: "Ana"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: The logged-in Account's Supabase access token (ES256, audience "authenticated").
 
+  responses:
+    AuthenticationRequired:
+      description: Missing, malformed, expired, wrong-audience or forged access token.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Authentication required."
+    NoUserForAccount:
+      description: Valid access token, but its Account has no User.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "No user exists for this account."
+
+  schemas:
     CreatePoolRequest:
       type: object
+      description: >
+        Must not contain creator_id (400): the creator is the logged-in User.
       required:
-        - creator_id
         - name
         - statement
         - deadline
         - options
       properties:
-        creator_id:
-          type: string
-          format: uuid
-          description: >
-            Required id of an existing user. (returned by POST /users).
-            example: "3f2b8c1e-4d5a-4e6f-9a7b-8c9d0e1f2a3b"
         name:
           type: string
           minLength: 1
@@ -278,10 +276,11 @@ components:
         id:
           type: string
           format: uuid
-          example: "00000000-0000-0000-0000-000000000001"
+          description: The User's id, which is also its Account's id.
+          example: "3f2b8c1e-4d5a-4e6f-9a7b-8c9d0e1f2a3b"
         name:
           type: string
-          example: "Guest User"
+          example: "Ana"
 
     ErrorResponse:
       type: object

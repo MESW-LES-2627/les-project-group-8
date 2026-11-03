@@ -1,10 +1,10 @@
-"""US3: See the pools. See docs/iterations/0/i00.d003-user-stories.md."""
+"""US3: See the pools. See docs/iterations/1/i01.d003-user-stories.md."""
 
 import uuid
 from datetime import datetime, timedelta, timezone
 
 from pools.models import Pool, UserSummary
-from tests.acceptance.steps import create_user, pool_payload
+from tests.acceptance.steps import pool_payload, sign_in
 
 
 def test_list_is_empty_when_there_are_no_pools(client):
@@ -17,13 +17,13 @@ def test_list_is_empty_when_there_are_no_pools(client):
     assert response.get_json() == []
 
 
-def test_newest_pool_comes_first(client):
+def test_newest_pool_comes_first(client, user_repo):
     # Given two pools created one after the other
-    ana = create_user(client)
-    client.post("/api/pools", json=pool_payload(ana["id"], name="First"))
-    client.post("/api/pools", json=pool_payload(ana["id"], name="Second"))
+    _, headers = sign_in(user_repo)
+    client.post("/api/pools", json=pool_payload(name="First"), headers=headers)
+    client.post("/api/pools", json=pool_payload(name="Second"), headers=headers)
 
-    # When I list the pools
+    # When I list the pools, without logging in
     response = client.get("/api/pools")
 
     # Then the newest one comes first

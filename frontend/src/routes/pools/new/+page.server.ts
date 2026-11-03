@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { GUEST_USER_ID } from '../../../lib/constants';
+import { loginPath } from '../../../lib/redirect';
 import { ApiError, createPool } from '../../../lib/server/api';
+import { endSession } from '../../../lib/server/session';
 import type { CreatePoolInput } from '../../../lib/types';
 
 type FieldErrors = {
@@ -78,7 +79,6 @@ function validate(values: {
 	return {
 		errors,
 		input: {
-			creator_id: GUEST_USER_ID,
 			name: values.name,
 			statement: values.statement,
 			deadline,
@@ -87,8 +87,16 @@ function validate(values: {
 	};
 }
 
+// Creating a pool needs a logged-in User: Flask makes them its creator and decider.
+export function load({ locals, url }) {
+	if (!locals.session) redirect(303, loginPath(url));
+}
+
 export const actions = {
-	default: async ({ request }) => {
+	default: async ({ request, locals, cookies, url }) => {
+		// The session may have ended since the page loaded (logged out in another tab, or not renewable).
+		if (!locals.session) redirect(303, loginPath(url));
+
 		const form = await request.formData();
 		const values = {
 			name: read(form, 'name'),
@@ -104,8 +112,14 @@ export const actions = {
 		}
 
 		try {
-			await createPool(input);
+			await createPool(input, locals.session.access_token);
 		} catch (error) {
+			if (error instanceof ApiError && error.status === 401) {
+				// Flask refused the token. End the session too, or /login would send a
+				// still-"logged-in" visitor straight home. The half-filled form is lost.
+				await endSession(locals, cookies);
+				redirect(303, loginPath(url));
+			}
 			if (error instanceof ApiError && error.status === 400) {
 				return fail(400, { error: error.message, values });
 			}
