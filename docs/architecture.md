@@ -158,6 +158,14 @@ sequenceDiagram
 - **Outcome order.** `GET /api/pools` does not guarantee that the two outcomes come back in the order they were created.
 
 
-## Known configuration issue
+## Database access: Flask is the only door
 
-Supabase row-level security rejects inserts (and appears to hide existing rows from reads) when `SUPABASE_KEY` is the **publishable** key. The backend must use the **`service_role`** key, both locally (`backend/.env`) and on Render. That key must never be sent to the frontend.
+Row-level security is **on** for `users`, `pools`, `outcomes` and `picks`, with **zero policies** (`backend/migrations/003_enable_rls.sql`, [ADR 0003](adr/0003-flask-is-the-only-door-to-app-tables.md)). With no policy allowing anything, Supabase's REST API refuses every direct read and write made with the publishable key or an Account's token: a `select` returns an empty list (RLS filters out every row), and an `insert`, `update` or `delete` fails with a row-level security error. The publishable key is public by design, so without this anyone could write rows, for example a pool with someone else's `creator_id`, and skip Flask's checks.
+
+Flask connects with the **secret** key (`SUPABASE_KEY`), which bypasses RLS, and enforces who may do what in its services. So:
+
+- RLS with no policies is deliberate, not an unfinished setup. Don't add policies and don't point Flask at the publishable key: either reopens the back door.
+- The secret key only lives in server environments (both Render services, local `backend/.env`), never in the frontend or in git.
+- A new table needs `ALTER TABLE <name> ENABLE ROW LEVEL SECURITY;` in its migration, or it is open to anyone with the publishable key.
+
+**Known limitation:** one Supabase project serves local development, staging and production. They share the same tables and the same secret key, so a local `backend/.env` can read and write production data, and a leaked key exposes every environment. Separate projects per environment would fix this; it is not worth the setup for the demo.
