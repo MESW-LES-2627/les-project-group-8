@@ -13,11 +13,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 		cookies: {
 			getAll: () => event.cookies.getAll(),
-			setAll: (cookiesToSet) => {
+			setAll: (cookiesToSet, headers) => {
 				for (const { name, value, options } of cookiesToSet) {
 					// httpOnly: the browser never holds tokens; only this server reads them.
 					event.cookies.set(name, value, { ...options, httpOnly: true, path: '/' });
 				}
+				// No-store cache headers, so a CDN never serves one person's session cookies to another.
+				event.setHeaders(headers);
 			}
 		}
 	});
