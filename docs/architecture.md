@@ -118,6 +118,38 @@ sequenceDiagram
   Route-->>Client: 200 {id, name}
 ```
 
+## Frontend session flow
+
+The SvelteKit server, not the browser, holds the session (`frontend/src/hooks.server.ts`):
+
+1. **Every request** builds a per-request Supabase client with `@supabase/ssr` (Supabase URL and publishable key, server-only config). It reads and writes the session in **httpOnly cookies**, so page scripts never see a token. The hook calls `getSession()`, which renews an expired access token from the refresh token and rewrites the cookies; if renewal fails the cookies are cleared and the request is logged out. The session lands on `locals.session`.
+2. **Talking to Flask:** `lib/server/api.ts` forwards `locals.session.access_token` as `Authorization: Bearer <token>`, and Flask verifies it (see "Who is calling"). The browser still never calls Flask or Supabase.
+3. **Who am I:** the root `+layout.server.ts` calls `GET /api/me` when there is a session and passes the User to the header. If Flask refuses the token or can't be reached, the page renders as logged out instead of failing.
+
+**Sign-up** (`routes/signup`): the form action trims the name, checks it (1–80 characters) and the password (at least 6) before calling Supabase, then calls `signUp({ email, password, options: { data: { name } } })`. "Confirm email" is off ([ADR 0002](adr/0002-no-email-confirmation-for-the-demo.md)), so Supabase returns a session straight away and the person is logged in. Supabase's `user_already_exists` error becomes "An account with this email already exists."
+
+**Accounts get their User from the database**, not from the app: an `AFTER INSERT` trigger on `auth.users` (`backend/migrations/003a_create_user_on_signup.sql`) inserts the User with the same id, named from the Account's `name` metadata, falling back to the part of the email before `@`. A `CHECK` on `users.name` (trimmed, 1–80 characters) backs up the form's check; if it fails, the whole sign-up fails and no Account is created.
+
+```mermaid
+sequenceDiagram
+  participant Browser
+  participant Kit as SvelteKit server
+  participant Auth as Supabase Auth
+  participant DB as Postgres trigger
+  participant Flask
+
+  Browser->>Kit: POST /signup (email, password, name)
+  Kit->>Auth: signUp(email, password, {name})
+  Auth->>DB: insert auth.users
+  DB->>DB: insert users (same id, name)
+  Auth-->>Kit: session
+  Kit-->>Browser: 303 / + httpOnly session cookies
+  Browser->>Kit: GET / (cookies)
+  Kit->>Flask: GET /api/me (Bearer access token)
+  Flask-->>Kit: {id, name}
+  Kit-->>Browser: page with the name in the header
+```
+
 ## Patterns, and where to find them
 
 | Pattern | Where | Why |
