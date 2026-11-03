@@ -40,7 +40,7 @@ pytest -v              # acceptance tests, no database needed
 | Variable | Value |
 | -------- | ----- |
 | `SUPABASE_URL` | Project URL (Supabase → Project Settings → API) |
-| `SUPABASE_KEY` | The **secret** key (`sb_secret_...`). The publishable key is refused by row-level security ([ADR 0003](docs/adr/0003-flask-is-the-only-door-to-app-tables.md)). Never expose it to the frontend or commit it |
+| `SUPABASE_KEY` | The **secret** key (Supabase → Project Settings → API Keys → Secret keys, `sb_secret_...`). The publishable key is refused by row-level security ([ADR 0003](docs/adr/0003-flask-is-the-only-door-to-app-tables.md)). Never expose it to the frontend or commit it |
 
 The app refuses to start if either variable is missing. Endpoints are described
 in [docs/iterations/0/openapi.yaml](docs/iterations/0/openapi.yaml), and tests
@@ -132,7 +132,7 @@ backend/
 ├── shared/                 # Supabase client, errors, input checks
 ├── users/                  # models, service, repository, routes
 ├── pools/                  # models, service, repository, routes
-├── migrations/             # SQL run in the Supabase SQL editor
+├── migrations/             # SQL run in the Supabase SQL editor; new tables need RLS on (ADR 0003)
 ├── tests/acceptance/       # one test per user-story acceptance criterion
 └── requirements.txt
 ```
