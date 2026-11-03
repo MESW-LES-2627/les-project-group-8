@@ -5,10 +5,12 @@ Users are never created here: a database trigger creates each one when its Accou
 
 from flask import Blueprint, jsonify
 
+from shared.auth import LoginGuard
+
 from .models import User
 
 
-def create_users_blueprint(login_required) -> Blueprint:
+def create_users_blueprint(login_required: LoginGuard) -> Blueprint:
     blueprint = Blueprint("users", __name__)
 
     @blueprint.get("/me")

@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 
+from users.models import User
+
 
 class PoolStatus(str, Enum):
     OPEN = "OPEN"
@@ -17,6 +19,10 @@ class UserSummary:
 
     id: str
     name: str
+
+    @classmethod
+    def of(cls, user: User) -> "UserSummary":
+        return cls(id=user.id, name=user.name)
 
 
 @dataclass(frozen=True)

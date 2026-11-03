@@ -38,12 +38,14 @@ src/
 ├── app.css               # Tailwind entrypoint (@import 'tailwindcss')
 ├── app.d.ts              # App.Locals / App.PageData typings
 ├── app.html              # HTML shell
-├── hooks.server.ts       # Per-request Supabase client, session on locals
+├── hooks.server.ts       # Per-request Supabase client, verified session on locals
 ├── lib/                  # Imported via the `#lib` alias
 │   ├── assets/favicon.svg
-│   ├── components/       # PoolForm, PoolCard, StatusBadge
+│   ├── components/       # Form (POST form + error banner), PoolForm, PoolCard, StatusBadge
 │   ├── server/api.ts     # Server-to-server Flask calls
-│   ├── server/session.ts # endSession(): log this browser out (logout, Flask 401)
+│   ├── server/session.ts # endSession() / clearSessionCookies(), and helpers shared by login and signup
+│   ├── account.ts        # Sign-up limits (name length, password minimum)
+│   ├── form.ts           # readField() and the shared form classes
 │   ├── redirect.ts       # loginPath() and sameSitePath(): only same-site `redirectTo` targets
 │   ├── types.ts
 │   └── index.ts
@@ -55,6 +57,7 @@ src/
     ├── signup/             # Sign-up page and server action
     ├── login/              # Login page and server action (`?redirectTo=` support)
     ├── logout/             # POST-only action: signs out, redirects home
+    ├── no-user/            # Where Flask's 403 lands: logged in, but the Account has no User
     └── pools/new/          # Creation page and server action (login required)
 ```
 

@@ -4,13 +4,14 @@ from datetime import datetime, timezone
 
 from flask import Blueprint, jsonify, request
 
+from shared.auth import LoginGuard
 from users.models import User
 
 from .models import Pool, UserSummary
 from .service import PoolService
 
 
-def create_pools_blueprint(service: PoolService, login_required) -> Blueprint:
+def create_pools_blueprint(service: PoolService, login_required: LoginGuard) -> Blueprint:
     blueprint = Blueprint("pools", __name__)
 
     @blueprint.get("/pools")

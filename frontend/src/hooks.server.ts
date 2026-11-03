@@ -1,6 +1,8 @@
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '$app/env/private';
 import { createServerClient } from '@supabase/ssr';
+import { isAuthRetryableFetchError } from '@supabase/supabase-js';
 import type { Handle } from '@sveltejs/kit/hooks';
+import { clearSessionCookies } from '#lib/server/session.ts';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// Read at request time (not module load) so `vite build` works without them.
@@ -26,11 +28,21 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	// Renews an expired access token from the refresh token (rewriting the cookies);
 	// if that fails, the session is cleared and the request is logged out.
-	// Only the access token is used, to call Flask, which verifies it (ADR 0001).
 	const {
 		data: { session }
 	} = await event.locals.supabase.auth.getSession();
 	event.locals.session = session;
+
+	// getSession() trusts whatever the cookie holds, so check the access token's signature
+	// against Supabase's public keys (cached), as Flask does (ADR 0001). A tampered or
+	// forged token logs the request out; Supabase being unreachable does not.
+	if (session) {
+		const { error } = await event.locals.supabase.auth.getClaims(session.access_token);
+		if (error && !isAuthRetryableFetchError(error)) {
+			clearSessionCookies(event.cookies);
+			event.locals.session = null;
+		}
+	}
 
 	return resolve(event);
 };
