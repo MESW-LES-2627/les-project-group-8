@@ -40,7 +40,7 @@ pytest -v              # acceptance tests, no database needed
 | Variable | Value |
 | -------- | ----- |
 | `SUPABASE_URL` | Project URL (Supabase → Project Settings → API) |
-| `SUPABASE_KEY` | The **`service_role`** key. The publishable key is blocked by row-level security. Never expose it to the frontend |
+| `SUPABASE_KEY` | The **secret** key (`sb_secret_...`). The publishable key is refused by row-level security ([ADR 0003](docs/adr/0003-flask-is-the-only-door-to-app-tables.md)). Never expose it to the frontend or commit it |
 
 The app refuses to start if either variable is missing. Endpoints are described
 in [docs/iterations/0/openapi.yaml](docs/iterations/0/openapi.yaml), and tests
