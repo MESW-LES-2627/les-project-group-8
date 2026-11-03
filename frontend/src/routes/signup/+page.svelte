@@ -17,7 +17,10 @@
 </svelte:head>
 
 <h1 class="text-3xl font-bold tracking-tight">Create an account</h1>
-<p class="mt-1 text-sm text-neutral-600">Your name is how other people see you in pools.</p>
+<p class="mt-1 text-sm text-neutral-600">
+	Your name is how other people see you in pools. Already have an account?
+	<a href="/login" class="underline">Log in</a>
+</p>
 
 <form
 	method="POST"

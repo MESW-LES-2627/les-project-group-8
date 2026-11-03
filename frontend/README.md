@@ -43,14 +43,17 @@ src/
 │   ├── assets/favicon.svg
 │   ├── components/       # PoolForm, PoolCard, StatusBadge
 │   ├── server/api.ts     # Server-to-server Flask calls
+│   ├── redirect.ts       # sameSitePath(): only same-site `redirectTo` targets
 │   ├── types.ts
 │   └── index.ts
 └── routes/
-    ├── +layout.svelte    # Imports app.css, header with the User's name
+    ├── +layout.svelte    # Imports app.css, header with the User's name / Log out, or Log in / Sign up
     ├── +layout.server.ts # Loads the current User from GET /api/me
     ├── +page.svelte        # Pool listing
     ├── +page.server.ts     # Loads pools from Flask
     ├── signup/             # Sign-up page and server action
+    ├── login/              # Login page and server action (`?redirectTo=` support)
+    ├── logout/             # POST-only action: signs out, redirects home
     └── pools/new/          # Creation page and server action
 ```
 

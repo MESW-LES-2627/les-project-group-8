@@ -22,6 +22,11 @@ function read(form: FormData, key: string): string {
 	return typeof value === 'string' ? value : '';
 }
 
+export function load({ locals }) {
+	// Already logged in: don't start a second session.
+	if (locals.session) redirect(303, '/');
+}
+
 export const actions = {
 	default: async ({ request, locals }) => {
 		const form = await request.formData();
