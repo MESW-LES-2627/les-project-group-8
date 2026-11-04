@@ -132,6 +132,7 @@ backend/
 ├── shared/                 # Supabase client, errors, input checks
 ├── users/                  # models, service, repository, routes
 ├── pools/                  # models, service, repository, routes
+├── picks/                  # models, service, repository, routes
 ├── migrations/             # SQL run in the Supabase SQL editor; new tables need RLS on (ADR 0003)
 ├── tests/acceptance/       # one test per user-story acceptance criterion
 └── requirements.txt
