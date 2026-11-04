@@ -55,7 +55,7 @@
 			class="mx-auto flex w-full max-w-3xl items-center justify-between px-6 py-5 font-mono text-[10px] uppercase tracking-widest text-neutral-500"
 		>
 			<span>LES — prediction pools</span>
-			<span>Iteration 0</span>
+			<span>Iteration 1</span>
 		</div>
 	</footer>
 </div>
