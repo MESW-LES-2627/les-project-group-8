@@ -1,5 +1,5 @@
 import { API_URL } from '$app/env/private';
-import type { CreatePoolInput, Pool, UserSummary } from '#lib/types.ts';
+import type { CreatePoolInput, Pick, Pool, UserSummary } from '#lib/types.ts';
 
 const TIMEOUT_MS = 15_000;
 
@@ -75,6 +75,10 @@ export function listPools(): Promise<Pool[]> {
 	return request<Pool[]>('/pools');
 }
 
+export function getPool(poolId: string): Promise<Pool> {
+	return request<Pool>(`/pools/${encodeURIComponent(poolId)}`);
+}
+
 /** The User the access token belongs to. */
 export function getCurrentUser(accessToken: string): Promise<UserSummary> {
 	return request<UserSummary>('/me', { accessToken });
@@ -83,4 +87,22 @@ export function getCurrentUser(accessToken: string): Promise<UserSummary> {
 /** Flask makes the token's User the creator and decider. */
 export function createPool(input: CreatePoolInput, accessToken: string): Promise<Pool> {
 	return request<Pool>('/pools', { method: 'POST', body: input, accessToken });
+}
+
+/** The logged-in User's pick for this pool, or null when they have not picked. */
+export async function getMyPick(poolId: string, accessToken: string): Promise<Pick | null> {
+	const body = await request<{ pick: Pick | null }>(
+		`/pools/${encodeURIComponent(poolId)}/picks`,
+		{ accessToken }
+	);
+	return body.pick;
+}
+
+/** Saves or replaces the logged-in User's pick. */
+export function savePick(poolId: string, outcomeId: string, accessToken: string): Promise<Pick> {
+	return request<Pick>(`/pools/${encodeURIComponent(poolId)}/picks`, {
+		method: 'POST',
+		body: { outcome_id: outcomeId },
+		accessToken
+	});
 }
