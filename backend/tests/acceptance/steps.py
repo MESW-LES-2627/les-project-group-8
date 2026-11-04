@@ -49,6 +49,13 @@ def bearer(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
+def create_pool(client, headers: dict, **overrides) -> dict:
+    """Create a pool as the User the headers belong to."""
+    response = client.post("/api/pools", json=pool_payload(**overrides), headers=headers)
+    assert response.status_code == 201, response.get_json()
+    return response.get_json()
+
+
 def pool_payload(**overrides) -> dict:
     payload = {
         "name": "Champions League Final",
@@ -58,6 +65,10 @@ def pool_payload(**overrides) -> dict:
     }
     payload.update(overrides)
     return payload
+
+
+def pick_payload(outcome_id: str) -> dict:
+    return {"outcome_id": outcome_id}
 
 
 def iso(moment: datetime) -> str:
