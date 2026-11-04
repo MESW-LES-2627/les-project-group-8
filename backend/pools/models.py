@@ -13,6 +13,13 @@ class PoolStatus(str, Enum):
     RESOLVED = "RESOLVED"
 
 
+class PoolPresentation(str, Enum):
+    """How a multiple-choice question renders its options."""
+
+    RADIO = "radio"
+    DROPDOWN = "dropdown"
+
+
 @dataclass(frozen=True)
 class UserSummary:
     """How a pool refers to a user: just enough to display them."""
@@ -41,6 +48,7 @@ class NewPool:
     options: tuple[str, ...]
     creator: UserSummary
     decider: UserSummary
+    presentation: PoolPresentation = PoolPresentation.RADIO
 
 
 @dataclass(frozen=True)
@@ -54,6 +62,7 @@ class Pool:
     options: tuple[Outcome, ...]
     winning_outcome_id: str | None
     created_at: datetime
+    presentation: PoolPresentation = PoolPresentation.RADIO
 
     def status(self, now: datetime | None = None) -> PoolStatus:
         if self.winning_outcome_id is not None:
