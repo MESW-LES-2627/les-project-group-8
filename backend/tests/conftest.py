@@ -6,7 +6,7 @@ import pytest
 from app import create_app
 from shared.auth import TokenVerifier
 from tests.acceptance.steps import SIGNING_KEY
-from tests.fakes import FakePoolRepository, FakeUserRepository
+from tests.fakes import FakePickRepository, FakePoolRepository, FakeUserRepository
 
 
 @pytest.fixture
@@ -20,10 +20,16 @@ def pool_repo():
 
 
 @pytest.fixture
-def client(user_repo, pool_repo):
+def pick_repo():
+    return FakePickRepository()
+
+
+@pytest.fixture
+def client(user_repo, pool_repo, pick_repo):
     app = create_app(
         user_repo=user_repo,
         pool_repo=pool_repo,
+        pick_repo=pick_repo,
         token_verifier=TokenVerifier.for_public_key(SIGNING_KEY.public_key()),
     )
     app.testing = True
