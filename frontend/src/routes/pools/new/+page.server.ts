@@ -3,27 +3,35 @@ import { readField } from '#lib/form.ts';
 import { loginPath } from '#lib/redirect.ts';
 import { ApiError, createPool } from '#lib/server/api.ts';
 import { endSession } from '#lib/server/session.ts';
-import type { CreatePoolInput } from '#lib/types.ts';
+import type { CreatePoolInput, PoolPresentation } from '#lib/types.ts';
+
+const MIN_OPTIONS = 2;
+const MAX_OPTIONS = 10;
 
 type FieldErrors = {
 	name?: string;
 	statement?: string;
-	option1?: string;
-	option2?: string;
+	options?: string;
 	deadline?: string;
+};
+
+type FormValues = {
+	name: string;
+	statement: string;
+	deadline: string;
+	options: string[];
+	presentation: string;
 };
 
 function read(form: FormData, key: string): string {
 	return readField(form, key).trim();
 }
 
-function validate(values: {
-	name: string;
-	statement: string;
-	deadline: string;
-	option1: string;
-	option2: string;
-}): { errors: FieldErrors; input?: CreatePoolInput } {
+function readOptions(form: FormData): string[] {
+	return form.getAll('options').map((value) => (typeof value === 'string' ? value.trim() : ''));
+}
+
+function validate(values: FormValues): { errors: FieldErrors; input?: CreatePoolInput } {
 	const errors: FieldErrors = {};
 
 	if (!values.name) {
@@ -38,24 +46,18 @@ function validate(values: {
 		errors.statement = 'Statement must be at most 500 characters.';
 	}
 
-	if (!values.option1) {
-		errors.option1 = 'Option A cannot be empty.';
-	} else if (values.option1.length > 100) {
-		errors.option1 = 'Option A must be at most 100 characters.';
-	}
-
-	if (!values.option2) {
-		errors.option2 = 'Option B cannot be empty.';
-	} else if (values.option2.length > 100) {
-		errors.option2 = 'Option B must be at most 100 characters.';
-	}
-
-	if (
-		!errors.option1 &&
-		!errors.option2 &&
-		values.option1.toLowerCase() === values.option2.toLowerCase()
+	if (values.options.length < MIN_OPTIONS) {
+		errors.options = 'Add at least two options.';
+	} else if (values.options.length > MAX_OPTIONS) {
+		errors.options = `Use at most ${MAX_OPTIONS} options.`;
+	} else if (values.options.some((option) => !option)) {
+		errors.options = 'Every option needs a label.';
+	} else if (values.options.some((option) => option.length > 100)) {
+		errors.options = 'Options must be at most 100 characters.';
+	} else if (
+		new Set(values.options.map((option) => option.toLowerCase())).size !== values.options.length
 	) {
-		errors.option2 = 'Options must be different.';
+		errors.options = 'Options must be different.';
 	}
 
 	let deadline = '';
@@ -76,13 +78,16 @@ function validate(values: {
 		return { errors };
 	}
 
+	const presentation: PoolPresentation = values.presentation === 'dropdown' ? 'dropdown' : 'radio';
+
 	return {
 		errors,
 		input: {
 			name: values.name,
 			statement: values.statement,
 			deadline,
-			options: [values.option1, values.option2]
+			options: values.options,
+			presentation
 		}
 	};
 }
@@ -98,12 +103,12 @@ export const actions = {
 		if (!locals.session) redirect(303, loginPath(url));
 
 		const form = await request.formData();
-		const values = {
+		const values: FormValues = {
 			name: read(form, 'name'),
 			statement: read(form, 'statement'),
 			deadline: read(form, 'deadline'),
-			option1: read(form, 'option1'),
-			option2: read(form, 'option2')
+			options: readOptions(form),
+			presentation: read(form, 'presentation')
 		};
 
 		const { errors, input } = validate(values);

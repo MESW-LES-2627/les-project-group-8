@@ -4,7 +4,9 @@ info:
   description: >
     Iteration 1 API contract. Browsing pools is public; creating one requires a
     logged-in User, who becomes its creator and decider. Users are not created
-    through the API: each Account gets its User when it signs up.
+    through the API: each Account gets its User when it signs up. Pools have two
+    to ten ordered options and a radio/dropdown presentation, and each logged-in
+    participant can save or replace exactly one pick per pool.
   version: 0.2.0
 
 servers:
@@ -78,9 +80,10 @@ paths:
     post:
       summary: Create a new pool
       description: >
-        Creates a pool with two possible outcomes. The logged-in User (from the
-        access token) is the creator and, for now, the decider. The body must not
-        name a creator.
+        Creates a multiple-choice question (a pool in this increment) with two to
+        ten ordered options and a radio or dropdown presentation. The logged-in
+        User (from the access token) is the creator and, for now, the decider. The
+        body must not name a creator.
       operationId: createPool
       security:
         - bearerAuth: []
@@ -98,7 +101,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Pool'
         '400':
-          description: Validation error (e.g., a creator_id in the body, missing fields, past deadline, or not exactly 2 unique outcomes).
+          description: Validation error (e.g., a creator_id in the body, missing fields, past deadline, or an invalid option list).
           content:
             application/json:
               schema:
@@ -109,7 +112,7 @@ paths:
                     error: "Field 'creator_id' is not accepted: the creator is the logged-in user."
                 wrongOutcomeCount:
                   value:
-                    error: "A pool must have exactly 2 unique, non-empty outcomes."
+                    error: "A question must have between 2 and 10 unique, non-empty options."
                 pastDeadline:
                   value:
                     error: "Field 'deadline' must be in the future."
@@ -128,6 +131,114 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /pools/{pool_id}:
+    get:
+      summary: Get one pool
+      description: Returns the pool, its options in authored order, and its derived status.
+      operationId: getPool
+      parameters:
+        - $ref: '#/components/parameters/PoolId'
+      responses:
+        '200':
+          description: The pool.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pool'
+        '404':
+          description: Unknown pool id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Pool not found."
+
+  /pools/{pool_id}/picks:
+    get:
+      summary: Get the logged-in User's pick
+      description: >
+        Returns the logged-in User's saved pick for this pool, or null when they
+        have not picked.
+      operationId: getMyPick
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PoolId'
+      responses:
+        '200':
+          description: The User's pick, or null.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - pick
+                properties:
+                  pick:
+                    allOf:
+                      - $ref: '#/components/schemas/Pick'
+                    nullable: true
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/NoUserForAccount'
+        '404':
+          description: Unknown pool id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Pool not found."
+
+    post:
+      summary: Save or replace the logged-in User's pick
+      description: >
+        Saves exactly one option of this pool for the logged-in User. A later pick
+        replaces the previous one instead of creating a second row. Picks are
+        refused once the deadline has passed or the pool is resolved.
+      operationId: savePick
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PoolId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavePickRequest'
+      responses:
+        '201':
+          description: Pick saved or replaced.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pick'
+        '400':
+          description: >
+            Invalid pool or option; a user_id in the body; an option from another
+            pool; a closed pool; or a body that is not a JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                userNamed:
+                  value:
+                    error: "Field 'user_id' is not accepted: the participant is the logged-in user."
+                unknownOutcome:
+                  value:
+                    error: "Field 'outcome_id' must be one of the pool's options."
+                closedPool:
+                  value:
+                    error: "Picks are closed for this pool."
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/NoUserForAccount'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -135,6 +246,15 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: The logged-in Account's Supabase access token (ES256, audience "authenticated").
+
+  parameters:
+    PoolId:
+      name: pool_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
 
   responses:
     AuthenticationRequired:
@@ -184,9 +304,9 @@ components:
           example: "2026-11-01T20:00:00Z"
         options:
           type: array
-          description: Exactly two distinct outcome labels for the MVP vertical slice.
+          description: Two to ten distinct, non-empty option labels, in the order they should be displayed.
           minItems: 2
-          maxItems: 2
+          maxItems: 10
           uniqueItems: true
           items:
             type: string
@@ -195,6 +315,14 @@ components:
           example:
             - "Yes, they win"
             - "No, draw or loss"
+            - "Match cancelled"
+        presentation:
+          type: string
+          enum:
+            - radio
+            - dropdown
+          default: radio
+          description: How the options are presented to participants. A dropdown starts with no answer selected.
 
     Pool:
       type: object
@@ -204,6 +332,7 @@ components:
         - statement
         - deadline
         - status
+        - presentation
         - creator
         - decider
         - options
@@ -231,6 +360,13 @@ components:
             - LOCKED
             - RESOLVED
           example: "OPEN"
+        presentation:
+          type: string
+          enum:
+            - radio
+            - dropdown
+          description: How the options are presented.
+          example: "radio"
         creator:
           $ref: '#/components/schemas/UserSummary'
         decider:
@@ -238,7 +374,7 @@ components:
         options:
           type: array
           minItems: 2
-          maxItems: 2
+          maxItems: 10
           items:
             $ref: '#/components/schemas/Outcome'
         winning_outcome_id:
@@ -267,6 +403,49 @@ components:
           type: string
           example: "Yes, they win"
 
+    SavePickRequest:
+      type: object
+      description: >
+        Must not contain user_id (400): the participant is the logged-in User.
+      required:
+        - outcome_id
+      properties:
+        outcome_id:
+          type: string
+          format: uuid
+          description: Exactly one option id that belongs to this pool.
+          example: "11111111-2222-3333-4444-555555555551"
+
+    Pick:
+      type: object
+      required:
+        - id
+        - pool_id
+        - user_id
+        - outcome_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "99999999-8888-7777-6666-555555555555"
+        pool_id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        user_id:
+          type: string
+          format: uuid
+          example: "00000000-0000-0000-0000-000000000001"
+        outcome_id:
+          type: string
+          format: uuid
+          example: "11111111-2222-3333-4444-555555555551"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-11-03T20:00:00Z"
+
     UserSummary:
       type: object
       required:
@@ -289,4 +468,4 @@ components:
       properties:
         error:
           type: string
-          example: "A pool must have exactly 2 unique, non-empty outcomes."
+          example: "A question must have between 2 and 10 unique, non-empty options."

@@ -1,5 +1,7 @@
 """Rules every endpoint follows: health check for deployments, and errors always as JSON."""
 
+import uuid
+
 from tests.acceptance.steps import pool_payload, sign_in
 
 
@@ -15,6 +17,13 @@ def test_unknown_route_returns_json_404(client):
 
     assert response.status_code == 404
     assert response.get_json() == {"error": "Not Found"}
+
+
+def test_unknown_pool_returns_json_404(client):
+    response = client.get(f"/api/pools/{uuid.uuid4()}")
+
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "Pool not found."}
 
 
 def test_users_cannot_be_created_through_the_api(client, user_repo):
