@@ -5,22 +5,69 @@
 	type FieldErrors = {
 		name?: string;
 		statement?: string;
-		option1?: string;
-		option2?: string;
+		options?: string;
 		deadline?: string;
 	};
 
 	type FormState = {
 		error: string;
 		fields?: FieldErrors;
-		values?: Record<string, string>;
+		values?: {
+			name?: string;
+			statement?: string;
+			deadline?: string;
+			options?: string[];
+			presentation?: string;
+		};
 	};
+
+	type OptionRow = { key: number; value: string };
 
 	let { form = null }: { form?: FormState | null } = $props();
 
+	const MAX_OPTIONS = 10;
 	const HOUR = 60 * 60 * 1000;
 	const DAY = 24 * HOUR;
 	const WEEK = 7 * DAY;
+
+	let nextOptionKey = 1;
+
+	function optionRowsFrom(values?: string[]): OptionRow[] {
+		const labels = values && values.length > 0 ? [...values] : ['', ''];
+		while (labels.length < 2) labels.push('');
+		return labels.map((value) => ({ key: nextOptionKey++, value }));
+	}
+
+	// These read the initial form values on purpose; the effect below re-syncs
+	// with every later submission.
+	// svelte-ignore state_referenced_locally
+	let optionRows = $state<OptionRow[]>(optionRowsFrom(form?.values?.options));
+	// svelte-ignore state_referenced_locally
+	let presentation = $state<'radio' | 'dropdown'>(
+		form?.values?.presentation === 'dropdown' ? 'dropdown' : 'radio'
+	);
+
+	// A failed submission replaces the form prop; restore what the user typed.
+	let appliedForm: FormState | null = null;
+	$effect(() => {
+		if (form && form !== appliedForm) {
+			appliedForm = form;
+			optionRows = optionRowsFrom(form.values?.options);
+			presentation = form.values?.presentation === 'dropdown' ? 'dropdown' : 'radio';
+		}
+	});
+
+	function addOption() {
+		if (optionRows.length < MAX_OPTIONS) {
+			optionRows.push({ key: nextOptionKey++, value: '' });
+		}
+	}
+
+	function removeOption(key: number) {
+		if (optionRows.length > 2) {
+			optionRows = optionRows.filter((row) => row.key !== key);
+		}
+	}
 
 	let deadlineInput: HTMLInputElement | undefined = $state();
 
@@ -107,33 +154,61 @@
 			{#if form?.fields?.deadline}<p class={errorClass}>{form.fields.deadline}</p>{/if}
 		</div>
 
-		<fieldset class="grid gap-4 border-t border-black pt-5 sm:grid-cols-2">
-			<legend class="sr-only">Outcomes</legend>
-			<div>
-				<label for="option1" class={labelClass}>Option A</label>
-				<input
-					id="option1"
-					name="option1"
-					required
-					maxlength="100"
-					value={form?.values?.option1 ?? ''}
-					class={inputClass}
-					aria-invalid={form?.fields?.option1 ? 'true' : undefined}
-				/>
-				{#if form?.fields?.option1}<p class={errorClass}>{form.fields.option1}</p>{/if}
+		<fieldset class="border-t border-black pt-5">
+			<legend class={labelClass}>Answer options</legend>
+			<p class="mt-1 text-xs text-neutral-600">
+				Two or more different labels. They keep the order shown here.
+			</p>
+			<div class="mt-3 grid gap-3">
+				{#each optionRows as row, index (row.key)}
+					<div>
+						<label for={`option-${row.key}`} class={labelClass}>Option {index + 1}</label>
+						<div class="flex gap-2">
+							<input
+								id={`option-${row.key}`}
+								name="options"
+								required
+								maxlength="100"
+								bind:value={row.value}
+								class={inputClass}
+								aria-invalid={form?.fields?.options ? 'true' : undefined}
+							/>
+							{#if optionRows.length > 2}
+								<button
+									type="button"
+									onclick={() => removeOption(row.key)}
+									class="mt-1 shrink-0 border border-black px-2 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white"
+								>
+									Remove
+								</button>
+							{/if}
+						</div>
+					</div>
+				{/each}
 			</div>
-			<div>
-				<label for="option2" class={labelClass}>Option B</label>
-				<input
-					id="option2"
-					name="option2"
-					required
-					maxlength="100"
-					value={form?.values?.option2 ?? ''}
-					class={inputClass}
-					aria-invalid={form?.fields?.option2 ? 'true' : undefined}
-				/>
-				{#if form?.fields?.option2}<p class={errorClass}>{form.fields.option2}</p>{/if}
+			{#if optionRows.length < MAX_OPTIONS}
+				<button
+					type="button"
+					onclick={addOption}
+					class="mt-3 border border-black px-2 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white"
+				>
+					+ Add option
+				</button>
+			{/if}
+			{#if form?.fields?.options}<p class={errorClass}>{form.fields.options}</p>{/if}
+		</fieldset>
+
+		<fieldset class="border-t border-black pt-5">
+			<legend class={labelClass}>Presentation</legend>
+			<div class="mt-2 flex flex-wrap gap-5">
+				<label class="flex items-center gap-2 text-sm">
+					<input type="radio" name="presentation" value="radio" bind:group={presentation} />
+					Radio buttons
+				</label>
+				<label class="flex items-center gap-2 text-sm">
+					<input type="radio" name="presentation" value="dropdown" bind:group={presentation} />
+					Dropdown
+				</label>
 			</div>
 		</fieldset>
 
