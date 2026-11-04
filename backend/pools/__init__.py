@@ -1,1 +1,1 @@
-"""Pools module: two-option prediction pools."""
+"""Pools module: multiple-choice prediction pools."""

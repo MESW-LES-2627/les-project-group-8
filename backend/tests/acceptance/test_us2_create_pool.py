@@ -33,7 +33,7 @@ def test_pool_is_created_open_with_creator_as_decider(client, user_repo, pool_re
     assert pool["status"] == "OPEN"
     assert pool["creator"] == pool["decider"] == {"id": ana.id, "name": "Ana"}
     assert pool["winning_outcome_id"] is None
-    assert sorted(o["label"] for o in pool["options"]) == sorted(payload["options"])
+    assert [o["label"] for o in pool["options"]] == payload["options"]
     assert [p.id for p in pool_repo.pools] == [pool["id"]]
 
 
@@ -126,10 +126,10 @@ def test_deadline_is_returned_in_utc(client, user_repo):
 
 @pytest.mark.parametrize(
     "options",
-    [None, [], ["Yes"], ["Yes", "No", "Maybe"], ["Yes", ""], ["Yes", "yes "]],
+    [None, [], ["Yes"], ["Yes", ""], ["Yes", "yes "]],
 )
-def test_pool_without_exactly_two_unique_outcomes_is_rejected(client, user_repo, pool_repo, options):
-    # Given fewer or more than two outcomes, an empty one, or two equal ones
+def test_pool_without_two_unique_outcomes_is_rejected(client, user_repo, pool_repo, options):
+    # Given fewer than two outcomes, an empty one, or two equal ones
     _, headers = sign_in(user_repo)
 
     # When I create a pool
@@ -137,7 +137,9 @@ def test_pool_without_exactly_two_unique_outcomes_is_rejected(client, user_repo,
 
     # Then I get a 400 error and no pool is created
     assert response.status_code == 400
-    assert response.get_json() == {"error": "A pool must have exactly 2 unique, non-empty outcomes."}
+    assert response.get_json() == {
+        "error": "A question must have between 2 and 10 unique, non-empty options."
+    }
     assert pool_repo.pools == []
 
 

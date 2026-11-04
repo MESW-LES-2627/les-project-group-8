@@ -18,6 +18,10 @@ def create_pools_blueprint(service: PoolService, login_required: LoginGuard) -> 
     def list_pools():
         return jsonify([pool_to_json(pool) for pool in service.list_pools()])
 
+    @blueprint.get("/pools/<pool_id>")
+    def get_pool(pool_id):
+        return jsonify(pool_to_json(service.get_pool(pool_id)))
+
     @blueprint.post("/pools")
     @login_required
     def create_pool(current_user: User):
@@ -34,6 +38,7 @@ def pool_to_json(pool: Pool) -> dict:
         "statement": pool.statement,
         "deadline": _utc_iso(pool.deadline),
         "status": pool.status().value,
+        "presentation": pool.presentation.value,
         "winning_outcome_id": pool.winning_outcome_id,
         "creator": _user_to_json(pool.creator),
         "decider": _user_to_json(pool.decider),
