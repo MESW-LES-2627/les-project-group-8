@@ -18,7 +18,12 @@ backend/
 │   ├── service.py
 │   ├── repository.py
 │   └── routes.py
-└── pools/             # two-option prediction pools
+├── pools/             # multiple-choice prediction pools
+│   ├── models.py
+│   ├── service.py
+│   ├── repository.py
+│   └── routes.py
+└── picks/             # one participant's answer to a pool question
     ├── models.py
     ├── service.py
     ├── repository.py
@@ -30,7 +35,7 @@ backend/
 | `routes.py` | HTTP only: read the request, call the service, turn the result into JSON | Flask, its own service and models; `users.models.User` as the guard's `current_user` |
 | `service.py` | Business rules: validation, defaults (decider = creator), talking to other modules | its own repository, other modules' services; `users.models.User` when a User is passed in (the pool's creator) |
 | `repository.py` | Database access with `supabase-py`. Rows are turned into dataclasses by hand | Supabase, its own models |
-| `models.py` | Plain dataclasses (`User`, `Pool`, `Outcome`...), plus rules that only need the data itself (`Pool.status()`) | Python standard library |
+| `models.py` | Plain dataclasses (`User`, `Pool`, `Outcome`, `Pick`...), plus rules that only need the data itself (`Pool.status()`) | Python standard library |
 
 ```mermaid
 flowchart LR
@@ -41,6 +46,9 @@ flowchart LR
   subgraph poolsModule [pools]
     PR[routes] --> PS[service] --> PRepo[repository]
   end
+  subgraph picksModule [picks]
+    PKR[routes] --> PKS[service] --> PKRepo[repository]
+  end
   subgraph sharedModule [shared]
     AUTH[auth]
     DB[db]
@@ -49,9 +57,13 @@ flowchart LR
   end
   App -.builds.-> UR
   App -.builds.-> PR
+  App -.builds.-> PKR
   PS -->|"get_user()"| US
+  PKS -->|"get_pool()"| PS
+  PKS -->|"get_user()"| US
   URepo --> Supabase[(Supabase Postgres)]
   PRepo --> Supabase
+  PKRepo --> Supabase
 ```
 
 ## Dependency rules
@@ -152,6 +164,21 @@ sequenceDiagram
   Kit-->>Browser: page with the name in the header
 ```
 
+## Request flow: saving a pick
+
+`POST /api/pools/{pool_id}/picks` carries only `{outcome_id}` and must be
+authenticated. `@login_required` verifies the Supabase token (ADR 0001) and
+loads the User, so `PickService` receives the logged-in participant instead of
+trusting an id from the body. It asks `PoolService` for the pool and rejects the
+request when the pool is not `OPEN` or the option does not belong to the pool.
+The repository upserts on `(pool_id, user_id)`, so changing a pick replaces the
+previous answer instead of adding a second one.
+`GET /api/pools/{pool_id}/picks` returns the logged-in User's saved answer or
+`null`.
+
+A `user_id` in the body is refused, just like `creator_id` when creating a pool,
+so a client cannot impersonate another User by changing an id.
+
 ## Patterns, and where to find them
 
 | Pattern | Where | Why |
@@ -177,18 +204,21 @@ sequenceDiagram
 - **Why:** it was already set up on Render and needs no new secret.
 - **Cost:** the current direct table requests execute separately. If the outcomes insert fails, `create_pool` attempts to delete the pool it just created. A crash or failed deletion can still leave incomplete data; this is compensating cleanup, not an atomic transaction. Atomic creation would require a separate implementation change, such as a transaction over a SQL connection or a database function. That change is deferred beyond the current implementation.
 
-## Adding a module in a later iteration (e.g. picks)
+## Adding a module in a later iteration (e.g. scores)
 
-1. Create `backend/picks/` with `models.py`, `service.py`, `repository.py`, `routes.py`.
-2. `PickService` receives a `PickRepository`, plus `PoolService` and `UserService` if it needs pools or users. It never reads their tables.
+1. Create `backend/scores/` with `models.py`, `service.py`, `repository.py`, `routes.py`.
+2. `ScoreService` receives a `ScoreRepository`, plus other services if it needs pools or users. It never reads their tables.
 3. Build it in `create_app()` and register its blueprint.
 4. Add a fake to `tests/fakes.py`, write the user story with acceptance criteria, and add one acceptance test per criterion.
 
+`picks/` is a worked example of these four steps.
+
 ## Not done yet (on purpose)
 
-- **Picks and resolving pools.** The `picks` table exists in `001_init.sql` but no code uses it yet.
+- **Resolving pools and scores.** Pools can be locked by their deadline but no endpoint sets a winner yet.
 - **`002_create_pool_fn.sql`** (a stored procedure for atomic pool creation) is not used by the code. See decision 2.
-- **Outcome order.** `GET /api/pools` does not guarantee that the two outcomes come back in the order they were created.
+- **Separate questions and rounds.** A pool still represents a single multiple-choice question. #29 will introduce rounds and questions, moving `presentation`/`outcomes` and renaming `picks.pool_id` to `picks.question_id`.
+- **Outcome order for legacy rows.** New pools store the authored order in `outcomes.position`; existing rows were backfilled when `004_multiple_choice.sql` ran.
 
 
 ## Database access: Flask is the only door
