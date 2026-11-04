@@ -3,7 +3,7 @@
 	import favicon from '#lib/assets/favicon.svg';
 	import type { LayoutProps } from './$types';
 
-	let { children }: LayoutProps = $props();
+	let { children, data }: LayoutProps = $props();
 </script>
 
 <svelte:head>
@@ -15,12 +15,34 @@
 	<header class="border-b border-black">
 		<nav class="mx-auto flex w-full max-w-3xl items-center justify-between px-6 py-4">
 			<a href="/" class="font-mono text-sm font-bold uppercase tracking-[0.2em]">LES</a>
-			<a
-				href="/pools/new"
-				class="border border-black px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white"
-			>
-				New pool
-			</a>
+			<div class="flex items-center gap-4">
+				{#if data.loggedIn}
+					{#if data.user}
+						<span class="text-sm font-bold">{data.user.name}</span>
+					{/if}
+					<form method="POST" action="/logout">
+						<button
+							type="submit"
+							class="cursor-pointer text-[10px] font-bold uppercase tracking-widest underline"
+						>
+							Log out
+						</button>
+					</form>
+				{:else}
+					<a href="/login" class="text-[10px] font-bold uppercase tracking-widest underline">
+						Log in
+					</a>
+					<a href="/signup" class="text-[10px] font-bold uppercase tracking-widest underline">
+						Sign up
+					</a>
+				{/if}
+				<a
+					href="/pools/new"
+					class="border border-black px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white"
+				>
+					New pool
+				</a>
+			</div>
 		</nav>
 	</header>
 

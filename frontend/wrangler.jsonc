@@ -10,13 +10,22 @@
 		"directory": ".svelte-kit/cloudflare"
 	},
 	// Read at runtime via `$app/env/private` (declared in src/env.ts).
-	"vars": { "API_URL": "https://les-backend.onrender.com" },
+	// The Supabase publishable key is public by design (never the secret key).
+	"vars": {
+		"API_URL": "https://les-backend.onrender.com",
+		"SUPABASE_URL": "https://xtaralttpdpluhkffryk.supabase.co",
+		"SUPABASE_PUBLISHABLE_KEY": "sb_publishable_ziQkPqpJg3OdkQiIHtJfTQ_tuKv3e0F"
+	},
 	// Environments inherit `main`, `assets` and `compatibility_*`, but NOT
 	// `vars` or bindings — set staging-only values under `env.staging`.
 	"env": {
 		"staging": {
 			"name": "les-frontend-staging",
-			"vars": { "API_URL": "https://les-backend-staging.onrender.com" }
+			"vars": {
+				"API_URL": "https://les-backend-staging.onrender.com",
+				"SUPABASE_URL": "https://xtaralttpdpluhkffryk.supabase.co",
+				"SUPABASE_PUBLISHABLE_KEY": "sb_publishable_ziQkPqpJg3OdkQiIHtJfTQ_tuKv3e0F"
+			}
 		}
 	}
 }

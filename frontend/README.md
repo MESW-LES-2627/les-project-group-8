@@ -13,7 +13,14 @@ pnpm dev        # http://localhost:5173
 `API_URL` is server-only and excludes the `/api` suffix. For example:
 `API_URL=http://127.0.0.1:5000`. If Flask uses port 5001, change this value to
 `http://127.0.0.1:5001` too. The browser submits to SvelteKit, server-side code in
-`src/lib/server/api.ts` calls Flask. Supabase credentials belong to the backend.
+`src/lib/server/api.ts` calls Flask.
+
+`SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are server-only too. `src/hooks.server.ts`
+builds a per-request Supabase client with `@supabase/ssr` that keeps the session in
+httpOnly cookies, renews it when the access token expires, and exposes it as
+`locals.session`. The browser never holds tokens: the server forwards the access
+token to Flask as `Authorization: Bearer …`. The Supabase **secret** key belongs to
+the backend only.
 
 ## Scripts
 
@@ -31,17 +38,27 @@ src/
 ├── app.css               # Tailwind entrypoint (@import 'tailwindcss')
 ├── app.d.ts              # App.Locals / App.PageData typings
 ├── app.html              # HTML shell
+├── hooks.server.ts       # Per-request Supabase client, verified session on locals
 ├── lib/                  # Imported via the `#lib` alias
 │   ├── assets/favicon.svg
-│   ├── components/       # PoolForm, PoolCard, StatusBadge
+│   ├── components/       # Form (POST form + error banner), PoolForm, PoolCard, StatusBadge
 │   ├── server/api.ts     # Server-to-server Flask calls
+│   ├── server/session.ts # endSession() / clearSessionCookies(), and helpers shared by login and signup
+│   ├── account.ts        # Sign-up limits (name length, password minimum)
+│   ├── form.ts           # readField() and the shared form classes
+│   ├── redirect.ts       # loginPath() and sameSitePath(): only same-site `redirectTo` targets
 │   ├── types.ts
 │   └── index.ts
 └── routes/
-    ├── +layout.svelte    # Imports app.css
+    ├── +layout.svelte    # Imports app.css, header with the User's name / Log out, or Log in / Sign up
+    ├── +layout.server.ts # Loads the current User from GET /api/me
     ├── +page.svelte        # Pool listing
     ├── +page.server.ts     # Loads pools from Flask
-    └── pools/new/          # Creation page and server action
+    ├── signup/             # Sign-up page and server action
+    ├── login/              # Login page and server action (`?redirectTo=` support)
+    ├── logout/             # POST-only action: signs out, redirects home
+    ├── no-user/            # Where Flask's 403 lands: logged in, but the Account has no User
+    └── pools/new/          # Creation page and server action (login required)
 ```
 
 ## Styling with Tailwind
@@ -115,7 +132,8 @@ This project is on SvelteKit 3, which differs from v2 in a couple of ways:
 `vite.config.ts` uses `@sveltejs/adapter-cloudflare`. GitHub Actions deploys the
 production Worker from `main` and the staging Worker from `staging`.
 `wrangler.jsonc` defines a server-only `API_URL` for each environment, pointing
-to the corresponding Flask service on Render.
+to the corresponding Flask service on Render, plus `SUPABASE_URL` and
+`SUPABASE_PUBLISHABLE_KEY` (the same Supabase project for every environment).
 
 See the root [deployment instructions](../README.md#environments) for environment
 URLs and repository configuration.

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PoolForm from '../../../lib/components/PoolForm.svelte';
+	import PoolForm from '#lib/components/PoolForm.svelte';
 	import type { PageProps } from './$types';
 
 	let { form }: PageProps = $props();
