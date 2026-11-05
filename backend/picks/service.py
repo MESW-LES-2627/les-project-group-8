@@ -14,11 +14,13 @@ class PickService:
         self._repository = repository
         self._pools = pools
 
-    def get_my_pick(self, pool_id, user: User) -> Pick | None:
+    def list_my_picks(self, pool_id, user: User) -> list[Pick]:
         pool = self._pools.get_pool(pool_id)
-        return self._repository.get(pool.id, user.id)
+        if not pool.bets:
+            return []
+        return self._repository.list_user_picks(tuple(bet.id for bet in pool.bets), user.id)
 
-    def save_pick(self, pool_id, payload, user: User) -> Pick:
+    def save_pick(self, pool_id, bet_id, payload, user: User) -> Pick:
         payload = require_json_object(payload)
 
         if "user_id" in payload:
@@ -32,13 +34,19 @@ class PickService:
         except NotFoundError:
             raise ValidationError("Field 'pool_id' must be the id of an existing pool.")
 
+        bet = pool.find_bet(str(bet_id))
+        if bet is None:
+            raise ValidationError("Field 'bet_id' must be the id of a bet in this pool.")
+
         if pool.status() != PoolStatus.OPEN:
             raise ValidationError("Picks are closed for this pool.")
+        if bet.winning_outcome_id is not None:
+            raise ValidationError("Picks are closed for this bet.")
 
         outcome_id = payload.get("outcome_id")
         if not isinstance(outcome_id, str) or outcome_id not in {
-            option.id for option in pool.options
+            option.id for option in bet.options
         }:
-            raise ValidationError("Field 'outcome_id' must be one of the pool's options.")
+            raise ValidationError("Field 'outcome_id' must be one of the bet's options.")
 
-        return self._repository.create_or_replace(pool.id, user.id, outcome_id)
+        return self._repository.create_or_replace(bet.id, user.id, outcome_id)

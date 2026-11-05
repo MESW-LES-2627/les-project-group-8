@@ -1,5 +1,7 @@
 # Pools contain Bets and share one deadline
 
+<!-- please review this file as well. -->
+
 For #29, a Pool becomes a container with its own name, description, creator,
 decider, creation date and deadline. It is created empty; its creator adds Bets
 afterwards. A Bet holds the statement, 2–10 ordered Outcomes, radio/dropdown

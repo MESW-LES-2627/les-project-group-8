@@ -1,4 +1,5 @@
 -- #29: a Pool is a container; each Bet has its own options and Picks.
+-- please review this file as well.
 -- Run after 003/003a/003b and 004_multiple_choice.sql.
 
 BEGIN;

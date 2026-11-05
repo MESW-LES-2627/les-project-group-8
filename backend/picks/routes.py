@@ -16,14 +16,14 @@ def create_picks_blueprint(service: PickService, login_required: LoginGuard) -> 
 
     @blueprint.get("/pools/<pool_id>/picks")
     @login_required
-    def get_my_pick(pool_id, current_user: User):
-        pick = service.get_my_pick(pool_id, current_user)
-        return jsonify(pick=pick_to_json(pick) if pick else None)
+    def list_my_picks(pool_id, current_user: User):
+        picks = service.list_my_picks(pool_id, current_user)
+        return jsonify(picks=[pick_to_json(pick) for pick in picks])
 
-    @blueprint.post("/pools/<pool_id>/picks")
+    @blueprint.post("/pools/<pool_id>/bets/<bet_id>/picks")
     @login_required
-    def save_pick(pool_id, current_user: User):
-        pick = service.save_pick(pool_id, request.get_json(silent=True), current_user)
+    def save_pick(pool_id, bet_id, current_user: User):
+        pick = service.save_pick(pool_id, bet_id, request.get_json(silent=True), current_user)
         return jsonify(pick_to_json(pick)), 201
 
     return blueprint
@@ -32,7 +32,7 @@ def create_picks_blueprint(service: PickService, login_required: LoginGuard) -> 
 def pick_to_json(pick: Pick) -> dict:
     return {
         "id": pick.id,
-        "pool_id": pick.pool_id,
+        "bet_id": pick.bet_id,
         "user_id": pick.user_id,
         "outcome_id": pick.outcome_id,
         "created_at": _utc_iso(pick.created_at),
