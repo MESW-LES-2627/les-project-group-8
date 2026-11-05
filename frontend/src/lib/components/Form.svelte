@@ -5,15 +5,22 @@
 	// A POST form with the error banner on top; `children` is told whether it is submitting.
 	let {
 		error,
+		action,
 		class: className = '',
 		children
-	}: { error?: string; class?: string; children: Snippet<[boolean]> } = $props();
+	}: {
+		error?: string;
+		action?: string;
+		class?: string;
+		children: Snippet<[boolean]>;
+	} = $props();
 
 	let submitting = $state(false);
 </script>
 
 <form
 	method="POST"
+	{action}
 	class={className}
 	use:enhance={() => {
 		submitting = true;

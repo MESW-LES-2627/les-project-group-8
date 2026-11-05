@@ -14,17 +14,15 @@
 		<StatusBadge status={pool.status} />
 	</div>
 
-	<p class="mt-2 text-sm text-neutral-700">{pool.statement}</p>
+	{#if pool.description}
+		<p class="mt-2 text-sm text-neutral-700">{pool.description}</p>
+	{/if}
 
 	<p class="mt-3 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
 		Deadline {formatDeadline(pool.deadline)}
 	</p>
 
-	<ul class="mt-4 grid gap-2 sm:grid-cols-2">
-		{#each pool.options as option (option.id)}
-			<li class="border border-black px-3 py-2 text-sm">{option.label}</li>
-		{/each}
-	</ul>
+	<p class="mt-4 text-sm">{pool.bets.length} {pool.bets.length === 1 ? 'bet' : 'bets'}</p>
 
 	<p class="mt-3 text-[11px] uppercase tracking-wide text-neutral-500">
 		By {pool.creator.name}

@@ -1,12 +1,15 @@
 import { API_URL } from '$app/env/private';
-import type { CreatePoolInput, Pick, Pool, UserSummary } from '#lib/types.ts';
+import type { Bet, CreateBetInput, CreatePoolInput, Pick, Pool, UserSummary } from '#lib/types.ts';
 
 const TIMEOUT_MS = 15_000;
 
 export class ApiError extends Error {
 	status: number;
 
-	constructor(message: string, status: number) {
+	constructor(
+		message: string,
+		status: number
+	) {
 		super(message);
 		this.name = 'ApiError';
 		this.status = status;
@@ -31,12 +34,20 @@ type RequestOptions = {
 
 async function request<T>(
 	path: string,
-	{ method = 'GET', body, accessToken }: RequestOptions = {}
+	{
+		method = 'GET',
+		body,
+		accessToken
+	}: RequestOptions = {}
 ): Promise<T> {
 	const url = `${apiBase()}${path}`;
 	const headers = new Headers({ accept: 'application/json' });
-	if (body !== undefined) headers.set('content-type', 'application/json');
-	if (accessToken) headers.set('authorization', `Bearer ${accessToken}`);
+	if (body !== undefined) {
+		headers.set('content-type', 'application/json');
+	}
+	if (accessToken) {
+		headers.set('authorization', `Bearer ${accessToken}`);
+	}
 
 	let response: Response;
 	try {
@@ -85,22 +96,49 @@ export function getCurrentUser(accessToken: string): Promise<UserSummary> {
 }
 
 /** Flask makes the token's User the creator and decider. */
-export function createPool(input: CreatePoolInput, accessToken: string): Promise<Pool> {
-	return request<Pool>('/pools', { method: 'POST', body: input, accessToken });
+export function createPool(
+	input: CreatePoolInput,
+	accessToken: string
+): Promise<Pool> {
+	return request<Pool>('/pools', {
+		method: 'POST',
+		body: input,
+		accessToken
+	});
 }
 
-/** The logged-in User's pick for this pool, or null when they have not picked. */
-export async function getMyPick(poolId: string, accessToken: string): Promise<Pick | null> {
-	const body = await request<{ pick: Pick | null }>(
+export function createBet(
+	poolId: string,
+	input: CreateBetInput,
+	accessToken: string
+): Promise<Bet> {
+	return request<Bet>(`/pools/${encodeURIComponent(poolId)}/bets`, {
+		method: 'POST',
+		body: input,
+		accessToken
+	});
+}
+
+/** Only the logged-in User's picks for the bets in this pool. */
+export async function getMyPicks(
+	poolId: string,
+	accessToken: string
+): Promise<Pick[]> {
+	const body = await request<{ picks: Pick[] }>(
 		`/pools/${encodeURIComponent(poolId)}/picks`,
 		{ accessToken }
 	);
-	return body.pick;
+	return body.picks;
 }
 
 /** Saves or replaces the logged-in User's pick. */
-export function savePick(poolId: string, outcomeId: string, accessToken: string): Promise<Pick> {
-	return request<Pick>(`/pools/${encodeURIComponent(poolId)}/picks`, {
+export function savePick(
+	poolId: string,
+	betId: string,
+	outcomeId: string,
+	accessToken: string
+): Promise<Pick> {
+	return request<Pick>(`/pools/${encodeURIComponent(poolId)}/bets/${encodeURIComponent(betId)}/picks`, {
 		method: 'POST',
 		body: { outcome_id: outcomeId },
 		accessToken
