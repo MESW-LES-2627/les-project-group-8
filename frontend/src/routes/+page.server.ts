@@ -1,5 +1,5 @@
-import { listPools } from '../lib/server/api';
-import type { Pool } from '../lib/types';
+import { listPools } from '#lib/server/api.ts';
+import type { Pool } from '#lib/types.ts';
 
 export async function load({ url }) {
 	let pools: Pool[] = [];
