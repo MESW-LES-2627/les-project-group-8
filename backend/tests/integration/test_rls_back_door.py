@@ -47,7 +47,6 @@ def test_pools_cannot_be_inserted_with_the_publishable_key(back_door):
     # Given a pool naming a User that does not exist, so nothing could be saved even if RLS were off
     row = {
         "name": "Back door",
-        "statement": "RLS lets this through",
         "deadline": "2030-01-01T00:00:00+00:00",
         "creator_id": NO_SUCH_USER,
         "decider_id": NO_SUCH_USER,

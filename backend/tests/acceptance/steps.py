@@ -14,7 +14,10 @@ SIGNING_KEY = ec.generate_private_key(ec.SECP256R1())
 FORGERY_KEY = ec.generate_private_key(ec.SECP256R1())
 
 
-def sign_in(user_repo, name="Ana") -> tuple[User, dict]:
+def sign_in(
+    user_repo,
+    name="Ana",
+) -> tuple[User, dict]:
     """Seed a User and return it with auth headers carrying a valid token for it."""
     user = User(id=str(uuid.uuid4()), name=name)
     user_repo.add(user)
@@ -49,9 +52,17 @@ def bearer(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
-def create_pool(client, headers: dict, **overrides) -> dict:
+def create_pool(
+    client,
+    headers: dict,
+    **overrides,
+) -> dict:
     """Create a pool as the User the headers belong to."""
-    response = client.post("/api/pools", json=pool_payload(**overrides), headers=headers)
+    response = client.post(
+        "/api/pools",
+        json=pool_payload(**overrides),
+        headers=headers,
+    )
     assert response.status_code == 201, response.get_json()
     return response.get_json()
 
@@ -59,8 +70,32 @@ def create_pool(client, headers: dict, **overrides) -> dict:
 def pool_payload(**overrides) -> dict:
     payload = {
         "name": "Champions League Final",
-        "statement": "Real Madrid wins in 90 minutes.",
+        "description": "Predictions for the final.",
         "deadline": iso(datetime.now(timezone.utc) + timedelta(days=7)),
+    }
+    payload.update(overrides)
+    return payload
+
+
+def create_bet(
+    client,
+    pool_id: str,
+    headers: dict,
+    **overrides,
+) -> dict:
+    """Add a Bet to an existing Pool as its creator."""
+    response = client.post(
+        f"/api/pools/{pool_id}/bets",
+        json=bet_payload(**overrides),
+        headers=headers,
+    )
+    assert response.status_code == 201, response.get_json()
+    return response.get_json()
+
+
+def bet_payload(**overrides) -> dict:
+    payload = {
+        "statement": "Real Madrid wins in 90 minutes.",
         "options": ["Yes, they win", "No, draw or loss"],
     }
     payload.update(overrides)
