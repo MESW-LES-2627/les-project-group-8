@@ -46,6 +46,7 @@ class NewPool:
     deadline: datetime
     creator: UserSummary
     decider: UserSummary
+    initial_bets: tuple["NewBet", ...] = ()
 
 
 @dataclass(frozen=True)

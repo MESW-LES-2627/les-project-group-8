@@ -1,0 +1,16 @@
+services:
+  postgres-test:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: les
+      POSTGRES_PASSWORD: les
+      POSTGRES_DB: les_test
+    ports:
+      - "127.0.0.1:55433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U les -d les_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 30

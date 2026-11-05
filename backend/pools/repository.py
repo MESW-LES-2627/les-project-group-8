@@ -1,114 +1,99 @@
-"""Database access for pools, using supabase-py. Rows are mapped to dataclasses by hand."""
+"""Pool and Bet persistence with one transaction per write operation."""
 
-from datetime import datetime
+from collections import defaultdict
 
 from .models import Bet, BetPresentation, NewBet, NewPool, Outcome, Pool, UserSummary
 
-_BET_COLUMNS = (
-    "id, pool_id, statement, winning_outcome_id, created_at, presentation,"
-    " outcomes!outcomes_bet_id_fkey(id, label, position)"
-)
+_POOL_SELECT = """
+    SELECT p.*, creator.name AS creator_name, decider.name AS decider_name
+    FROM pools p JOIN users creator ON creator.id = p.creator_id
+    JOIN users decider ON decider.id = p.decider_id
+"""
+_BET_SELECT = """
+    SELECT b.*, COALESCE(
+        json_agg(json_build_object('id', o.id, 'label', o.label) ORDER BY o.position)
+        FILTER (WHERE o.id IS NOT NULL), '[]'::json
+    ) AS options
+    FROM bets b LEFT JOIN outcomes o ON o.bet_id = b.id
+"""
 
-_POOL_COLUMNS = (
-    "id, name, description, deadline, created_at,"
-    " creator:users!creator_id(id, name),"
-    " decider:users!decider_id(id, name),"
-    f" bets({_BET_COLUMNS})"
-)
 
-
-class SupabasePoolRepository:
-    def __init__(self, client):
-        self._db = client
+class PsycopgPoolRepository:
+    def __init__(self, connect):
+        self._connect = connect
 
     def list_pools(self) -> list[Pool]:
-        rows = (
-            self._db.table("pools")
-            .select(_POOL_COLUMNS)
-            .order("created_at", desc=True)
-            .execute()
-            .data
-        )
-        return [_to_pool(row) for row in rows]
+        with self._connect() as conn:
+            return _read_pools(conn)
 
     def get_pool(self, pool_id: str) -> Pool | None:
-        rows = self._db.table("pools").select(_POOL_COLUMNS).eq("id", pool_id).execute().data
-        return _to_pool(rows[0]) if rows else None
+        with self._connect() as conn:
+            pools = _read_pools(conn, pool_id)
+            return pools[0] if pools else None
 
     def create_pool(self, new_pool: NewPool) -> Pool:
-        pool_id = self._db.table("pools").insert({
-            "name": new_pool.name,
-            "description": new_pool.description,
-            "deadline": new_pool.deadline.isoformat(),
-            "creator_id": new_pool.creator.id,
-            "decider_id": new_pool.decider.id,
-        }).execute().data[0]["id"]
-
-        row = (
-            self._db.table("pools")
-            .select(_POOL_COLUMNS)
-            .eq("id", pool_id)
-            .single()
-            .execute()
-            .data
-        )
-        return _to_pool(row)
+        # The context commits only after every insert and the response read
+        # succeed; any exception rolls back and closes this connection.
+        with self._connect() as conn:
+            pool_id = conn.execute(
+                """INSERT INTO pools (name, description, deadline, creator_id, decider_id)
+                   VALUES (%s, %s, %s, %s, %s) RETURNING id""",
+                (new_pool.name, new_pool.description, new_pool.deadline,
+                 new_pool.creator.id, new_pool.decider.id),
+            ).fetchone()["id"]
+            conn.execute(
+                "INSERT INTO rounds (pool_id, deadline) VALUES (%s, %s)",
+                (pool_id, new_pool.deadline),
+            )
+            for bet in new_pool.initial_bets:
+                _insert_bet(conn, pool_id, bet)
+            return _read_pools(conn, pool_id)[0]
 
     def create_bet(self, pool_id: str, new_bet: NewBet) -> Bet:
-        bet_id = self._db.table("bets").insert({
-            "pool_id": pool_id,
-            "statement": new_bet.statement,
-            "presentation": new_bet.presentation.value,
-        }).execute().data[0]["id"]
+        with self._connect() as conn:
+            return _insert_bet(conn, pool_id, new_bet)
 
-        # Keep the existing cleanup approach until #31 introduces transactions.
-        try:
-            self._db.table("outcomes").insert(
-                [
-                    {"bet_id": bet_id, "label": label, "position": position}
-                    for position, label in enumerate(new_bet.options)
-                ]
-            ).execute()
-        except Exception:
-            self._db.table("bets").delete().eq("id", bet_id).execute()
-            raise
 
-        row = (
-            self._db.table("bets")
-            .select(_BET_COLUMNS)
-            .eq("id", bet_id)
-            .single()
-            .execute()
-            .data
+def _insert_bet(conn, pool_id, new_bet: NewBet) -> Bet:
+    bet_id = conn.execute(
+        """INSERT INTO bets (pool_id, round_id, statement, presentation, created_at)
+           VALUES (%s, (SELECT id FROM rounds WHERE pool_id = %s), %s, %s, clock_timestamp())
+           RETURNING id""",
+        (pool_id, pool_id, new_bet.statement, new_bet.presentation.value),
+    ).fetchone()["id"]
+    with conn.cursor() as cursor:
+        cursor.executemany(
+            "INSERT INTO outcomes (bet_id, label, position) VALUES (%s, %s, %s)",
+            [(bet_id, label, position) for position, label in enumerate(new_bet.options)],
         )
-        return _to_bet(row)
+    row = conn.execute(_BET_SELECT + " WHERE b.id = %s GROUP BY b.id", (bet_id,)).fetchone()
+    return _to_bet(row)
 
 
-def _to_pool(row: dict) -> Pool:
-    bets = sorted(
-        (_to_bet(bet) for bet in row.get("bets") or []),
-        key=lambda bet: (bet.created_at, bet.id),
-    )
-    return Pool(
-        id=str(row["id"]),
-        name=row["name"],
-        description=row["description"],
-        deadline=datetime.fromisoformat(row["deadline"]),
-        creator=UserSummary(id=str(row["creator"]["id"]), name=row["creator"]["name"]),
-        decider=UserSummary(id=str(row["decider"]["id"]), name=row["decider"]["name"]),
-        created_at=datetime.fromisoformat(row["created_at"]),
-        bets=tuple(bets),
-    )
+def _read_pools(conn, pool_id=None) -> list[Pool]:
+    where, params = ("", ()) if pool_id is None else (" WHERE p.id = %s", (pool_id,))
+    rows = conn.execute(_POOL_SELECT + where + " ORDER BY p.created_at DESC, p.id", params).fetchall()
+    if not rows:
+        return []
+    bets = defaultdict(list)
+    for row in conn.execute(
+        _BET_SELECT + " WHERE b.pool_id = ANY(%s::uuid[]) GROUP BY b.id ORDER BY b.created_at, b.id",
+        ([row["id"] for row in rows],),
+    ).fetchall():
+        bets[row["pool_id"]].append(_to_bet(row))
+    return [Pool(
+        id=str(row["id"]), name=row["name"], description=row["description"],
+        deadline=row["deadline"], created_at=row["created_at"],
+        creator=UserSummary(str(row["creator_id"]), row["creator_name"]),
+        decider=UserSummary(str(row["decider_id"]), row["decider_name"]),
+        bets=tuple(bets[row["id"]]),
+    ) for row in rows]
 
 
-def _to_bet(row: dict) -> Bet:
-    options = sorted(row.get("outcomes") or [], key=lambda outcome: outcome["position"])
+def _to_bet(row) -> Bet:
     return Bet(
-        id=str(row["id"]),
-        pool_id=str(row["pool_id"]),
-        statement=row["statement"],
-        options=tuple(Outcome(id=str(option["id"]), label=option["label"]) for option in options),
-        winning_outcome_id=row.get("winning_outcome_id"),
-        created_at=datetime.fromisoformat(row["created_at"]),
-        presentation=BetPresentation(row["presentation"]),
+        id=str(row["id"]), pool_id=str(row["pool_id"]), statement=row["statement"],
+        options=tuple(Outcome(str(o["id"]), o["label"]) for o in row["options"]),
+        winning_outcome_id=str(row["winning_outcome_id"]) if row["winning_outcome_id"] else None,
+        created_at=row["created_at"], presentation=BetPresentation(row["presentation"]),
     )

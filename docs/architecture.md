@@ -9,7 +9,7 @@ backend/
 ├── app.py             # create_app(): builds everything and registers the routes
 ├── shared/            # code every module uses
 │   ├── auth.py        # token verifier and @login_required guard (see "Who is calling")
-│   ├── db.py          # Supabase client (refuses to start without credentials)
+│   ├── db.py          # Psycopg connection factory (requires DATABASE_URL)
 │   ├── errors.py      # ValidationError -> 400, AuthenticationError -> 401, ForbiddenError -> 403,
 │   │                  # NotFoundError -> 404, anything else -> 500
 │   └── validation.py  # small input checks: JSON object, required text
@@ -34,7 +34,7 @@ backend/
 | :--- | :--- | :--- |
 | `routes.py` | HTTP only: read the request, call the service, turn the result into JSON | Flask, its own service and models; `users.models.User` as the guard's `current_user` |
 | `service.py` | Business rules: validation, defaults (decider = creator), talking to other modules | its own repository, other modules' services; `users.models.User` when a User is passed in (the pool's creator) |
-| `repository.py` | Database access with `supabase-py`. Rows are turned into dataclasses by hand | Supabase, its own models |
+| `repository.py` | Parameterized SQL with Psycopg. Rows are turned into dataclasses by hand | PostgreSQL, its own models |
 | `models.py` | Plain dataclasses (`User`, `Pool`, `Bet`, `Outcome`, `Pick`...), plus rules that only need the data itself (`Pool.status()`) | Python standard library |
 
 ```mermaid
@@ -87,7 +87,7 @@ sequenceDiagram
   Routes->>Service: create_pool(payload, creator=current_user)
   Service->>Service: refuse a creator_id (400); parse_new_pool() validates fields -> NewPool, creator = decider = current_user
   Service->>Repo: create_pool(new_pool)
-  Repo->>DB: insert empty pool, select pool
+  Repo->>DB: transaction: insert pool, initial round, optional initial Bets and options; read pool
   DB-->>Repo: row
   Repo-->>Service: Pool
   Service-->>Routes: Pool
@@ -190,7 +190,7 @@ so a client cannot impersonate another User by changing an id.
 | Layered modules (modular monolith) | `users/`, `pools/` | Each business area can grow on its own without a distributed system |
 | Repository | `*/repository.py` | Services don't know how or where data is stored |
 | Manual row mapping (Data Mapper idea, no ORM) | `_to_pool()` in `pools/repository.py` | The class forbids ORMs; mapping by hand keeps the SQL/table shape out of the models |
-| Dependency injection (by constructor) | `create_app()` in `app.py` | Tests pass fake repositories, and production passes Supabase ones. No framework needed |
+| Dependency injection (by constructor) | `create_app()` in `app.py` | Tests pass fake repositories, and production passes Psycopg ones. No framework needed |
 | Application factory | `create_app()` | Each test gets a fresh app; Gunicorn calls `app:create_app()` |
 | Test double (fake) | `tests/fakes.py` | Acceptance tests run without a database (see [testing](iterations/1/i01.d004-testing.md)) |
 
@@ -202,11 +202,14 @@ so a client cannot impersonate another User by changing an id.
 - **Why:** a flat "all routes in one file" layout mixed HTTP, rules and SQL in the same functions. Microservices would add network calls and deployments for a three-endpoint app.
 - **Cost:** module boundaries are a convention (rule 2 above), not enforced by the language. We keep them in code review.
 
-### 2. Keep `supabase-py` instead of raw SQL with `psycopg`
+### 2. Psycopg transactions with Supabase PostgreSQL
 
-- **Chosen:** `supabase-py`, which calls Supabase's REST API. It is a query builder, not an ORM: there are no mapped classes, no lazy loading, and no automatic saving.
-- **Why:** it was already set up on Render and needs no new secret.
-- **Cost:** the direct table requests execute separately. If an Outcomes insert fails, `create_bet` attempts to delete only the new Bet, preserving its Pool and existing Bets. A crash or failed deletion can still leave incomplete data. Transactions remain in #31.
+All three repositories use Psycopg and parameterized SQL. A connection context
+commits on success, rolls back on failure, and closes the connection. Pool
+creation includes its internal initial round and optional `initial_bets`;
+adding a Bet includes its options. There are no compensating cleanup deletes.
+Supabase Auth and the existing service-level access checks are unchanged.
+See [database setup](database-setup.md) for connection settings and tests.
 
 ## Adding a module in a later iteration (e.g. scores)
 
@@ -220,18 +223,18 @@ so a client cannot impersonate another User by changing an id.
 ## Not done yet (on purpose)
 
 - **Resolution and scores.** No endpoint sets a Bet's winning Outcome yet; Pool status follows only its shared deadline (`OPEN` / `LOCKED`).
-- **Rounds.** A future design decision; #29 introduces no Round table.
-- **Transactions.** Deferred to #31. The #29 migration removes the unused `002_create_pool_fn.sql` function if installed.
+- **Multiple rounds.** Deferred. #31 stores one internal initial round without a new UI or API.
+- The unused `002_create_pool_fn.sql` function is removed by the #29 migration.
 
 
 ## Database access: Flask is the only door
 
-Row-level security is **on** for `users`, `pools`, `bets`, `outcomes` and `picks`, with **zero policies** (migrations 003 and #29, [ADR 0003](adr/0003-flask-is-the-only-door-to-app-tables.md)). With no policy allowing anything, Supabase's REST API refuses every direct read and write made with the publishable key or an Account's token: a `select` returns an empty list (RLS filters out every row), and an `insert`, `update` or `delete` fails with a row-level security error. The publishable key is public by design, so without this anyone could write rows, for example a pool with someone else's `creator_id`, and skip Flask's checks.
+Row-level security is **on** for `users`, `pools`, `rounds`, `bets`, `outcomes` and `picks`, with **zero policies** (migrations 003 and #29, [ADR 0003](adr/0003-flask-is-the-only-door-to-app-tables.md)). With no policy allowing anything, Supabase's REST API refuses every direct read and write made with the publishable key or an Account's token: a `select` returns an empty list (RLS filters out every row), and an `insert`, `update` or `delete` fails with a row-level security error. The publishable key is public by design, so without this anyone could write rows, for example a pool with someone else's `creator_id`, and skip Flask's checks.
 
-Flask connects with the **secret** key (`SUPABASE_KEY`), which bypasses RLS, and enforces who may do what in its services. So:
+Flask connects through `DATABASE_URL` with a table-owner or `BYPASSRLS` PostgreSQL role, and enforces who may do what in its services. So:
 
 - RLS with no policies is deliberate, not an unfinished setup. Don't add permissive policies and don't point Flask at the publishable key: either reopens the back door.
-- The secret key only lives in server environments (both Render services, local `backend/.env`), never in the frontend or in git.
+- The database connection URI only lives in server environments (both Render services, local `backend/.env`), never in the frontend or in git.
 - A new table needs `ALTER TABLE <name> ENABLE ROW LEVEL SECURITY;` in its migration, or it is open to anyone with the publishable key.
 
-**Known limitation:** one Supabase project serves local development, staging and production. They share the same tables and the same secret key, so a local `backend/.env` can read and write production data, and a leaked key exposes every environment. Separate projects per environment would fix this; it is not worth the setup for the demo.
+**Known limitation:** one Supabase project serves local development, staging and production. They share the same tables and the database credentials, so a local `backend/.env` can read and write production data, and a leaked connection URI exposes every environment. Separate projects per environment would fix this; it is not worth the setup for the demo.
