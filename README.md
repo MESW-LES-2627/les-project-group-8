@@ -33,7 +33,7 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
 cp .env.example .env   # then fill in the values below
-flask run              # http://127.0.0.1:5000/api/health
+flask run --port 5001  # http://127.0.0.1:5001/api/health
 pytest -v              # acceptance tests, no database needed
 ```
 
@@ -46,12 +46,19 @@ The app refuses to start if either variable is missing. Endpoints are described
 in [docs/iterations/1/i01.d007.openapi.yaml](docs/iterations/1/i01.d007.openapi.yaml), and tests
 in [docs/iterations/1/i01.d004-testing.md](docs/iterations/1/i01.d004-testing.md).
 
-The default local API URL is `http://127.0.0.1:5000`. If port 5000 is occupied, run `flask run --port 5001` and set
-`API_URL=http://127.0.0.1:5001` in `frontend/.env`.
+The example frontend configuration uses `API_URL=http://127.0.0.1:5001`.
+Keep it aligned with Flask's port.
 
 Creating a pool requires login: Flask makes the logged-in User its creator and
-decider, and refuses a `creator_id` in the request. Users are created only by
+decider. The Pool starts empty with a shared deadline; its creator adds Bets
+with 2–10 ordered options while it is open. Each User can save or change one
+Pick per Bet before that deadline. Users are created only by
 the sign-up trigger (`backend/migrations/003a_create_user_on_signup.sql`).
+
+The #29 migration must be coordinated with the adapted backend and frontend:
+local, staging and production share one database. See
+[ADR 0004](docs/adr/0004-pools-contain-bets.md); applying the migration alone
+breaks clients of the old schema and API. Rounds remain future scope.
 
 ## Deploying the frontend
 

@@ -1,6 +1,6 @@
 # Prediction Pools
 
-Friends create pools around a yes/no-style statement and each person picks the outcome they think will happen.
+Friends create Pools containing Bets; each person picks one Outcome for each Bet.
 
 ## Language
 
@@ -16,6 +16,13 @@ _Avoid_: Profile, application profile, member, player
 
 ### Pools
 
+**Pool**:
+A container created empty, with a name, description, creator, decider and one shared deadline for its Bets.
+
+**Bet**:
+A statement inside a Pool, with 2–10 ordered Outcomes, radio/dropdown presentation and an optional winning Outcome.
+_Avoid_: Question
+
 **Pick**:
-A User's choice of one outcome in a pool.
+A User's choice of one Outcome for one Bet. Each User has at most one Pick per Bet.
 _Avoid_: Prediction, bet, vote
