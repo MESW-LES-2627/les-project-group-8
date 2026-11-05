@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PoolCard from '../lib/components/PoolCard.svelte';
+	import PoolCard from '#lib/components/PoolCard.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
