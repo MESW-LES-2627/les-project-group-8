@@ -18,12 +18,12 @@ backend/
 │   ├── service.py
 │   ├── repository.py
 │   └── routes.py
-├── pools/             # multiple-choice prediction pools
+├── pools/             # Pool containers, their Bets and Outcomes
 │   ├── models.py
 │   ├── service.py
 │   ├── repository.py
 │   └── routes.py
-└── picks/             # one participant's answer to a pool question
+└── picks/             # one participant's answer to one Bet
     ├── models.py
     ├── service.py
     ├── repository.py
@@ -35,7 +35,7 @@ backend/
 | `routes.py` | HTTP only: read the request, call the service, turn the result into JSON | Flask, its own service and models; `users.models.User` as the guard's `current_user` |
 | `service.py` | Business rules: validation, defaults (decider = creator), talking to other modules | its own repository, other modules' services; `users.models.User` when a User is passed in (the pool's creator) |
 | `repository.py` | Database access with `supabase-py`. Rows are turned into dataclasses by hand | Supabase, its own models |
-| `models.py` | Plain dataclasses (`User`, `Pool`, `Outcome`, `Pick`...), plus rules that only need the data itself (`Pool.status()`) | Python standard library |
+| `models.py` | Plain dataclasses (`User`, `Pool`, `Bet`, `Outcome`, `Pick`...), plus rules that only need the data itself (`Pool.status()`) | Python standard library |
 
 ```mermaid
 flowchart LR
@@ -58,9 +58,7 @@ flowchart LR
   App -.builds.-> UR
   App -.builds.-> PR
   App -.builds.-> PKR
-  PS -->|"get_user()"| US
   PKS -->|"get_pool()"| PS
-  PKS -->|"get_user()"| US
   URepo --> Supabase[(Supabase Postgres)]
   PRepo --> Supabase
   PKRepo --> Supabase
@@ -89,7 +87,7 @@ sequenceDiagram
   Routes->>Service: create_pool(payload, creator=current_user)
   Service->>Service: refuse a creator_id (400); parse_new_pool() validates fields -> NewPool, creator = decider = current_user
   Service->>Repo: create_pool(new_pool)
-  Repo->>DB: insert pool, insert 2 outcomes, select pool
+  Repo->>DB: insert empty pool, select pool
   DB-->>Repo: row
   Repo-->>Service: Pool
   Service-->>Routes: Pool
@@ -98,12 +96,17 @@ sequenceDiagram
 
 The body never says who the creator is: a `creator_id` (Iteration 0's way of choosing one) is refused with 400, so nobody can create a pool in someone else's name. If any step raises `ValidationError` or `NotFoundError`, the error handlers in `shared/errors.py` turn it into a JSON response. Any other exception becomes a generic `500 {"error": "Internal server error."}`, and the details are only logged.
 
+The Pool is the aggregate root for authoring ([ADR 0004](adr/0004-pools-contain-bets.md)).
+`POST /api/pools/{pool_id}/bets` lets only its creator add a Bet before the shared
+deadline. Bets and Outcomes stay in `pools/`; each Bet owns its statement,
+2–10 ordered options and radio/dropdown presentation. Pool reads include its Bets.
+
 ## Who is calling: token verifier and login guard
 
 A logged-in Account's Supabase access token reaches Flask as `Authorization: Bearer <token>`. `shared/auth.py` has two parts:
 
 - **`TokenVerifier`** checks the token locally (ADR 0001): ES256 signature against a trusted key, `exp` not passed, `aud == "authenticated"`. It returns the token's `sub`, which is the User's id. In production `TokenVerifier.from_env()` trusts the key set at `<SUPABASE_URL>/auth/v1/.well-known/jwks.json`; PyJWT's `PyJWKClient` fetches it on first use and caches it (refreshed at most every 5 minutes), so requests don't call Supabase. A token with an unknown `kid` (Supabase rotated its key) refetches the set, at most once every 30 seconds. If Supabase can't be reached when the set must be fetched, the request fails with a 500, not a 401: it is our failure, not the caller's.
-- **`create_login_guard(verifier, load_user)`** builds the `@login_required` decorator. It reads the bearer token, verifies it, loads the User through `UserService.get_user()` and calls the route with `current_user=<User>`. `app.py` builds it once and hands it to any blueprint that needs it, so any route can be guarded: today `GET /api/me` and `POST /api/pools`.
+- **`create_login_guard(verifier, load_user)`** builds the `@login_required` decorator. It reads the bearer token, verifies it, loads the User through `UserService.get_user()` and calls the route with `current_user=<User>`. `app.py` builds it once and hands it to any blueprint that needs it, so any route can be guarded: it covers `GET /api/me`, Pool/Bet creation and both Pick endpoints.
 
 | Request | Response |
 | :--- | :--- |
@@ -166,15 +169,16 @@ sequenceDiagram
 
 ## Request flow: saving a pick
 
-`POST /api/pools/{pool_id}/picks` carries only `{outcome_id}` and must be
+`POST /api/pools/{pool_id}/bets/{bet_id}/picks` carries only `{outcome_id}` and must be
 authenticated. `@login_required` verifies the Supabase token (ADR 0001) and
 loads the User, so `PickService` receives the logged-in participant instead of
 trusting an id from the body. It asks `PoolService` for the pool and rejects the
-request when the pool is not `OPEN` or the option does not belong to the pool.
-The repository upserts on `(pool_id, user_id)`, so changing a pick replaces the
+request when the Pool is not `OPEN`, the Bet has a winner, the Bet belongs to a
+different Pool, or the option does not belong to that Bet.
+The repository upserts on `(bet_id, user_id)`, so changing a Pick replaces the
 previous answer instead of adding a second one.
-`GET /api/pools/{pool_id}/picks` returns the logged-in User's saved answer or
-`null`.
+`GET /api/pools/{pool_id}/picks` returns `{picks: [...]}` for the logged-in User
+and only the Bets of that Pool; the array is empty when there are no saved Picks.
 
 A `user_id` in the body is refused, just like `creator_id` when creating a pool,
 so a client cannot impersonate another User by changing an id.
@@ -202,7 +206,7 @@ so a client cannot impersonate another User by changing an id.
 
 - **Chosen:** `supabase-py`, which calls Supabase's REST API. It is a query builder, not an ORM: there are no mapped classes, no lazy loading, and no automatic saving.
 - **Why:** it was already set up on Render and needs no new secret.
-- **Cost:** the current direct table requests execute separately. If the outcomes insert fails, `create_pool` attempts to delete the pool it just created. A crash or failed deletion can still leave incomplete data; this is compensating cleanup, not an atomic transaction. Atomic creation would require a separate implementation change, such as a transaction over a SQL connection or a database function. That change is deferred beyond the current implementation.
+- **Cost:** the direct table requests execute separately. If an Outcomes insert fails, `create_bet` attempts to delete only the new Bet, preserving its Pool and existing Bets. A crash or failed deletion can still leave incomplete data. Transactions remain in #31.
 
 ## Adding a module in a later iteration (e.g. scores)
 
@@ -215,15 +219,14 @@ so a client cannot impersonate another User by changing an id.
 
 ## Not done yet (on purpose)
 
-- **Resolving pools and scores.** Pools can be locked by their deadline but no endpoint sets a winner yet.
-- **`002_create_pool_fn.sql`** (a stored procedure for atomic pool creation) is not used by the code. See decision 2.
-- **Separate questions and rounds.** A pool still represents a single multiple-choice question. #29 will introduce rounds and questions, moving `presentation`/`outcomes` and renaming `picks.pool_id` to `picks.question_id`.
-- **Outcome order for legacy rows.** New pools store the authored order in `outcomes.position`; existing rows were backfilled when `004_multiple_choice.sql` ran.
+- **Resolution and scores.** No endpoint sets a Bet's winning Outcome yet; Pool status follows only its shared deadline (`OPEN` / `LOCKED`).
+- **Rounds.** A future design decision; #29 introduces no Round table.
+- **Transactions.** Deferred to #31. The #29 migration removes the unused `002_create_pool_fn.sql` function if installed.
 
 
 ## Database access: Flask is the only door
 
-Row-level security is **on** for `users`, `pools`, `outcomes` and `picks`, with **zero policies** (`backend/migrations/003_enable_rls.sql`, [ADR 0003](adr/0003-flask-is-the-only-door-to-app-tables.md)). With no policy allowing anything, Supabase's REST API refuses every direct read and write made with the publishable key or an Account's token: a `select` returns an empty list (RLS filters out every row), and an `insert`, `update` or `delete` fails with a row-level security error. The publishable key is public by design, so without this anyone could write rows, for example a pool with someone else's `creator_id`, and skip Flask's checks.
+Row-level security is **on** for `users`, `pools`, `bets`, `outcomes` and `picks`, with **zero policies** (migrations 003 and #29, [ADR 0003](adr/0003-flask-is-the-only-door-to-app-tables.md)). With no policy allowing anything, Supabase's REST API refuses every direct read and write made with the publishable key or an Account's token: a `select` returns an empty list (RLS filters out every row), and an `insert`, `update` or `delete` fails with a row-level security error. The publishable key is public by design, so without this anyone could write rows, for example a pool with someone else's `creator_id`, and skip Flask's checks.
 
 Flask connects with the **secret** key (`SUPABASE_KEY`), which bypasses RLS, and enforces who may do what in its services. So:
 

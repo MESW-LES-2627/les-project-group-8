@@ -1,5 +1,6 @@
-export type PoolStatus = 'OPEN' | 'LOCKED' | 'RESOLVED';
-export type PoolPresentation = 'radio' | 'dropdown';
+export type PoolStatus = 'OPEN' | 'LOCKED';
+export type BetStatus = PoolStatus | 'RESOLVED';
+export type BetPresentation = 'radio' | 'dropdown';
 
 export interface UserSummary {
 	id: string;
@@ -14,28 +15,40 @@ export interface Outcome {
 export interface Pool {
 	id: string;
 	name: string;
-	statement: string;
+	description: string;
 	deadline: string;
 	status: PoolStatus;
-	presentation: PoolPresentation;
-	winning_outcome_id: string | null;
 	creator: UserSummary;
 	decider: UserSummary;
+	bets: Bet[];
+	created_at: string;
+}
+
+export interface Bet {
+	id: string;
+	pool_id: string;
+	statement: string;
+	presentation: BetPresentation;
+	winning_outcome_id: string | null;
 	options: Outcome[];
-	created_at?: string;
+	created_at: string;
 }
 
 export interface CreatePoolInput {
 	name: string;
-	statement: string;
+	description: string;
 	deadline: string;
+}
+
+export interface CreateBetInput {
+	statement: string;
 	options: string[];
-	presentation: PoolPresentation;
+	presentation: BetPresentation;
 }
 
 export interface Pick {
 	id: string;
-	pool_id: string;
+	bet_id: string;
 	user_id: string;
 	outcome_id: string;
 	created_at: string;

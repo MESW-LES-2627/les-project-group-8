@@ -10,11 +10,10 @@ from users.models import User
 class PoolStatus(str, Enum):
     OPEN = "OPEN"
     LOCKED = "LOCKED"
-    RESOLVED = "RESOLVED"
 
 
-class PoolPresentation(str, Enum):
-    """How a multiple-choice question renders its options."""
+class BetPresentation(str, Enum):
+    """How a Bet renders its options."""
 
     RADIO = "radio"
     DROPDOWN = "dropdown"
@@ -43,29 +42,44 @@ class NewPool:
     """A validated pool that has not been saved yet."""
 
     name: str
-    statement: str
+    description: str
     deadline: datetime
-    options: tuple[str, ...]
     creator: UserSummary
     decider: UserSummary
-    presentation: PoolPresentation = PoolPresentation.RADIO
+
+
+@dataclass(frozen=True)
+class NewBet:
+    statement: str
+    options: tuple[str, ...]
+    presentation: BetPresentation = BetPresentation.RADIO
+
+
+@dataclass(frozen=True)
+class Bet:
+    id: str
+    pool_id: str
+    statement: str
+    options: tuple[Outcome, ...]
+    winning_outcome_id: str | None
+    created_at: datetime
+    presentation: BetPresentation = BetPresentation.RADIO
 
 
 @dataclass(frozen=True)
 class Pool:
     id: str
     name: str
-    statement: str
+    description: str
     deadline: datetime
     creator: UserSummary
     decider: UserSummary
-    options: tuple[Outcome, ...]
-    winning_outcome_id: str | None
     created_at: datetime
-    presentation: PoolPresentation = PoolPresentation.RADIO
+    bets: tuple[Bet, ...] = ()
 
     def status(self, now: datetime | None = None) -> PoolStatus:
-        if self.winning_outcome_id is not None:
-            return PoolStatus.RESOLVED
         now = now or datetime.now(timezone.utc)
         return PoolStatus.OPEN if now < self.deadline else PoolStatus.LOCKED
+
+    def find_bet(self, bet_id: str) -> Bet | None:
+        return next((bet for bet in self.bets if bet.id == bet_id), None)

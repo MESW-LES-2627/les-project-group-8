@@ -6,13 +6,12 @@ SvelteKit 3 + TypeScript + Tailwind CSS 4, built with Vite.
 
 ```bash
 pnpm install
-cp .env.example .env  # Set API_URL to the running Flask backend (default :5000)
+cp .env.example .env  # Set API_URL to the running Flask backend (example :5001)
 pnpm dev        # http://localhost:5173
 ```
 
 `API_URL` is server-only and excludes the `/api` suffix. For example:
-`API_URL=http://127.0.0.1:5000`. If Flask uses port 5001, change this value to
-`http://127.0.0.1:5001` too. The browser submits to SvelteKit, server-side code in
+`API_URL=http://127.0.0.1:5001`. The browser submits to SvelteKit; server-side code in
 `src/lib/server/api.ts` calls Flask.
 
 `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are server-only too. `src/hooks.server.ts`
@@ -41,7 +40,7 @@ src/
 ├── hooks.server.ts       # Per-request Supabase client, verified session on locals
 ├── lib/                  # Imported via the `#lib` alias
 │   ├── assets/favicon.svg
-│   ├── components/       # Form (POST form + error banner), PoolForm, PoolCard, StatusBadge
+│   ├── components/       # Form, PoolForm/PoolCard, BetForm/BetCard, StatusBadge
 │   ├── server/api.ts     # Server-to-server Flask calls
 │   ├── server/session.ts # endSession() / clearSessionCookies(), and helpers shared by login and signup
 │   ├── account.ts        # Sign-up limits (name length, password minimum)
@@ -58,7 +57,8 @@ src/
     ├── login/              # Login page and server action (`?redirectTo=` support)
     ├── logout/             # POST-only action: signs out, redirects home
     ├── no-user/            # Where Flask's 403 lands: logged in, but the Account has no User
-    └── pools/new/          # Creation page and server action (login required)
+    ├── pools/new/          # Creates an empty Pool (login required)
+    └── pools/[id]/         # Pool detail, creator's addBet action, per-Bet pick action
 ```
 
 ## Styling with Tailwind

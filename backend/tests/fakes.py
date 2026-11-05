@@ -5,7 +5,7 @@ from dataclasses import replace
 from datetime import datetime, timezone
 
 from picks.models import Pick
-from pools.models import NewPool, Outcome, Pool
+from pools.models import Bet, NewBet, NewPool, Outcome, Pool
 from users.models import User
 
 
@@ -31,39 +31,81 @@ class FakePoolRepository:
     def get_pool(self, pool_id: str) -> Pool | None:
         return next((pool for pool in self.pools if pool.id == pool_id), None)
 
-    def create_pool(self, new_pool: NewPool) -> Pool:
+    def create_pool(
+        self,
+        new_pool: NewPool,
+    ) -> Pool:
         pool = Pool(
             id=str(uuid.uuid4()),
             name=new_pool.name,
-            statement=new_pool.statement,
+            description=new_pool.description,
             deadline=new_pool.deadline,
             creator=new_pool.creator,
             decider=new_pool.decider,
-            options=tuple(Outcome(id=str(uuid.uuid4()), label=label) for label in new_pool.options),
-            winning_outcome_id=None,
             created_at=datetime.now(timezone.utc),
-            presentation=new_pool.presentation,
         )
         self.pools.append(pool)
         return pool
+
+    def create_bet(
+        self,
+        pool_id: str,
+        new_bet: NewBet,
+    ) -> Bet:
+        bet = Bet(
+            id=str(uuid.uuid4()),
+            pool_id=pool_id,
+            statement=new_bet.statement,
+            options=tuple(
+                Outcome(id=str(uuid.uuid4()), label=label)
+                for label in new_bet.options
+            ),
+            winning_outcome_id=None,
+            created_at=datetime.now(timezone.utc),
+            presentation=new_bet.presentation,
+        )
+        for index, pool in enumerate(self.pools):
+            if pool.id == pool_id:
+                self.pools[index] = replace(pool, bets=pool.bets + (bet,))
+                return bet
+        raise AssertionError("Cannot seed a bet without its pool.")
 
 
 class FakePickRepository:
     def __init__(self):
         self.picks: dict[tuple[str, str], Pick] = {}
 
-    def get(self, pool_id: str, user_id: str) -> Pick | None:
-        return self.picks.get((pool_id, user_id))
+    def get(
+        self,
+        bet_id: str,
+        user_id: str,
+    ) -> Pick | None:
+        return self.picks.get((bet_id, user_id))
 
-    def create_or_replace(self, pool_id: str, user_id: str, outcome_id: str) -> Pick:
-        key = (pool_id, user_id)
+    def list_user_picks(
+        self,
+        bet_ids: tuple[str, ...],
+        user_id: str,
+    ) -> list[Pick]:
+        return [
+            pick for pick in self.picks.values()
+            if pick.bet_id in bet_ids and pick.user_id == user_id
+        ]
+
+    def create_or_replace(
+        self,
+        bet_id: str,
+        user_id: str,
+        outcome_id: str,
+    ) -> Pick:
+        key = (bet_id, user_id)
         existing = self.picks.get(key)
         pick = (
             replace(existing, outcome_id=outcome_id)
             if existing
             else Pick(
                 id=str(uuid.uuid4()),
-                pool_id=pool_id,
+                bet_id=bet_id,
                 user_id=user_id,
                 outcome_id=outcome_id,
                 created_at=datetime.now(timezone.utc),

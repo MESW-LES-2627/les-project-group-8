@@ -4,13 +4,14 @@ info:
   description: >
     Iteration 1 API contract. Browsing pools is public; creating one requires a
     logged-in User, who becomes its creator and decider. Users are not created
-    through the API: each Account gets its User when it signs up. Pools have two
-    to ten ordered options and a radio/dropdown presentation, and each logged-in
-    participant can save or replace exactly one pick per pool.
-  version: 0.2.0
+    through the API: each Account gets its User when it signs up. Pools are
+    created empty with one shared deadline. Their creator adds Bets with two to
+    ten ordered options and radio/dropdown presentation. Each participant can
+    save or replace one Pick per Bet. Rounds are outside this contract.
+  version: 0.3.0
 
 servers:
-  - url: http://127.0.0.1:5000/api
+  - url: http://127.0.0.1:5001/api
     description: Local Flask development server
   - url: https://les-backend-staging.onrender.com/api
     description: Staging server on Render
@@ -80,10 +81,9 @@ paths:
     post:
       summary: Create a new pool
       description: >
-        Creates a multiple-choice question (a pool in this increment) with two to
-        ten ordered options and a radio or dropdown presentation. The logged-in
-        User (from the access token) is the creator and, for now, the decider. The
-        body must not name a creator.
+        Creates an empty Pool with a name, optional description and future shared
+        deadline. The logged-in User becomes its creator and decider. Creator,
+        decider and Bet fields must not be supplied in the body.
       operationId: createPool
       security:
         - bearerAuth: []
@@ -101,7 +101,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Pool'
         '400':
-          description: Validation error (e.g., a creator_id in the body, missing fields, past deadline, or an invalid option list).
+          description: Validation error (e.g., identity or Bet fields, missing name, invalid description or past deadline).
           content:
             application/json:
               schema:
@@ -110,9 +110,9 @@ paths:
                 creatorNamed:
                   value:
                     error: "Field 'creator_id' is not accepted: the creator is the logged-in user."
-                wrongOutcomeCount:
+                embeddedBet:
                   value:
-                    error: "A question must have between 2 and 10 unique, non-empty options."
+                    error: "Pools are created empty. Add bets separately."
                 pastDeadline:
                   value:
                     error: "Field 'deadline' must be in the future."
@@ -134,7 +134,7 @@ paths:
   /pools/{pool_id}:
     get:
       summary: Get one pool
-      description: Returns the pool, its options in authored order, and its derived status.
+      description: Returns Pool metadata, its deadline-derived status and its Bets with options in authored order.
       operationId: getPool
       parameters:
         - $ref: '#/components/parameters/PoolId'
@@ -154,31 +154,80 @@ paths:
               example:
                 error: "Pool not found."
 
+  /pools/{pool_id}/bets:
+    post:
+      summary: Add a Bet to a Pool
+      description: Only the authenticated Pool creator may add Bets, strictly before the Pool deadline.
+      operationId: createBet
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PoolId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBetRequest'
+      responses:
+        '201':
+          description: Bet created with its ordered options.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bet'
+        '400':
+          description: Invalid statement, options, presentation or body; forbidden Pool/winner fields; or a closed Pool.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "A bet must have between 2 and 10 unique, non-empty options."
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          description: The Account has no User or the User is not the Pool's creator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Only the pool's creator can add bets."
+        '404':
+          description: Unknown Pool id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Pool not found."
+
   /pools/{pool_id}/picks:
     get:
-      summary: Get the logged-in User's pick
+      summary: List the logged-in User's Picks in a Pool
       description: >
-        Returns the logged-in User's saved pick for this pool, or null when they
-        have not picked.
-      operationId: getMyPick
+        Returns only this User's saved Picks for the Bets in this Pool, including
+        after the deadline. The array is empty for an empty Pool or no saved Picks.
+      operationId: listMyPicks
       security:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/PoolId'
       responses:
         '200':
-          description: The User's pick, or null.
+          description: The User's Picks for this Pool.
           content:
             application/json:
               schema:
                 type: object
                 required:
-                  - pick
+                  - picks
                 properties:
-                  pick:
-                    allOf:
-                      - $ref: '#/components/schemas/Pick'
-                    nullable: true
+                  picks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pick'
         '401':
           $ref: '#/components/responses/AuthenticationRequired'
         '403':
@@ -192,17 +241,19 @@ paths:
               example:
                 error: "Pool not found."
 
+  /pools/{pool_id}/bets/{bet_id}/picks:
     post:
       summary: Save or replace the logged-in User's pick
       description: >
-        Saves exactly one option of this pool for the logged-in User. A later pick
-        replaces the previous one instead of creating a second row. Picks are
-        refused once the deadline has passed or the pool is resolved.
+        Saves one option of this Bet for the logged-in User. A later Pick replaces
+        this User's previous Pick for the same Bet. The Bet must belong to the Pool,
+        the Pool deadline must be future and the Bet must have no winner.
       operationId: savePick
       security:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/PoolId'
+        - $ref: '#/components/parameters/BetId'
       requestBody:
         required: true
         content:
@@ -218,8 +269,8 @@ paths:
                 $ref: '#/components/schemas/Pick'
         '400':
           description: >
-            Invalid pool or option; a user_id in the body; an option from another
-            pool; a closed pool; or a body that is not a JSON object.
+            Invalid Pool, Bet or option; a user_id in the body; unrelated Bet/option
+            references; a closed Pool or Bet; or a body that is not a JSON object.
           content:
             application/json:
               schema:
@@ -230,7 +281,7 @@ paths:
                     error: "Field 'user_id' is not accepted: the participant is the logged-in user."
                 unknownOutcome:
                   value:
-                    error: "Field 'outcome_id' must be one of the pool's options."
+                    error: "Field 'outcome_id' must be one of the bet's options."
                 closedPool:
                   value:
                     error: "Picks are closed for this pool."
@@ -250,6 +301,14 @@ components:
   parameters:
     PoolId:
       name: pool_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    BetId:
+      name: bet_id
       in: path
       required: true
       schema:
@@ -278,12 +337,11 @@ components:
     CreatePoolRequest:
       type: object
       description: >
-        Must not contain creator_id (400): the creator is the logged-in User.
+        Must not contain creator_id, decider_id, statement, options, presentation
+        or bets (400). Pool creation is separate from adding Bets.
       required:
         - name
-        - statement
         - deadline
-        - options
       properties:
         name:
           type: string
@@ -291,20 +349,33 @@ components:
           maxLength: 120
           description: Title of the pool.
           example: "Champions League Final"
-        statement:
+        description:
           type: string
-          minLength: 1
           maxLength: 500
-          description: The exact prediction statement being judged.
-          example: "Real Madrid wins in 90 minutes."
+          default: ''
+          description: Optional description, trimmed before saving.
+          example: "Predictions for the final."
         deadline:
           type: string
           format: date-time
           description: ISO-8601 UTC timestamp when the pool locks. Must be in the future.
-          example: "2026-11-01T20:00:00Z"
+          example: "2030-06-01T20:00:00Z"
+
+    CreateBetRequest:
+      type: object
+      description: Must not contain pool_id, deadline, creator_id, decider_id or winning_outcome_id (400).
+      required:
+        - statement
+        - options
+      properties:
+        statement:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: "Real Madrid wins in 90 minutes."
         options:
           type: array
-          description: Two to ten distinct, non-empty option labels, in the order they should be displayed.
+          description: Two to ten non-empty labels in authored order, distinct after trimming and case folding.
           minItems: 2
           maxItems: 10
           uniqueItems: true
@@ -329,14 +400,13 @@ components:
       required:
         - id
         - name
-        - statement
+        - description
         - deadline
         - status
-        - presentation
         - creator
         - decider
-        - options
-        - winning_outcome_id
+        - bets
+        - created_at
       properties:
         id:
           type: string
@@ -345,32 +415,60 @@ components:
         name:
           type: string
           example: "Champions League Final"
-        statement:
+        description:
           type: string
-          example: "Real Madrid wins in 90 minutes."
+          example: "Predictions for the final."
         deadline:
           type: string
           format: date-time
-          example: "2026-11-01T20:00:00Z"
+          example: "2030-06-01T20:00:00Z"
         status:
           type: string
-          description: Derived on the backend from deadline and winning_outcome_id.
+          description: OPEN strictly before the shared deadline, otherwise LOCKED.
           enum:
             - OPEN
             - LOCKED
-            - RESOLVED
           example: "OPEN"
+        creator:
+          $ref: '#/components/schemas/UserSummary'
+        decider:
+          $ref: '#/components/schemas/UserSummary'
+        bets:
+          type: array
+          description: Empty when created; Bets are listed in creation order.
+          items:
+            $ref: '#/components/schemas/Bet'
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp.
+          example: "2026-10-19T20:00:00Z"
+
+    Bet:
+      type: object
+      required:
+        - id
+        - pool_id
+        - statement
+        - presentation
+        - options
+        - winning_outcome_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        pool_id:
+          type: string
+          format: uuid
+        statement:
+          type: string
+          example: "Real Madrid wins in 90 minutes."
         presentation:
           type: string
           enum:
             - radio
             - dropdown
-          description: How the options are presented.
-          example: "radio"
-        creator:
-          $ref: '#/components/schemas/UserSummary'
-        decider:
-          $ref: '#/components/schemas/UserSummary'
         options:
           type: array
           minItems: 2
@@ -381,7 +479,7 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Null until the decider resolves the pool.
+          description: Null for a new Bet; a stored winner must be one of this Bet's Outcomes.
           example: null
         created_at:
           type: string
@@ -413,14 +511,14 @@ components:
         outcome_id:
           type: string
           format: uuid
-          description: Exactly one option id that belongs to this pool.
+          description: Exactly one option id that belongs to this Bet.
           example: "11111111-2222-3333-4444-555555555551"
 
     Pick:
       type: object
       required:
         - id
-        - pool_id
+        - bet_id
         - user_id
         - outcome_id
         - created_at
@@ -429,7 +527,7 @@ components:
           type: string
           format: uuid
           example: "99999999-8888-7777-6666-555555555555"
-        pool_id:
+        bet_id:
           type: string
           format: uuid
           example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
@@ -468,4 +566,4 @@ components:
       properties:
         error:
           type: string
-          example: "A question must have between 2 and 10 unique, non-empty options."
+          example: "A bet must have between 2 and 10 unique, non-empty options."
