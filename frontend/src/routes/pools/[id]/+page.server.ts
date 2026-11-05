@@ -60,7 +60,7 @@ export async function load({
 		pool = await getPool(params.id);
 	} catch (err) {
 		if (err instanceof ApiError && err.status === 404) {
-			error(404, 'Pool not found');
+			throw error(404, 'Pool not found');
 		}
 		return {
 			pool: null,
