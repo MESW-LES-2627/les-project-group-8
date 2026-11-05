@@ -12,7 +12,7 @@
 	// Read at runtime via `$app/env/private` (declared in src/env.ts).
 	// The Supabase publishable key is public by design (never the secret key).
 	"vars": {
-		"API_URL": "https://les-backend.onrender.com",
+		"API_URL": "https://les-backend-ocd4.onrender.com",
 		"SUPABASE_URL": "https://xtaralttpdpluhkffryk.supabase.co",
 		"SUPABASE_PUBLISHABLE_KEY": "sb_publishable_ziQkPqpJg3OdkQiIHtJfTQ_tuKv3e0F"
 	},
