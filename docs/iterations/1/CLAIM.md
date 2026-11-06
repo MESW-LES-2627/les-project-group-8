@@ -24,5 +24,5 @@ with the final permalinks checked against that version.
 | Staging | [Staging app](https://les-frontend-staging.les-h.workers.dev) |
 | CI/CD Pipeline | [GitHub Actions](https://github.com/MESW-LES-2627/les-project-group-8/actions) |
 | Stories in this increment | [Iteration backlog](i01.d008-iteration-backlog.md) |
-| Retrospective | none yet |
+| Retrospective | [Iteration 1 retrospective](i01.d009-retrospective.md) |
 | AI log | [Iteration 1 AI log](i01.d005-ai-log.md) |
