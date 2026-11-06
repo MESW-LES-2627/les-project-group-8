@@ -19,6 +19,12 @@ within the same Pool.
 - **Introduce Round now:** adds a concept and table that this increment does not
   need. Rounds remain a future design decision.
 
+Update for #31: persistence creates one internal initial Round per Pool to
+support the transaction requirement. Bets remain the question model; no
+Round-management API or UI is introduced. `initial_bets` optionally saves a
+complete Pool and its Bets in one transaction; the existing frontend flow still
+starts empty and adds Bets separately.
+
 ## Consequences
 
 - Existing Pools keep their IDs and URLs. Each gets one Bet reusing the old ID;

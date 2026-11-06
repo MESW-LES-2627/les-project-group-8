@@ -39,10 +39,12 @@ pytest -v              # acceptance tests, no database needed
 
 | Variable | Value |
 | -------- | ----- |
-| `SUPABASE_URL` | Project URL (Supabase → Project Settings → API) |
-| `SUPABASE_KEY` | The **secret** key (Supabase → Project Settings → API Keys → Secret keys, `sb_secret_...`). The publishable key is refused by row-level security ([ADR 0003](docs/adr/0003-flask-is-the-only-door-to-app-tables.md)). Never expose it to the frontend or commit it |
+| `SUPABASE_URL` | Project URL used to verify Supabase Auth tokens |
+| `DATABASE_URL` | Server-only PostgreSQL URI from Supabase's **Connect** dialog, with the URL-encoded database password and `sslmode=require`. The database role must own the app tables or have `BYPASSRLS` |
 
-The app refuses to start if either variable is missing. Endpoints are described
+Both variables are required. PostgreSQL stays on Supabase and login continues
+through Supabase Auth. See [database setup](docs/database-setup.md) for migrations,
+local PostgreSQL rollback tests and staging setup. Endpoints are described
 in [docs/iterations/1/i01.d007.openapi.yaml](docs/iterations/1/i01.d007.openapi.yaml), and tests
 in [docs/iterations/1/i01.d004-testing.md](docs/iterations/1/i01.d004-testing.md).
 
@@ -58,7 +60,11 @@ the sign-up trigger (`backend/migrations/003a_create_user_on_signup.sql`).
 The #29 migration must be coordinated with the adapted backend and frontend:
 local, staging and production share one database. See
 [ADR 0004](docs/adr/0004-pools-contain-bets.md); applying the migration alone
-breaks clients of the old schema and API. Rounds remain future scope.
+breaks clients of the old schema and API. Migration
+`20261105000100_pool_transactions.sql` follows it and adds one internal initial
+round. The frontend still creates an empty Pool and adds Bets separately;
+API callers can provide `initial_bets` to save the entire structure in one
+transaction. Multiple-round management remains future scope.
 
 ## Deploying the frontend
 
@@ -136,7 +142,7 @@ frontend/
 └── vite.config.ts          # Uses @sveltejs/adapter-cloudflare
 backend/
 ├── app.py                  # create_app(): wires modules together
-├── shared/                 # Supabase client, errors, input checks
+├── shared/                 # Psycopg connections, Supabase Auth, errors, input checks
 ├── users/                  # models, service, repository, routes
 ├── pools/                  # models, service, repository, routes
 ├── picks/                  # models, service, repository, routes

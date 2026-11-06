@@ -339,6 +339,8 @@ components:
       description: >
         Must not contain creator_id, decider_id, statement, options, presentation
         or bets (400). Pool creation is separate from adding Bets.
+        Optionally provide initial_bets to save the Pool, its internal initial
+        round, Bets and options atomically. The frontend still starts empty.
       required:
         - name
         - deadline
@@ -360,6 +362,13 @@ components:
           format: date-time
           description: ISO-8601 UTC timestamp when the pool locks. Must be in the future.
           example: "2030-06-01T20:00:00Z"
+
+        initial_bets:
+          type: array
+          default: []
+          description: Optional questions to save in the pool creation transaction.
+          items:
+            $ref: '#/components/schemas/CreateBetRequest'
 
     CreateBetRequest:
       type: object

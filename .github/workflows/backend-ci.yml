@@ -15,6 +15,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: les
+          POSTGRES_PASSWORD: les
+          POSTGRES_DB: les_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U les -d les_test"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
     defaults:
       run:
         working-directory: backend
@@ -35,6 +49,7 @@ jobs:
       - name: Run tests
         run: pytest -v
         env:
+          TEST_DATABASE_URL: postgresql://les:les@127.0.0.1:5432/les_test
           # Public by design (ADR 0003); lets tests/integration check that RLS
           # refuses direct REST access. The secret key is never given to CI.
           SUPABASE_URL: https://xtaralttpdpluhkffryk.supabase.co

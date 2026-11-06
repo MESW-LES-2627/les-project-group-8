@@ -8,5 +8,10 @@ Row-level security is enabled on `users`, `pools`, `outcomes` and `picks` with *
 
 ## Consequences
 
+Update for #31: Flask now uses Psycopg and `DATABASE_URL`, with a PostgreSQL
+table-owner or `BYPASSRLS` role, instead of the Data API secret key. The same RLS
+boundary and service-level authorization apply. Database credentials remain
+server-only; Supabase Auth and the frontend session flow are unchanged.
+
 - RLS enabled with zero policies is deliberate, not an unfinished setup. Do not add permissive policies or point Flask at the publishable key: either reopens the back door.
 - The secret key must only ever live in server environments (Render, local `backend/.env`), never in the frontend or in git.

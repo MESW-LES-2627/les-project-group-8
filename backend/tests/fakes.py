@@ -45,7 +45,9 @@ class FakePoolRepository:
             created_at=datetime.now(timezone.utc),
         )
         self.pools.append(pool)
-        return pool
+        for bet in new_pool.initial_bets:
+            self.create_bet(pool.id, bet)
+        return self.get_pool(pool.id)
 
     def create_bet(
         self,

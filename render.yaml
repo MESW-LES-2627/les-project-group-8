@@ -20,7 +20,7 @@ services:
         value: "3.13"
       - key: SUPABASE_URL
         sync: false # prompted on first Blueprint sync; set in the dashboard
-      - key: SUPABASE_KEY
+      - key: DATABASE_URL
         sync: false
 
   - type: web
@@ -39,5 +39,5 @@ services:
         value: "3.13"
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_KEY
+      - key: DATABASE_URL
         sync: false

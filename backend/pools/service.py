@@ -64,7 +64,14 @@ def parse_new_pool(payload, creator: UserSummary, now: datetime | None = None) -
         deadline=_future_deadline(payload.get("deadline"), now or datetime.now(timezone.utc)),
         creator=creator,
         decider=creator,
+        initial_bets=_initial_bets(payload.get("initial_bets", [])),
     )
+
+
+def _initial_bets(raw) -> tuple[NewBet, ...]:
+    if not isinstance(raw, list):
+        raise ValidationError("Field 'initial_bets' must be an array.")
+    return tuple(parse_new_bet(bet) for bet in raw)
 
 
 def parse_new_bet(payload) -> NewBet:
