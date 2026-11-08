@@ -1,0 +1,166 @@
+@startuml VisaoDoAplicativo
+' Conceptual product vision model; independent of the current database or MVP.
+!pragma layout smetana
+top to bottom direction
+skinparam monochrome true
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 45
+skinparam ranksep 65
+skinparam defaultFontName SansSerif
+hide circle
+title Prediction Pool Application Vision — Class Diagram
+
+class User {
+  -name: String
+  -email: String
+  +createPool(): Pool
+  +join(pool: Pool): Participation
+}
+
+class Pool {
+  -title: String
+  -description: String
+  -recurring: Boolean
+  +addRound(): Round
+  +customizeTheme(): void
+  +calculateScores(): void
+}
+
+class Participation {
+  -joinedAt: DateTime
+  /totalPoints: Decimal
+  +submitPick(bet: Bet): Pick
+  +viewLeaderboard(): Leaderboard
+}
+
+class Round {
+  -name: String
+  -number: Integer
+  -pickDeadline: DateTime
+  +acceptsPicks(at: DateTime): Boolean
+  +calculateScores(): void
+}
+
+abstract class Bet {
+  -prompt: String
+  -maximumPoints: Decimal
+  +validateAnswer(value: String): Boolean
+}
+
+class MultipleChoiceBet {
+  +validateAnswer(value: String): Boolean
+}
+
+class OpenEndedBet {
+  +validateAnswer(value: String): Boolean
+}
+
+class NumericalBet {
+  -unit: String
+  +validateAnswer(value: String): Boolean
+}
+
+class ListSelectionBet {
+  -minimumSelections: Integer
+  -maximumSelections: Integer
+  +validateAnswer(value: String): Boolean
+}
+
+class Outcome {
+  -label: String
+  -order: Integer
+}
+
+class Pick {
+  -submittedAt: DateTime
+  -numericalValue: Decimal [0..1]
+  -textValue: String [0..1]
+  /earnedPoints: Decimal
+  +update(): void
+}
+
+class Result {
+  -recordedAt: DateTime
+  -numericalValue: Decimal [0..1]
+  -textValue: String [0..1]
+  +correct(): void
+}
+
+class Template {
+  -name: String
+  -description: String
+  +createPool(organizer: User): Pool
+}
+
+class Leaderboard {
+  -generatedAt: DateTime
+  +points(participation: Participation): Decimal
+  +position(participation: Participation): Integer
+  +positionChange(participation: Participation): Integer
+}
+
+class Statistics {
+  +accuracy(participation: Participation): Decimal
+  +answerFrequency(bet: Bet): Map
+  +performanceByRound(participation: Participation): Map
+}
+
+User "1" -- "0..*" Pool : organizes >
+User "1" -- "0..*" Participation : has >
+Pool "1" *-- "0..*" Participation : memberships
+Pool "0..1" *-- "1..*" Round : rounds
+Round "1" *-- "1..*" Bet : bets
+Bet <|-- MultipleChoiceBet
+Bet <|-- NumericalBet
+Bet <|-- OpenEndedBet
+Bet <|-- ListSelectionBet
+MultipleChoiceBet "0..1" *-- "2..*" Outcome : alternatives
+ListSelectionBet "0..1" *-- "1..*" Outcome : items
+Participation "1" *-- "0..*" Pick : picks
+Bet "1" -- "0..*" Pick : receives <
+Pick "0..*" -- "0..*" Outcome : selects >
+Bet "1" *-- "0..1" Result : correct answer
+Result "0..*" -- "0..*" Outcome : correct outcomes >
+User "1" -- "0..*" Result : records >
+Template "0..1" -- "0..*" Pool : used to create >
+Template "0..1" *-- "1..*" Round : predefined rounds
+Pool "1" -- "1..*" Leaderboard : leaderboards
+Round "0..1" -- "0..1" Leaderboard : optional scope
+Pool "1" -- "1" Statistics : metrics
+Leaderboard ..> Pick : calculated from
+Statistics ..> Pick : analyzes
+Statistics ..> Result : compares
+
+note left of Participation
+  One participation per user and pool.
+  Organizer and participant are roles;
+  the organizer may also participate.
+end note
+
+note right of Round
+  {xor} Each round belongs to exactly one
+  pool or template, never both.
+  One-time pool: one round.
+  Recurring pool: multiple rounds.
+end note
+
+note left of Template
+  Optional starting point with predefined rounds
+  and bets (e.g. Premier League or Oscars).
+  Creating a pool copies this structure;
+  the resulting pool can be customized independently.
+end note
+
+note left of Pick
+  At most one pick per participation and bet.
+  Both must belong to the same pool.
+end note
+
+note right of Result
+  Recorded by the pool organizer.
+  Corrections trigger score recalculation.
+end note
+
+@enduml
