@@ -26,3 +26,17 @@ _Avoid_: Question
 **Pick**:
 A User's choice of one Outcome for one Bet. Each User has at most one Pick per Bet.
 _Avoid_: Prediction, bet, vote
+
+**Decider**:
+The one User of a Pool allowed to resolve its Bets. Today the Decider is always the Pool's creator.
+_Avoid_: Judge, admin, owner
+
+**Resolution**:
+The Decider's final choice of the winning Outcome for one Bet, made once the Pool deadline has passed. A Bet is resolved at most once. Bets are resolved one by one; a Pool as a whole is never resolved.
+_Avoid_: Resolving a pool, settling, result
+
+### Scores
+
+**Record**:
+A User's wins and losses over the resolved Bets they picked on: a win when their Pick is the winning Outcome, a loss otherwise. Bets without a Resolution don't count.
+_Avoid_: Score, standings, stats

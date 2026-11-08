@@ -7,8 +7,11 @@ info:
     through the API: each Account gets its User when it signs up. Pools are
     created empty with one shared deadline. Their creator adds Bets with two to
     ten ordered options and radio/dropdown presentation. Each participant can
-    save or replace one Pick per Bet. Rounds are outside this contract.
-  version: 0.3.0
+    save or replace one Pick per Bet. Once the deadline has passed, everyone's
+    Picks are visible and the Pool's decider resolves each Bet by choosing its
+    winning Outcome, once. A User's Record counts wins and losses over resolved
+    Bets. Rounds are outside this contract.
+  version: 0.4.0
 
 servers:
   - url: http://127.0.0.1:5001/api
@@ -205,18 +208,20 @@ paths:
 
   /pools/{pool_id}/picks:
     get:
-      summary: List the logged-in User's Picks in a Pool
+      summary: List the Picks in a Pool
       description: >
-        Returns only this User's saved Picks for the Bets in this Pool, including
-        after the deadline. The array is empty for an empty Pool or no saved Picks.
-      operationId: listMyPicks
+        Strictly before the deadline, returns only the logged-in User's Picks
+        (US16). From the deadline on, returns every User's Picks for the Bets in
+        this Pool (US15), which is also how a client finds who picked a Bet's
+        winning Outcome (US23). The array is empty for an empty Pool or no Picks.
+      operationId: listPicks
       security:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/PoolId'
       responses:
         '200':
-          description: The User's Picks for this Pool.
+          description: The visible Picks for this Pool.
           content:
             application/json:
               schema:
@@ -289,6 +294,106 @@ paths:
           $ref: '#/components/responses/AuthenticationRequired'
         '403':
           $ref: '#/components/responses/NoUserForAccount'
+
+  /pools/{pool_id}/bets/{bet_id}/resolve:
+    post:
+      summary: Resolve a Bet by choosing its winning Outcome
+      description: >
+        Only the Pool's decider may resolve, only once the Pool deadline has
+        passed (at or after it), and only once per Bet. The winner must be one of
+        this Bet's Outcomes.
+      operationId: resolveBet
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PoolId'
+        - $ref: '#/components/parameters/BetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveBetRequest'
+      responses:
+        '200':
+          description: The resolved Bet, with its winning_outcome_id set.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bet'
+        '400':
+          description: >
+            Missing, malformed or unknown winning_outcome_id, or one from another
+            Bet (US17); the deadline is still in the future (US19); or a body that
+            is not a JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notAnOption:
+                  value:
+                    error: "Field 'winning_outcome_id' must be one of the bet's options."
+                tooEarly:
+                  value:
+                    error: "This bet cannot be resolved before the pool deadline."
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          description: The logged-in User is not the Pool's decider (US18), or the Account has no User.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Only the pool's decider can resolve its bets."
+        '404':
+          description: Unknown pool or bet id, or a Bet that is not in this Pool (US18).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Bet not found."
+        '409':
+          description: The Bet already has a winner; it is left unchanged (US20).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "This bet is already resolved."
+
+  /users/{user_id}/score:
+    get:
+      summary: Get a User's Record
+      description: >
+        Counts the resolved Bets this User picked on: a win when the Pick is the
+        winning Outcome, a loss otherwise. Bets without a winner are not counted.
+        Public, like browsing pools (US22, US24).
+      operationId: getRecord
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The User's Record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '404':
+          description: Unknown or malformed user id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "User not found."
 
 components:
   securitySchemes:
@@ -514,12 +619,42 @@ components:
           description: Exactly one option id that belongs to this Bet.
           example: "11111111-2222-3333-4444-555555555551"
 
+    ResolveBetRequest:
+      type: object
+      required:
+        - winning_outcome_id
+      properties:
+        winning_outcome_id:
+          type: string
+          format: uuid
+          description: One option id that belongs to this Bet.
+          example: "11111111-2222-3333-4444-555555555551"
+
+    Record:
+      type: object
+      required:
+        - user
+        - wins
+        - losses
+      properties:
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        wins:
+          type: integer
+          minimum: 0
+          example: 3
+        losses:
+          type: integer
+          minimum: 0
+          example: 1
+
     Pick:
       type: object
       required:
         - id
         - bet_id
         - user_id
+        - user
         - outcome_id
         - created_at
       properties:
@@ -535,6 +670,8 @@ components:
           type: string
           format: uuid
           example: "00000000-0000-0000-0000-000000000001"
+        user:
+          $ref: '#/components/schemas/UserSummary'
         outcome_id:
           type: string
           format: uuid
