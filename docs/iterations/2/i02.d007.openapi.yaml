@@ -9,8 +9,9 @@ info:
     ten ordered options and radio/dropdown presentation. Each participant can
     save or replace one Pick per Bet. Once the deadline has passed, everyone's
     Picks are visible and the Pool's decider resolves each Bet by choosing its
-    winning Outcome, once. A User's Record counts wins and losses over resolved
-    Bets. Rounds are outside this contract.
+    winning Outcome, once. Each Pool has a Leaderboard of its participants'
+    Records: wins and losses over its resolved Bets. Rounds are outside this
+    contract.
   version: 0.4.0
 
 servers:
@@ -364,36 +365,35 @@ paths:
               example:
                 error: "This bet is already resolved."
 
-  /users/{user_id}/score:
+  /pools/{pool_id}/leaderboard:
     get:
-      summary: Get a User's Record
+      summary: Get a pool's Leaderboard
       description: >
-        Counts the resolved Bets this User picked on: a win when the Pick is the
-        winning Outcome, a loss otherwise. Bets without a winner are not counted.
-        Public, like browsing pools (US22, US24).
-      operationId: getRecord
+        One Record per User with a Pick in this Pool, counted over its resolved
+        Bets: a win when the Pick is the winning Outcome, a loss otherwise. Bets
+        without a winner are not counted. Ordered by most wins, then fewest
+        losses; Users with equal wins and losses share a rank (1, 2, 2, 4).
+        Public, like getPool (US22, US24, US31).
+      operationId: getLeaderboard
       parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/PoolId'
       responses:
         '200':
-          description: The User's Record.
+          description: The Leaderboard; empty when the Pool has no Picks.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Record'
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaderboardEntry'
         '404':
-          description: Unknown or malformed user id.
+          description: Unknown pool id.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "User not found."
+                error: "Pool not found."
 
 components:
   securitySchemes:
@@ -630,12 +630,14 @@ components:
           description: One option id that belongs to this Bet.
           example: "11111111-2222-3333-4444-555555555551"
 
-    Record:
+    LeaderboardEntry:
       type: object
+      description: One User's Record in one Pool, with their rank.
       required:
         - user
         - wins
         - losses
+        - rank
       properties:
         user:
           $ref: '#/components/schemas/UserSummary'
@@ -646,6 +648,10 @@ components:
         losses:
           type: integer
           minimum: 0
+          example: 1
+        rank:
+          type: integer
+          minimum: 1
           example: 1
 
     Pick:

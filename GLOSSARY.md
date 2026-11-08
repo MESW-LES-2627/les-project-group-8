@@ -38,5 +38,9 @@ _Avoid_: Resolving a pool, settling, result
 ### Scores
 
 **Record**:
-A User's wins and losses over the resolved Bets they picked on: a win when their Pick is the winning Outcome, a loss otherwise. Bets without a Resolution don't count.
-_Avoid_: Score, standings, stats
+A User's wins and losses over the resolved Bets they picked on within a set of Pools, usually a single Pool: a win when their Pick is the winning Outcome, a loss otherwise. Bets without a Resolution don't count.
+_Avoid_: Score, stats
+
+**Leaderboard**:
+The Users with a Pick in a Pool, ordered by their Records in that Pool: most wins first, then fewest losses. Users with equal wins and losses share a rank.
+_Avoid_: Standings, ranking, results
