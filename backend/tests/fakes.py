@@ -72,7 +72,8 @@ class FakePoolRepository:
 
 
 class FakePickRepository:
-    def __init__(self):
+    def __init__(self, users: FakeUserRepository):
+        self._users = users
         self.picks: dict[tuple[str, str], Pick] = {}
 
     def get(
@@ -82,14 +83,15 @@ class FakePickRepository:
     ) -> Pick | None:
         return self.picks.get((bet_id, user_id))
 
-    def list_user_picks(
+    def list_picks(
         self,
         bet_ids: tuple[str, ...],
-        user_id: str,
+        user_id: str | None = None,
     ) -> list[Pick]:
         return [
-            pick for pick in self.picks.values()
-            if pick.bet_id in bet_ids and pick.user_id == user_id
+            replace(pick, user=self._users.get(pick.user_id))
+            for pick in self.picks.values()
+            if pick.bet_id in bet_ids and (user_id is None or pick.user_id == user_id)
         ]
 
     def create_or_replace(
@@ -109,6 +111,7 @@ class FakePickRepository:
                 user_id=user_id,
                 outcome_id=outcome_id,
                 created_at=datetime.now(timezone.utc),
+                user=self._users.get(user_id),
             )
         )
         self.picks[key] = pick

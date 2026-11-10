@@ -2,24 +2,26 @@
 
 from datetime import datetime
 
+from users.models import User
+
 from .models import Pick
 
-_PICK_COLUMNS = "id, bet_id, user_id, outcome_id, created_at"
+_PICK_COLUMNS = "id, bet_id, user_id, outcome_id, created_at, user:users!user_id(id, name)"
 
 
 class SupabasePickRepository:
     def __init__(self, client):
         self._db = client
 
-    def list_user_picks(self, bet_ids: tuple[str, ...], user_id: str) -> list[Pick]:
-        rows = (
+    def list_picks(self, bet_ids: tuple[str, ...], user_id: str | None = None) -> list[Pick]:
+        query = (
             self._db.table("picks")
             .select(_PICK_COLUMNS)
             .in_("bet_id", list(bet_ids))
-            .eq("user_id", user_id)
-            .execute()
-            .data
         )
+        if user_id is not None:
+            query = query.eq("user_id", user_id)
+        rows = query.order("created_at").order("id").execute().data
         return [_to_pick(row) for row in rows]
 
     def create_or_replace(self, bet_id: str, user_id: str, outcome_id: str) -> Pick:
@@ -29,6 +31,7 @@ class SupabasePickRepository:
                 {"bet_id": bet_id, "user_id": user_id, "outcome_id": outcome_id},
                 on_conflict="bet_id,user_id",
             )
+            .select(_PICK_COLUMNS)
             .execute()
             .data[0]
         )
@@ -42,4 +45,5 @@ def _to_pick(row: dict) -> Pick:
         user_id=str(row["user_id"]),
         outcome_id=str(row["outcome_id"]),
         created_at=datetime.fromisoformat(row["created_at"]),
+        user=User(id=str(row["user"]["id"]), name=row["user"]["name"]),
     )

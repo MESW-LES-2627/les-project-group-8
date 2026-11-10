@@ -34,7 +34,7 @@
 	{/if}
 	{#if data.pickLoadError}
 		<p role="alert" class="mt-6 border border-black px-3 py-2 text-sm">
-			Could not load your saved picks: {data.pickLoadError}
+			Could not load picks: {data.pickLoadError}
 		</p>
 	{/if}
 	{#if form?.action === 'pick' && !pool.bets.some((bet) => bet.id === form?.betId)}
@@ -50,7 +50,7 @@
 			<BetCard
 				{bet}
 				poolStatus={pool.status}
-				pick={data.picks.find((pick) => pick.bet_id === bet.id)}
+				pick={data.picks.find((pick) => pick.bet_id === bet.id && pick.user_id === data.user?.id)}
 				loggedIn={data.loggedIn}
 				user={data.user}
 				loginHref={`/login?redirectTo=${encodeURIComponent(`/pools/${pool.id}`)}`}

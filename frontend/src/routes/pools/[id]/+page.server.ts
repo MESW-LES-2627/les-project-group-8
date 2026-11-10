@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { readField } from '#lib/form.ts';
 import { loginPath } from '#lib/redirect.ts';
-import { ApiError, createBet, getMyPicks, getPool, savePick } from '#lib/server/api.ts';
+import { ApiError, createBet, listPicks, getPool, savePick } from '#lib/server/api.ts';
 import { clearSessionCookies, endSession } from '#lib/server/session.ts';
 import type { BetPresentation, CreateBetInput, Pick, Pool } from '#lib/types.ts';
 
@@ -75,13 +75,13 @@ export async function load({
 	let pickLoadError: string | null = null;
 	if (locals.session) {
 		try {
-			picks = await getMyPicks(pool.id, locals.session.access_token);
+			picks = await listPicks(pool.id, locals.session.access_token);
 		} catch (err) {
 			if (err instanceof ApiError && err.status === 401) {
 				clearSessionCookies(cookies);
 				locals.session = null;
 			} else if (!(err instanceof ApiError && err.status === 403)) {
-				pickLoadError = err instanceof Error ? err.message : 'Could not load your picks.';
+				pickLoadError = err instanceof Error ? err.message : 'Could not load picks.';
 			}
 		}
 	}

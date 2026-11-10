@@ -20,8 +20,8 @@ def pool_repo():
 
 
 @pytest.fixture
-def pick_repo():
-    return FakePickRepository()
+def pick_repo(user_repo):
+    return FakePickRepository(user_repo)
 
 
 @pytest.fixture
