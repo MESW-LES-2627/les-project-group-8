@@ -83,15 +83,21 @@ class FakePickRepository:
     ) -> Pick | None:
         return self.picks.get((bet_id, user_id))
 
-    def list_picks(
+    def list_user_picks(
         self,
         bet_ids: tuple[str, ...],
-        user_id: str | None = None,
+        user_id: str,
+    ) -> list[Pick]:
+        return [pick for pick in self.list_all_picks(bet_ids) if pick.user_id == user_id]
+
+    def list_all_picks(
+        self,
+        bet_ids: tuple[str, ...],
     ) -> list[Pick]:
         return [
             replace(pick, user=self._users.get(pick.user_id))
             for pick in self.picks.values()
-            if pick.bet_id in bet_ids and (user_id is None or pick.user_id == user_id)
+            if pick.bet_id in bet_ids
         ]
 
     def create_or_replace(
