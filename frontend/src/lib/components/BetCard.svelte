@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
+	import BetPicks from '#lib/components/BetPicks.svelte';
 	import { inputClass, labelClass, submitClass } from '#lib/form.ts';
 	import type { Bet, BetStatus, Pick, PoolStatus, UserSummary } from '#lib/types.ts';
 
@@ -117,4 +118,5 @@
 			<p class="mt-3 text-sm text-neutral-600">You did not pick an option.</p>
 		{/if}
 	{/if}
+	<BetPicks {bet} />
 </article>

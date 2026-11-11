@@ -119,8 +119,8 @@ export function createBet(
 	});
 }
 
-/** Only the logged-in User's picks for the bets in this pool. */
-export async function getMyPicks(
+/** Own picks before the deadline; everyone's picks from the deadline on. */
+export async function listPicks(
 	poolId: string,
 	accessToken: string
 ): Promise<Pick[]> {
