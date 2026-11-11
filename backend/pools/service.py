@@ -55,6 +55,24 @@ class PoolService:
                 raise ValidationError(f"Field '{field}' is not accepted when adding a bet.")
         return self._repository.create_bet(pool.id, parse_new_bet(payload))
 
+    def resolve_bet(self, pool_id, bet_id, payload) -> Bet:
+        payload = require_json_object(payload)
+        pool = self.get_pool(pool_id)
+        bet = pool.find_bet(str(bet_id))
+        if bet is None:
+            raise NotFoundError("Bet not found.")
+
+        outcome_id = payload.get("winning_outcome_id")
+        if not isinstance(outcome_id, str) or outcome_id not in {
+            option.id for option in bet.options
+        }:
+            raise ValidationError("Field 'winning_outcome_id' must be one of the bet's options.")
+
+        resolved = self._repository.resolve_bet(pool.id, bet.id, outcome_id)
+        if resolved is None:
+            raise NotFoundError("Bet not found.")
+        return resolved
+
 
 def parse_new_pool(payload, creator: UserSummary, now: datetime | None = None) -> NewPool:
     payload = require_json_object(payload)

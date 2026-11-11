@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import BetPicks from '#lib/components/BetPicks.svelte';
+	import ResolveControl from '#lib/components/ResolveControl.svelte';
 	import { inputClass, labelClass, submitClass } from '#lib/form.ts';
 	import type { Bet, BetStatus, Pick, PoolStatus, UserSummary } from '#lib/types.ts';
 
@@ -119,4 +120,5 @@
 		{/if}
 	{/if}
 	<BetPicks {bet} />
+	<ResolveControl {bet} />
 </article>

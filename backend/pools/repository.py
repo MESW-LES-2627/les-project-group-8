@@ -54,6 +54,18 @@ class SupabasePoolRepository:
         )
         return _to_pool(row)
 
+    def resolve_bet(self, pool_id: str, bet_id: str, winning_outcome_id: str) -> Bet | None:
+        rows = (
+            self._db.table("bets")
+            .update({"winning_outcome_id": winning_outcome_id})
+            .eq("pool_id", pool_id)
+            .eq("id", bet_id)
+            .select(_BET_COLUMNS)
+            .execute()
+            .data
+        )
+        return _to_bet(rows[0]) if rows else None
+
     def create_bet(self, pool_id: str, new_bet: NewBet) -> Bet:
         bet_id = self._db.table("bets").insert({
             "pool_id": pool_id,

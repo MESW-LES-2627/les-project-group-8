@@ -70,6 +70,19 @@ class FakePoolRepository:
                 return bet
         raise AssertionError("Cannot seed a bet without its pool.")
 
+    def resolve_bet(self, pool_id: str, bet_id: str, winning_outcome_id: str) -> Bet | None:
+        for index, pool in enumerate(self.pools):
+            if pool.id == pool_id:
+                bet = pool.find_bet(bet_id)
+                if bet is None:
+                    return None
+                resolved = replace(bet, winning_outcome_id=winning_outcome_id)
+                self.pools[index] = replace(
+                    pool, bets=tuple(resolved if item.id == bet_id else item for item in pool.bets),
+                )
+                return resolved
+        return None
+
 
 class FakePickRepository:
     def __init__(self, users: FakeUserRepository):

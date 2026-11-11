@@ -219,7 +219,7 @@ so a client cannot impersonate another User by changing an id.
 
 ## Not done yet (on purpose)
 
-- **Resolution and scores.** No endpoint sets a Bet's winning Outcome yet; Pool status follows only its shared deadline (`OPEN` / `LOCKED`).
+- **Resolution restrictions and scores.** US17 stores a Bet's winning Outcome through `PoolService`; its resolved state is derived from that winner. Decider-only access, deadline enforcement and protection against replacing a winner remain US18–US20. Pool status still follows its shared deadline (`OPEN` / `LOCKED`); scores remain future scope.
 - **Rounds.** A future design decision; #29 introduces no Round table.
 - **Transactions.** Deferred to #31. The #29 migration removes the unused `002_create_pool_fn.sql` function if installed.
 
