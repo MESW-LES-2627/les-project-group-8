@@ -119,6 +119,19 @@ export function createBet(
 	});
 }
 
+export function resolveBet(
+	poolId: string,
+	betId: string,
+	winningOutcomeId: string,
+	accessToken: string
+): Promise<Bet> {
+	return request<Bet>(`/pools/${encodeURIComponent(poolId)}/bets/${encodeURIComponent(betId)}/resolve`, {
+		method: 'POST',
+		body: { winning_outcome_id: winningOutcomeId },
+		accessToken
+	});
+}
+
 /** Own picks before the deadline; everyone's picks from the deadline on. */
 export async function listPicks(
 	poolId: string,
