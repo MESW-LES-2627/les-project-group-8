@@ -215,11 +215,15 @@ so a client cannot impersonate another User by changing an id.
 3. Build it in `create_app()` and register its blueprint.
 4. Add a fake to `tests/fakes.py`, write the user story with acceptance criteria, and add one acceptance test per criterion.
 
-`picks/` is a worked example of these four steps.
+`picks/` and `scores/` are worked examples of these four steps. `ScoreService`
+checks the Pool through `PoolService`; its repository joins Picks, Bets and Users
+as a read projection. The public leaderboard counts only Picks on Bets with a
+winner, orders by wins descending and losses ascending, and shares competition
+ranks for equal records (1, 2, 2, 4).
 
 ## Not done yet (on purpose)
 
-- **Resolution restrictions and scores.** US17 stores a Bet's winning Outcome through `PoolService`; its resolved state is derived from that winner. Decider-only access, deadline enforcement and protection against replacing a winner remain US18–US20. Pool status still follows its shared deadline (`OPEN` / `LOCKED`); scores remain future scope.
+- **Resolution restrictions.** US17 stores a Bet's winning Outcome through `PoolService`; its resolved state is derived from that winner. Decider-only access, deadline enforcement and protection against replacing a winner remain US18–US20. Pool status still follows its shared deadline (`OPEN` / `LOCKED`).
 - **Rounds.** A future design decision; #29 introduces no Round table.
 - **Transactions.** Deferred to #31. The #29 migration removes the unused `002_create_pool_fn.sql` function if installed.
 

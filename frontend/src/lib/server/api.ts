@@ -1,5 +1,5 @@
 import { API_URL } from '$app/env/private';
-import type { Bet, CreateBetInput, CreatePoolInput, Pick, Pool, UserSummary } from '#lib/types.ts';
+import type { Bet, CreateBetInput, CreatePoolInput, LeaderboardEntry, Pick, Pool, UserSummary } from '#lib/types.ts';
 
 const TIMEOUT_MS = 15_000;
 
@@ -88,6 +88,10 @@ export function listPools(): Promise<Pool[]> {
 
 export function getPool(poolId: string): Promise<Pool> {
 	return request<Pool>(`/pools/${encodeURIComponent(poolId)}`);
+}
+
+export function getLeaderboard(poolId: string): Promise<LeaderboardEntry[]> {
+	return request<LeaderboardEntry[]>(`/pools/${encodeURIComponent(poolId)}/leaderboard`);
 }
 
 /** The User the access token belongs to. */

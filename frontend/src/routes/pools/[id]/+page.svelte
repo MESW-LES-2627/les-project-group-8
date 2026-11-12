@@ -1,6 +1,7 @@
 <script lang="ts">
 	import BetCard from '#lib/components/BetCard.svelte';
 	import BetForm from '#lib/components/BetForm.svelte';
+	import Leaderboard from '#lib/components/Leaderboard.svelte';
 	import StatusBadge from '#lib/components/StatusBadge.svelte';
 	import { formatDeadline } from '#lib/format.ts';
 	import type { PageProps } from './$types';
@@ -58,6 +59,14 @@
 			/>
 		{/each}
 	</section>
+
+	{#if data.leaderboardLoadError}
+		<p role="alert" class="mt-8 border border-black px-3 py-2 text-sm">
+			Could not load leaderboard: {data.leaderboardLoadError}
+		</p>
+	{:else}
+		<Leaderboard entries={data.leaderboard} currentUserId={data.user?.id ?? null} />
+	{/if}
 
 	{#if data.user?.id === pool.creator.id}
 		<section class="mt-10 border-t border-black pt-6" aria-labelledby="add-bet-heading">

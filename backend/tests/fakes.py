@@ -6,7 +6,26 @@ from datetime import datetime, timezone
 
 from picks.models import Pick
 from pools.models import Bet, NewBet, NewPool, Outcome, Pool
+from scores.models import ScoringPick
 from users.models import User
+
+
+class FakeScoreRepository:
+    def __init__(self, pools, picks):
+        self._pools = pools
+        self._picks = picks
+
+    def list_scoring_picks(self, pool_id: str) -> list[ScoringPick]:
+        pool = self._pools.get_pool(pool_id)
+        return [
+            ScoringPick(
+                user_id=pick.user_id,
+                user_name=pick.user.name,
+                outcome_id=pick.outcome_id,
+                winning_outcome_id=pool.find_bet(pick.bet_id).winning_outcome_id,
+            )
+            for pick in self._picks.list_all_picks(tuple(bet.id for bet in pool.bets))
+        ]
 
 
 class FakeUserRepository:
