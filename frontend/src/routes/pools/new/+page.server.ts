@@ -1,28 +1,17 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { GUEST_USER_ID } from '../../../lib/constants';
-import { ApiError, createPool } from '../../../lib/server/api';
-import type { CreatePoolInput } from '../../../lib/types';
+import { readField } from '#lib/form.ts';
+import { loginPath } from '#lib/redirect.ts';
+import { ApiError, createPool } from '#lib/server/api.ts';
+import { endSession } from '#lib/server/session.ts';
+import type { CreatePoolInput, Pool } from '#lib/types.ts';
 
 type FieldErrors = {
 	name?: string;
-	statement?: string;
-	option1?: string;
-	option2?: string;
+	description?: string;
 	deadline?: string;
 };
 
-function read(form: FormData, key: string): string {
-	const value = form.get(key);
-	return typeof value === 'string' ? value.trim() : '';
-}
-
-function validate(values: {
-	name: string;
-	statement: string;
-	deadline: string;
-	option1: string;
-	option2: string;
-}): { errors: FieldErrors; input?: CreatePoolInput } {
+function validate(values: CreatePoolInput): { errors: FieldErrors; input?: CreatePoolInput } {
 	const errors: FieldErrors = {};
 
 	if (!values.name) {
@@ -31,30 +20,8 @@ function validate(values: {
 		errors.name = 'Name must be at most 120 characters.';
 	}
 
-	if (!values.statement) {
-		errors.statement = 'Statement cannot be empty.';
-	} else if (values.statement.length > 500) {
-		errors.statement = 'Statement must be at most 500 characters.';
-	}
-
-	if (!values.option1) {
-		errors.option1 = 'Option A cannot be empty.';
-	} else if (values.option1.length > 100) {
-		errors.option1 = 'Option A must be at most 100 characters.';
-	}
-
-	if (!values.option2) {
-		errors.option2 = 'Option B cannot be empty.';
-	} else if (values.option2.length > 100) {
-		errors.option2 = 'Option B must be at most 100 characters.';
-	}
-
-	if (
-		!errors.option1 &&
-		!errors.option2 &&
-		values.option1.toLowerCase() === values.option2.toLowerCase()
-	) {
-		errors.option2 = 'Options must be different.';
+	if (values.description.length > 500) {
+		errors.description = 'Description must be at most 500 characters.';
 	}
 
 	let deadline = '';
@@ -74,47 +41,64 @@ function validate(values: {
 	if (Object.keys(errors).length > 0) {
 		return { errors };
 	}
+	return { errors, input: { ...values, deadline } };
+}
 
-	return {
-		errors,
-		input: {
-			creator_id: GUEST_USER_ID,
-			name: values.name,
-			statement: values.statement,
-			deadline,
-			options: [values.option1, values.option2]
-		}
-	};
+export function load({
+	locals,
+	url
+}) {
+	if (!locals.session) {
+		redirect(303, loginPath(url));
+	}
 }
 
 export const actions = {
-	default: async ({ request }) => {
-		const form = await request.formData();
-		const values = {
-			name: read(form, 'name'),
-			statement: read(form, 'statement'),
-			deadline: read(form, 'deadline'),
-			option1: read(form, 'option1'),
-			option2: read(form, 'option2')
-		};
-
-		const { errors, input } = validate(values);
-		if (!input) {
-			return fail(400, { error: 'Please fix the errors below.', fields: errors, values });
+	default: async ({
+		request,
+		locals,
+		cookies,
+		url
+	}) => {
+		if (!locals.session) {
+			redirect(303, loginPath(url));
 		}
 
-		try {
-			await createPool(input);
-		} catch (error) {
-			if (error instanceof ApiError && error.status === 400) {
-				return fail(400, { error: error.message, values });
-			}
-			return fail(502, {
-				error: error instanceof Error ? error.message : 'Could not save the pool.',
+		const form = await request.formData();
+		const values = {
+			name: readField(form, 'name').trim(),
+			description: readField(form, 'description').trim(),
+			deadline: readField(form, 'deadline').trim()
+		};
+		const { errors, input } = validate(values);
+		if (!input) {
+			return fail(400, {
+				error: 'Please fix the errors below.',
+				fields: errors,
 				values
 			});
 		}
 
-		redirect(303, '/?created=1');
+		let pool: Pool;
+		try {
+			pool = await createPool(input, locals.session.access_token);
+		} catch (err) {
+			if (err instanceof ApiError && err.status === 401) {
+				await endSession(locals, cookies);
+				redirect(303, loginPath(url));
+			}
+			if (err instanceof ApiError && err.status === 403) {
+				redirect(303, '/no-user');
+			}
+			if (err instanceof ApiError && err.status === 400) {
+				return fail(400, { error: err.message, values });
+			}
+			return fail(502, {
+				error: err instanceof Error ? err.message : 'Could not save the pool.',
+				values
+			});
+		}
+
+		redirect(303, `/pools/${pool.id}?created=1`);
 	}
 };

@@ -1,12 +1,15 @@
 import { API_URL } from '$app/env/private';
-import type { CreatePoolInput, Pool } from '../types';
+import type { Bet, CreateBetInput, CreatePoolInput, Pick, Pool, UserSummary } from '#lib/types.ts';
 
 const TIMEOUT_MS = 15_000;
 
 export class ApiError extends Error {
 	status: number;
 
-	constructor(message: string, status: number) {
+	constructor(
+		message: string,
+		status: number
+	) {
 		super(message);
 		this.name = 'ApiError';
 		this.status = status;
@@ -21,17 +24,37 @@ function apiBase(): string {
 	return `${API_URL.replace(/\/+$/, '')}/api`;
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+type RequestOptions = {
+	method?: 'GET' | 'POST';
+	/** Sent as JSON. */
+	body?: unknown;
+	/** The logged-in Account's Supabase access token; Flask verifies it (ADR 0001). */
+	accessToken?: string;
+};
+
+async function request<T>(
+	path: string,
+	{
+		method = 'GET',
+		body,
+		accessToken
+	}: RequestOptions = {}
+): Promise<T> {
 	const url = `${apiBase()}${path}`;
-	const headers = new Headers(init?.headers);
-	headers.set('accept', 'application/json');
-	if (init?.body) headers.set('content-type', 'application/json');
+	const headers = new Headers({ accept: 'application/json' });
+	if (body !== undefined) {
+		headers.set('content-type', 'application/json');
+	}
+	if (accessToken) {
+		headers.set('authorization', `Bearer ${accessToken}`);
+	}
 
 	let response: Response;
 	try {
 		response = await fetch(url, {
-			...init,
+			method,
 			headers,
+			body: body === undefined ? undefined : JSON.stringify(body),
 			signal: AbortSignal.timeout(TIMEOUT_MS)
 		});
 	} catch {
@@ -39,33 +62,98 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 	}
 
 	const text = await response.text();
-	let body: unknown = null;
+	let data: unknown = null;
 	if (text) {
 		try {
-			body = JSON.parse(text);
+			data = JSON.parse(text);
 		} catch {
-			body = null;
+			data = null;
 		}
 	}
 
 	if (!response.ok) {
 		const message =
-			body && typeof body === 'object' && 'error' in body
-				? String((body as { error: unknown }).error)
+			data && typeof data === 'object' && 'error' in data
+				? String((data as { error: unknown }).error)
 				: `The backend returned ${response.status}.`;
 		throw new ApiError(message, response.status);
 	}
 
-	return body as T;
+	return data as T;
 }
 
 export function listPools(): Promise<Pool[]> {
 	return request<Pool[]>('/pools');
 }
 
-export function createPool(input: CreatePoolInput): Promise<Pool> {
+export function getPool(poolId: string): Promise<Pool> {
+	return request<Pool>(`/pools/${encodeURIComponent(poolId)}`);
+}
+
+/** The User the access token belongs to. */
+export function getCurrentUser(accessToken: string): Promise<UserSummary> {
+	return request<UserSummary>('/me', { accessToken });
+}
+
+/** Flask makes the token's User the creator and decider. */
+export function createPool(
+	input: CreatePoolInput,
+	accessToken: string
+): Promise<Pool> {
 	return request<Pool>('/pools', {
 		method: 'POST',
-		body: JSON.stringify(input)
+		body: input,
+		accessToken
+	});
+}
+
+export function createBet(
+	poolId: string,
+	input: CreateBetInput,
+	accessToken: string
+): Promise<Bet> {
+	return request<Bet>(`/pools/${encodeURIComponent(poolId)}/bets`, {
+		method: 'POST',
+		body: input,
+		accessToken
+	});
+}
+
+export function resolveBet(
+	poolId: string,
+	betId: string,
+	winningOutcomeId: string,
+	accessToken: string
+): Promise<Bet> {
+	return request<Bet>(`/pools/${encodeURIComponent(poolId)}/bets/${encodeURIComponent(betId)}/resolve`, {
+		method: 'POST',
+		body: { winning_outcome_id: winningOutcomeId },
+		accessToken
+	});
+}
+
+/** Own picks before the deadline; everyone's picks from the deadline on. */
+export async function listPicks(
+	poolId: string,
+	accessToken: string
+): Promise<Pick[]> {
+	const body = await request<{ picks: Pick[] }>(
+		`/pools/${encodeURIComponent(poolId)}/picks`,
+		{ accessToken }
+	);
+	return body.picks;
+}
+
+/** Saves or replaces the logged-in User's pick. */
+export function savePick(
+	poolId: string,
+	betId: string,
+	outcomeId: string,
+	accessToken: string
+): Promise<Pick> {
+	return request<Pick>(`/pools/${encodeURIComponent(poolId)}/bets/${encodeURIComponent(betId)}/picks`, {
+		method: 'POST',
+		body: { outcome_id: outcomeId },
+		accessToken
 	});
 }

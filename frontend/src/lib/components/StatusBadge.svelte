@@ -5,8 +5,7 @@
 
 	const styles: Record<PoolStatus, string> = {
 		OPEN: 'bg-black text-white',
-		LOCKED: 'bg-white text-black',
-		RESOLVED: 'bg-neutral-200 text-black'
+		LOCKED: 'bg-white text-black'
 	};
 </script>
 
@@ -15,5 +14,5 @@
 		status
 	]}"
 >
-	{status}
+	{status === 'OPEN' ? 'Picks open' : 'Picks closed'}
 </span>

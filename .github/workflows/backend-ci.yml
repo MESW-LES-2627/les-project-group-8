@@ -12,6 +12,11 @@ on:
       - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
 
+# A new push to a PR cancels its older run; pushes to main/staging always finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -34,3 +39,8 @@ jobs:
 
       - name: Run tests
         run: pytest -v
+        env:
+          # Public by design (ADR 0003); lets tests/integration check that RLS
+          # refuses direct REST access. The secret key is never given to CI.
+          SUPABASE_URL: https://xtaralttpdpluhkffryk.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_ziQkPqpJg3OdkQiIHtJfTQ_tuKv3e0F
