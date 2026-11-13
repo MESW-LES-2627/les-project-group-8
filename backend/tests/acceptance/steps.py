@@ -108,3 +108,23 @@ def pick_payload(outcome_id: str) -> dict:
 
 def iso(moment: datetime) -> str:
     return moment.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def seed_pick(client, pool_repo, pick_repo, user, pool, headers, *, winner=None, choice=0) -> dict:
+    """Add a Bet as the Pool's creator, store the User's Pick on it, and resolve it if `winner` is set."""
+    bet = create_bet(client, pool["id"], headers)
+    pick_repo.create_or_replace(bet["id"], user.id, bet["options"][choice]["id"])
+    if winner is not None:
+        pool_repo.resolve_bet(pool["id"], bet["id"], bet["options"][winner]["id"])
+    return bet
+
+
+def leaderboard(client, pool) -> list:
+    # Public: deliberately no Authorization header.
+    response = client.get(f"/api/pools/{pool['id']}/leaderboard")
+    assert response.status_code == 200
+    return response.get_json()
+
+
+def record(user, wins, losses, rank=1) -> dict:
+    return {"user": {"id": user.id, "name": user.name}, "wins": wins, "losses": losses, "rank": rank}
