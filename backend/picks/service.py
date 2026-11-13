@@ -14,11 +14,14 @@ class PickService:
         self._repository = repository
         self._pools = pools
 
-    def list_my_picks(self, pool_id, user: User) -> list[Pick]:
+    def list_picks(self, pool_id, user: User) -> list[Pick]:
         pool = self._pools.get_pool(pool_id)
         if not pool.bets:
             return []
-        return self._repository.list_user_picks(tuple(bet.id for bet in pool.bets), user.id)
+        bet_ids = tuple(bet.id for bet in pool.bets)
+        if pool.status() == PoolStatus.OPEN:
+            return self._repository.list_user_picks(bet_ids, user.id)
+        return self._repository.list_all_picks(bet_ids)
 
     def save_pick(self, pool_id, bet_id, payload, user: User) -> Pick:
         payload = require_json_object(payload)

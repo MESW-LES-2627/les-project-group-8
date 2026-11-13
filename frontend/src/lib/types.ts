@@ -50,6 +50,7 @@ export interface Pick {
 	id: string;
 	bet_id: string;
 	user_id: string;
+	user: UserSummary;
 	outcome_id: string;
 	created_at: string;
 }

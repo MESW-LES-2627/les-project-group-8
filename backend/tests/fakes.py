@@ -70,9 +70,23 @@ class FakePoolRepository:
                 return bet
         raise AssertionError("Cannot seed a bet without its pool.")
 
+    def resolve_bet(self, pool_id: str, bet_id: str, winning_outcome_id: str) -> Bet | None:
+        for index, pool in enumerate(self.pools):
+            if pool.id == pool_id:
+                bet = pool.find_bet(bet_id)
+                if bet is None:
+                    return None
+                resolved = replace(bet, winning_outcome_id=winning_outcome_id)
+                self.pools[index] = replace(
+                    pool, bets=tuple(resolved if item.id == bet_id else item for item in pool.bets),
+                )
+                return resolved
+        return None
+
 
 class FakePickRepository:
-    def __init__(self):
+    def __init__(self, users: FakeUserRepository):
+        self._users = users
         self.picks: dict[tuple[str, str], Pick] = {}
 
     def get(
@@ -87,9 +101,16 @@ class FakePickRepository:
         bet_ids: tuple[str, ...],
         user_id: str,
     ) -> list[Pick]:
+        return [pick for pick in self.list_all_picks(bet_ids) if pick.user_id == user_id]
+
+    def list_all_picks(
+        self,
+        bet_ids: tuple[str, ...],
+    ) -> list[Pick]:
         return [
-            pick for pick in self.picks.values()
-            if pick.bet_id in bet_ids and pick.user_id == user_id
+            replace(pick, user=self._users.get(pick.user_id))
+            for pick in self.picks.values()
+            if pick.bet_id in bet_ids
         ]
 
     def create_or_replace(
@@ -109,6 +130,7 @@ class FakePickRepository:
                 user_id=user_id,
                 outcome_id=outcome_id,
                 created_at=datetime.now(timezone.utc),
+                user=self._users.get(user_id),
             )
         )
         self.picks[key] = pick

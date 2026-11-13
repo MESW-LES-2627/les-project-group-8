@@ -16,8 +16,8 @@ def create_picks_blueprint(service: PickService, login_required: LoginGuard) -> 
 
     @blueprint.get("/pools/<pool_id>/picks")
     @login_required
-    def list_my_picks(pool_id, current_user: User):
-        picks = service.list_my_picks(pool_id, current_user)
+    def list_picks(pool_id, current_user: User):
+        picks = service.list_picks(pool_id, current_user)
         return jsonify(picks=[pick_to_json(pick) for pick in picks])
 
     @blueprint.post("/pools/<pool_id>/bets/<bet_id>/picks")
@@ -34,6 +34,7 @@ def pick_to_json(pick: Pick) -> dict:
         "id": pick.id,
         "bet_id": pick.bet_id,
         "user_id": pick.user_id,
+        "user": {"id": pick.user.id, "name": pick.user.name},
         "outcome_id": pick.outcome_id,
         "created_at": _utc_iso(pick.created_at),
     }
