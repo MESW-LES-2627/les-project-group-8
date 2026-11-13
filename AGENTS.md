@@ -11,3 +11,7 @@ The five default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`,
 ### Domain docs
 
 Single-context: one root `GLOSSARY.md` plus `docs/adr/`. See `docs/agents/domain.md`.
+
+## Course evaluation
+
+Assessing an iteration or preparing for a review: follow `docs/evaluation.md`.
