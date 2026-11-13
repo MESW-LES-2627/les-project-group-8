@@ -1,6 +1,6 @@
 # Issue tracker: GitHub
 
-Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all operations.
+Epics and user stories for this repo live as GitHub issues. Use the `gh` CLI for all operations.
 
 ## Conventions
 
@@ -16,24 +16,29 @@ Infer the repo from `git remote -v`; `gh` does this automatically when run insid
 
 ## Project board
 
-Issues are tracked on the org project **Group 8 — Iteration 1** (number `22`, owner `MESW-LES-2627`). Its `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`.
+Issues are tracked on the org project **Group 8 — Iteration 2** (number `24`, owner `MESW-LES-2627`). Work is two levels deep: an **epic** (label `epic`) is a parent issue whose sub-issues are **user stories** (label `user-story`). Its `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`, so epics stay in the project. Its views:
 
-GitHub's board automation only reacts to issues **linked** to a PR, and `Closes #N` only links when the PR targets `main`. Our feature PRs target `staging`, so nothing moves on its own: **you move the cards.** This needs the `project` scope on `gh` (`gh auth refresh -h github.com -s project`).
+- **Iteration 2 board**: stories only (`-label:epic`), in swimlanes by `Parent issue`.
+- **Epics**: a table of epics with their `Sub-issues progress`.
+- **Roadmap**: epics only.
+
+Iteration 1's board (`22`) is kept as a record.
+
+GitHub's board automation only reacts to issues **linked** to a PR, and `Closes #N` only links when the PR targets `main`. Our feature PRs target `staging`, so nothing moves on its own: **you move the story cards.** This needs the `project` scope on `gh` (`gh auth refresh -h github.com -s project`). Epics are never moved by hand.
 
 | When | Do |
 | :--- | :--- |
-| You start a ticket | Assign it (`gh issue edit <n> --add-assignee @me`) and set it `In progress`. |
-| Its PR into `staging` opens | Set the ticket, and its parent spec, `In review`. List them in the PR body as `Part of #<n>`. |
-| It is verified on staging | Close the ticket (`Item closed` moves it to `Done`). Close the spec once all its tickets are closed. |
-| `staging` is promoted to `main` | The parent story closes, through `Closes #<n>` in the promotion PR (one keyword per issue). |
+| You start a story | Assign it (`gh issue edit <n> --add-assignee @me`) and set it `In progress`. |
+| Its PR into `staging` opens | Set the story `In review`. List it in the PR body as `Part of #<n>`. |
+| `staging` is promoted to `main` | The story closes, through `Closes #<n>` in the promotion PR (one keyword per issue); `Item closed` moves it to `Done`. Once an epic's last story closes, `.github/workflows/close-epic.yml` closes the epic. |
 
 **Set a status** (option ids: `To do` `f75ad846`, `In progress` `47fc9ee4`, `In review` `1d04f341`, `Done` `98236657`):
 
 ```sh
 item=$(gh api graphql -f query='{repository(owner:"MESW-LES-2627",name:"les-project-group-8"){issue(number:<n>){projectItems(first:5){nodes{id project{number}}}}}}' \
-  --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number==22) | .id')
-gh project item-edit --id "$item" --project-id PVT_kwDOFEfeUs4Bpfy- \
-  --field-id PVTSSF_lADOFEfeUs4Bpfy-zhn7L30 --single-select-option-id <option-id>
+  --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number==24) | .id')
+gh project item-edit --id "$item" --project-id PVT_kwDOFEfeUs4Bqvy6 \
+  --field-id PVTSSF_lADOFEfeUs4Bqvy6zhpFf7I --single-select-option-id <option-id>
 ```
 
 ## Pull requests as a triage surface
