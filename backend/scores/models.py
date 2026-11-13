@@ -1,14 +1,6 @@
-"""Read projections for a participant's record in a pool."""
+"""Plain data for the scores module."""
 
 from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
-class ScoringPick:
-    user_id: str
-    user_name: str
-    outcome_id: str
-    winning_outcome_id: str | None
 
 
 @dataclass
