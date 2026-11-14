@@ -1,9 +1,9 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { readField } from '#lib/form.ts';
 import { loginPath } from '#lib/redirect.ts';
-import { ApiError, createBet, listPicks, getPool, resolveBet, savePick } from '#lib/server/api.ts';
+import { ApiError, createBet, getLeaderboard, listPicks, getPool, resolveBet, savePick } from '#lib/server/api.ts';
 import { clearSessionCookies, endSession } from '#lib/server/session.ts';
-import type { BetPresentation, CreateBetInput, Pick, Pool } from '#lib/types.ts';
+import type { BetPresentation, CreateBetInput, LeaderboardEntry, Pick, Pool } from '#lib/types.ts';
 
 type BetValues = {
 	statement: string;
@@ -66,10 +66,21 @@ export async function load({
 			pool: null,
 			picks: [] as Pick[],
 			pickLoadError: null,
+			leaderboard: [] as LeaderboardEntry[],
+			leaderboardLoadError: null,
 			created: false,
 			loadError: err instanceof Error ? err.message : 'Could not load the pool.'
 		};
 	}
+
+	// Not awaited yet, so it loads in parallel with the Picks below.
+	const leaderboardRequest = getLeaderboard(pool.id).then(
+		(leaderboard) => ({ leaderboard, leaderboardLoadError: null as string | null }),
+		(err) => ({
+			leaderboard: [] as LeaderboardEntry[],
+			leaderboardLoadError: err instanceof Error ? err.message : 'Could not load leaderboard.'
+		})
+	);
 
 	let picks: Pick[] = [];
 	let pickLoadError: string | null = null;
@@ -90,6 +101,7 @@ export async function load({
 		pool,
 		picks,
 		pickLoadError,
+		...(await leaderboardRequest),
 		loadError: null,
 		created: url.searchParams.has('created')
 	};
