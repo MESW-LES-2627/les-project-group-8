@@ -28,7 +28,7 @@
 						class:font-bold={entry.user.id === currentUserId}
 					>
 						<td class="p-3">{entry.rank}</td>
-						<th scope="row" class="p-3 font-normal">
+						<th scope="row" class="p-3" class:font-normal={entry.user.id !== currentUserId}>
 							{entry.user.name}{entry.user.id === currentUserId ? ' (you)' : ''}
 						</th>
 						<td class="p-3">{entry.wins}</td>

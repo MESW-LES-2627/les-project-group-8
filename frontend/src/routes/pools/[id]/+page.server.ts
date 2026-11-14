@@ -73,13 +73,14 @@ export async function load({
 		};
 	}
 
-	let leaderboard: LeaderboardEntry[] = [];
-	let leaderboardLoadError: string | null = null;
-	try {
-		leaderboard = await getLeaderboard(pool.id);
-	} catch (err) {
-		leaderboardLoadError = err instanceof Error ? err.message : 'Could not load leaderboard.';
-	}
+	// Not awaited yet, so it loads in parallel with the Picks below.
+	const leaderboardRequest = getLeaderboard(pool.id).then(
+		(leaderboard) => ({ leaderboard, leaderboardLoadError: null as string | null }),
+		(err) => ({
+			leaderboard: [] as LeaderboardEntry[],
+			leaderboardLoadError: err instanceof Error ? err.message : 'Could not load leaderboard.'
+		})
+	);
 
 	let picks: Pick[] = [];
 	let pickLoadError: string | null = null;
@@ -100,8 +101,7 @@ export async function load({
 		pool,
 		picks,
 		pickLoadError,
-		leaderboard,
-		leaderboardLoadError,
+		...(await leaderboardRequest),
 		loadError: null,
 		created: url.searchParams.has('created')
 	};

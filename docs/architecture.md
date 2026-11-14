@@ -215,9 +215,10 @@ so a client cannot impersonate another User by changing an id.
 3. Build it in `create_app()` and register its blueprint.
 4. Add a fake to `tests/fakes.py`, write the user story with acceptance criteria, and add one acceptance test per criterion.
 
-`picks/` and `scores/` are worked examples of these four steps. `ScoreService`
-checks the Pool through `PoolService`; its repository joins Picks, Bets and Users
-as a read projection. The public leaderboard counts only Picks on Bets with a
+`picks/` and `scores/` are worked examples of these four steps. `scores/` has no
+table of its own, so it has no repository or fake: `ScoreService` reads the Pool
+through `PoolService` and every Pick through `PickService.list_all_picks`, which
+ignores the deadline and so has no route (US16). The public leaderboard counts only Picks on Bets with a
 winner, orders by wins descending and losses ascending, and shares competition
 ranks for equal records (1, 2, 2, 4).
 

@@ -1,6 +1,6 @@
 """Business rules for picks."""
 
-from pools.models import PoolStatus
+from pools.models import Pool, PoolStatus
 from pools.service import PoolService
 from shared.errors import NotFoundError, ValidationError
 from shared.validation import require_json_object
@@ -22,6 +22,12 @@ class PickService:
         if pool.status() == PoolStatus.OPEN:
             return self._repository.list_user_picks(bet_ids, user.id)
         return self._repository.list_all_picks(bet_ids)
+
+    def list_all_picks(self, pool: Pool) -> list[Pick]:
+        # Ignores the deadline, so no route may return it while the Pool is open (US16).
+        if not pool.bets:
+            return []
+        return self._repository.list_all_picks(tuple(bet.id for bet in pool.bets))
 
     def save_pick(self, pool_id, bet_id, payload, user: User) -> Pick:
         payload = require_json_object(payload)
