@@ -48,4 +48,7 @@
 			{submitting ? 'Resolving…' : 'Resolve bet'}
 		</button>
 	</form>
+{:else if form?.error}
+	<!-- The reload after a failed resolve can show that this User is no longer the decider. -->
+	<p role="alert" class="mt-5 border-t border-black pt-4 text-sm">{form.error}</p>
 {/if}
