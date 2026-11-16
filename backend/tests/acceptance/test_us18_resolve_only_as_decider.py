@@ -36,25 +36,35 @@ def pool_with_decider(client, user_repo, pool_repo):
 def test_non_decider_is_forbidden_and_bet_unchanged(
     client, pool_repo, pool_with_decider, role, valid_payload,
 ):
+    # Given a Bet in a pool where someone else is the decider
     pool, bet, headers = pool_with_decider
     before = tuple(pool_repo.pools)
+
+    # When I try to resolve it
     response = client.post(
         f"/api/pools/{pool['id']}/bets/{bet['id']}/resolve",
         json={"winning_outcome_id": bet["options"][0]["id"]} if valid_payload else [],
         headers=headers[role],
     )
+
+    # Then I get a 403 error and the Bet is unchanged
     assert response.status_code == 403
     assert response.get_json() == {"error": "Only the pool's decider can resolve its bets."}
     assert tuple(pool_repo.pools) == before
 
 
 def test_decider_who_is_not_creator_can_resolve(client, pool_repo, pool_with_decider):
+    # Given a Bet in a pool where I am the decider but not the creator
     pool, bet, headers = pool_with_decider
     winner = bet["options"][1]["id"]
+
+    # When I resolve it
     response = client.post(
         f"/api/pools/{pool['id']}/bets/{bet['id']}/resolve",
         json={"winning_outcome_id": winner}, headers=headers["decider"],
     )
+
+    # Then the resolution is accepted
     assert response.status_code == 200
     assert response.get_json() == {**bet, "winning_outcome_id": winner}
     assert pool_repo.get_pool(pool["id"]).find_bet(bet["id"]).winning_outcome_id == winner
@@ -67,6 +77,7 @@ def test_decider_who_is_not_creator_can_resolve(client, pool_repo, pool_with_dec
 def test_missing_or_mismatched_bet_returns_404(
     client, pool_repo, pool_with_decider, role, target,
 ):
+    # Given an unknown pool or Bet id, or a Bet from another pool
     pool, bet, headers = pool_with_decider
     pool_id, bet_id = pool["id"], bet["id"]
     if target == "unknown-pool":
@@ -82,25 +93,37 @@ def test_missing_or_mismatched_bet_returns_404(
         other_bet = create_bet(client, other_pool["id"], headers["creator"])
         bet_id = other_bet["id"]
     before = tuple(pool_repo.pools)
+
+    # When I try to resolve it
     response = client.post(
         f"/api/pools/{pool_id}/bets/{bet_id}/resolve",
         json={"winning_outcome_id": bet["options"][0]["id"]}, headers=headers[role],
     )
+
+    # Then I get a 404 response that names what was not found
     assert response.status_code == 404
+    assert response.get_json() == {
+        "error": "Pool not found." if target in ("unknown-pool", "malformed-pool") else "Bet not found.",
+    }
     assert tuple(pool_repo.pools) == before
 
 
 @pytest.mark.parametrize("auth", ["missing", "invalid", "expired"])
 def test_resolve_requires_login(client, pool_repo, pool_with_decider, auth):
+    # Given no token, an invalid one, or the decider's expired one
     pool, bet, _ = pool_with_decider
     decider_id = pool_repo.get_pool(pool["id"]).decider.id
     headers = {} if auth == "missing" else bearer(
         expired_token(decider_id) if auth == "expired" else "invalid",
     )
     before = tuple(pool_repo.pools)
+
+    # When I try to resolve a Bet
     response = client.post(
         f"/api/pools/{pool['id']}/bets/{bet['id']}/resolve",
         json={"winning_outcome_id": bet["options"][0]["id"]}, headers=headers,
     )
+
+    # Then I get a 401 error and the Bet is unchanged
     assert response.status_code == 401
     assert tuple(pool_repo.pools) == before
