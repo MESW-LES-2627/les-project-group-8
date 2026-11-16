@@ -12,7 +12,7 @@
 	const winner = $derived(bet.options.find((option) => option.id === bet.winning_outcome_id));
 </script>
 
-{#if isDecider && winner}
+{#if winner}
 	<p class="mt-5 border-t border-black pt-4 text-sm" role="status">
 		Resolved — winning outcome: <strong>{winner.label}</strong>
 	</p>
