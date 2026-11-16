@@ -44,7 +44,7 @@ def test_non_decider_is_forbidden_and_bet_unchanged(
         headers=headers[role],
     )
     assert response.status_code == 403
-    assert response.get_json() == {"error": "Only the pool's decider can resolve bets."}
+    assert response.get_json() == {"error": "Only the pool's decider can resolve its bets."}
     assert tuple(pool_repo.pools) == before
 
 

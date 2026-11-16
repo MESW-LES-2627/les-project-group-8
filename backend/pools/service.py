@@ -61,7 +61,7 @@ class PoolService:
         if bet is None:
             raise NotFoundError("Bet not found.")
         if pool.decider.id != decider.id:
-            raise ForbiddenError("Only the pool's decider can resolve bets.")
+            raise ForbiddenError("Only the pool's decider can resolve its bets.")
 
         payload = require_json_object(payload)
         outcome_id = payload.get("winning_outcome_id")
