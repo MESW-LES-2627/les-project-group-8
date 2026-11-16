@@ -38,7 +38,7 @@ def create_pools_blueprint(service: PoolService, login_required: LoginGuard) -> 
     @login_required
     def resolve_bet(pool_id, bet_id, current_user: User):
         bet = service.resolve_bet(
-            pool_id, bet_id, request.get_json(silent=True), decider=current_user,
+            pool_id, bet_id, request.get_json(silent=True), user=current_user,
         )
         return jsonify(bet_to_json(bet))
 

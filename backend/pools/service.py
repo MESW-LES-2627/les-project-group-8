@@ -55,12 +55,12 @@ class PoolService:
                 raise ValidationError(f"Field '{field}' is not accepted when adding a bet.")
         return self._repository.create_bet(pool.id, parse_new_bet(payload))
 
-    def resolve_bet(self, pool_id, bet_id, payload, decider: User) -> Bet:
+    def resolve_bet(self, pool_id, bet_id, payload, user: User) -> Bet:
         pool = self.get_pool(pool_id)
         bet = pool.find_bet(str(bet_id))
         if bet is None:
             raise NotFoundError("Bet not found.")
-        if pool.decider.id != decider.id:
+        if pool.decider.id != user.id:
             raise ForbiddenError("Only the pool's decider can resolve its bets.")
 
         payload = require_json_object(payload)
