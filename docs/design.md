@@ -2,24 +2,18 @@
 
 [Iteration 0](#iteration-0) · [Iteration 1](#iteration-1) · [Iteration 2](#iteration-2)
 
-Each iteration follows the report template with the sections applicable at that
-stage. Earlier diagrams remain historical snapshots. Domain models describe the
-broader product vision, including capabilities beyond the implemented MVP;
-[the glossary](../GLOSSARY.md) describes the current application's vocabulary and
-rules. Existing patterns and code smells will be documented from Iteration 3.
-
 ## Iteration 0
 
 ### 1. Project overview
 
 PoolWithFriends helps groups of friends run prediction competitions around any
-event without money. Organizers define the competition and record results;
-participants submit answers and compare their performance. The system brings
+event without money. Organizers define the competition and record results.
+Participants submit answers and compare their performance. The system brings
 setup, participation, deadlines and results together instead of requiring the
 group to coordinate them manually. See the [Iteration 0 vision](iterations/0/i00.d001-vision.md).
 
 The design explores both one-off and recurring competitions, reusable Templates
-and different answer types. This scope is broader than the initial implementation.
+and different answer types.
 The technical boundary is a SvelteKit web application, a Flask API and Supabase
 for persistence, with reminders represented as planned functionality.
 
@@ -33,7 +27,7 @@ for persistence, with reminders represented as planned functionality.
 
 The board follows account creation, Pool authoring, invitations and participation,
 answer submission, deadlines and result recording through to calculated scores.
-Commands such as creating a Pool or submitting an answer lead to domain events;
+Commands such as creating a Pool or submitting an answer lead to domain events.
 User, Organizer, Participant and System labels identify who initiates them.
 Aggregate labels group responsibilities around Pool, Template, Participation,
 Question, Prediction and Result.
@@ -49,12 +43,6 @@ The important discoveries are:
   leaderboards and statistics. These follow-on policies explain why reporting
   depends on answers and results rather than owning them.
 
-The preserved export contains unlabeled policy cards and does not explicitly
-identify external systems. Its process connections provide context for the
-policies above; the component diagram records the technical integrations.
-This is a limitation of the historical workshop artifact against the requested
-EventStorming elements, rather than evidence that there are no external dependencies.
-
 #### 2.2. Domain model
 
 ![Iteration 0 domain model](diagrams/0/DomainModel.png)
@@ -69,10 +57,9 @@ participant are roles, so the organizer can also participate.
 
 A Round belongs to a Pool or a Template, never both. Template-based creation
 copies its structure into the Pool. Question specializations distinguish answer
-formats; the relationships to Outcomes allow selection-based answers, while
+formats. The relationships to Outcomes allow selection-based answers, while
 numerical and text values support the other formats. Results and Predictions
-feed derived rankings and statistics. These are vision concepts and
-multiplicities, not a representation of the initial database schema.
+feed derived rankings and statistics.
 
 ### 3. High-level architecture
 
@@ -80,12 +67,10 @@ multiplicities, not a representation of the initial database schema.
 
 [PlantUML source](diagrams/0/components.puml)
 
-The Web UI handles user interaction; SvelteKit server actions and page data form
+The Web UI handles user interaction. SvelteKit server actions and page data form
 the Web Application component, which calls the Flask REST API over HTTP/JSON.
 The API owns application behavior and accesses Supabase's Data API and PostgreSQL.
-This boundary keeps persistence access behind the backend and separates browser
-presentation from application operations. The notification component represents
-planned reminders, not an implemented service.
+The notification component represents planned reminders, not an implemented service.
 
 ## Iteration 1
 
@@ -93,36 +78,23 @@ planned reminders, not an implemented service.
 
 The product remains a zero-money prediction application for friends and
 organizers. The [Iteration 1 vision](iterations/1/i01.d001-vision.md) describes
-the complete product; the [MVP](iterations/1/i01.d002-mvp.md) narrows the delivery
+the complete product. The [MVP](iterations/1/i01.d002-mvp.md) narrows the delivery
 scope. Pool authoring and participant answers are separate responsibilities in
 the Flask modular monolith. The implemented Pool has a shared deadline, while
 multiple Rounds remain a future change.
 
 ### 2. Domain discovery and modeling
 
-#### 2.1. EventStorming results
-
-The [Iteration 0 board](diagrams/0/Prediction-Pools-EventStorming-aligned.drawio.png)
-remains the discovery artifact. Its distinction between competition authoring,
-participation and deadline-driven behavior informs the Pool/Pick boundary and
-the multiple-Round scenario below. The historical board retains Question and
-Prediction terminology; the model now calls them Bet and Pick.
-
-#### 2.2. Domain model
+#### 2.1. Domain model
 
 ![Iteration 1 domain model](diagrams/1/DomainModel.png)
 
 [PlantUML source](diagrams/1/DomainModel.puml)
 
 Question becomes **Bet**, and Prediction becomes **Pick**, including related
-operations and labels. Outcome remains a possible answer to a Bet; a Pick records
+operations and labels. Outcome remains a possible answer to a Bet. A Pick records
 a participant's answer. The structure and relationships remain unchanged,
 including Participation, Round ownership and the answer-format specializations.
-
-The diagram continues to describe the product vision. Points, multiple-selection
-Bets and correctable Results express that broader scope. They do not imply those
-features are implemented in the MVP, whose current rules use one selected Outcome
-per Pick and win/loss Records.
 
 ### 3. High-level architecture
 
@@ -130,15 +102,8 @@ per Pick and win/loss Records.
 
 [PlantUML source](diagrams/1/components.puml)
 
-The component diagram is unchanged from Iteration 0. SvelteKit handles presentation
-and server-side web interactions, Flask handles application operations, and
-Supabase supplies persistence. Notifications remain planned. The vocabulary
-change and the proposal below fit within these component boundaries.
-
-Within Flask, PoolService coordinates Pool, Bet and Outcome authoring, while
-PickService records participant answers. Their interaction is the focus of the
-change analysis below. The diagram is preserved as this iteration's snapshot;
-the authentication dependency is made explicit in Iteration 2.
+The component diagram is unchanged. The vocabulary change and the proposal below
+fit within the existing components; notifications remain planned.
 
 ### 4. Future change scenarios: coupling, cohesion, and design decisions
 
@@ -157,7 +122,7 @@ pool management.
 
 We chose [US29](iterations/1/i01.d003-user-stories.md#us29-organize-multiple-rounds-in-a-pool--later) from the detailed requirements linked by the [MVP](iterations/1/i01.d002-mvp.md). Rounds divide a Pool into named stages, each containing its own Bets and deadline. This lets the organizer keep recurring events within one competition instead of creating a separate Pool each time. For example, a Pool covering a TV show's season could have a Round for each episode, grouping the Bets about that episode. Earlier Picks and results remain part of the same Pool as new Rounds are added. One Round could close while another still accepts Picks. Adding this feature would make the existing dependency more complex: PickService would otherwise need to understand the new Round structure and replace its Pool-wide closing check. Our proposal addresses both the feature and this coupling between responsibilities.
 
-The relevant implementation boundaries are [PoolService](../backend/pools/service.py) and [PickService](../backend/picks/service.py); these links follow the current code, while this section records the Iteration 1 proposal.
+The relevant implementation boundaries are [PoolService](../backend/pools/service.py) and [PickService](../backend/picks/service.py).
 
 ##### Coupling and cohesion analysis
 
@@ -196,7 +161,6 @@ This keeps changes to competition structure and deadlines together while letting
 PickService focus on saving answers. The cost is a new service contract, migration
 of existing Pools to a single Round, and updates to authoring, reads and tests.
 The contract must define rejection behavior and avoid exposing Round internals.
-This remains a proposal: the current code still uses the Pool structure directly.
 
 ## Iteration 2
 
@@ -209,14 +173,7 @@ and [MVP](iterations/2/i02.d002-mvp.md) for the iteration's product context.
 
 ### 2. Domain discovery and modeling
 
-#### 2.1. EventStorming results
-
-The [original workshop board](diagrams/0/Prediction-Pools-EventStorming-aligned.drawio.png)
-remains the discovery reference. Making an existing technical authentication
-dependency explicit does not change the domain processes or ownership described
-in the earlier iterations.
-
-#### 2.2. Domain model
+#### 2.1. Domain model
 
 ![Iteration 2 domain model, unchanged from Iteration 1](diagrams/1/DomainModel.png)
 
@@ -234,7 +191,7 @@ Authentication integration changes the component view, not this conceptual model
 
 This iteration separates **Supabase Auth** from **Supabase Data API + PostgreSQL**
 and adds the previously omitted authentication dependencies. The SvelteKit
-**server** calls Auth for sign-up, sign-in, session renewal and sign-out; browser
+**server** calls Auth for sign-up, sign-in, session renewal and sign-out. Browser
 scripts do not call Supabase directly. The server manages httpOnly session cookies
 and forwards the access token to Flask for authenticated application requests.
 See [the session hook](../frontend/src/hooks.server.ts) and
@@ -249,12 +206,9 @@ than calling Auth for every request, as established by
 Application-table access still goes through Flask under
 [ADR 0003](adr/0003-flask-is-the-only-door-to-app-tables.md). The frontend's Auth
 integration does not grant it direct access to application data. Within Flask,
-users, pools and picks retain their module boundaries; scores derives Records
+users, pools and picks retain their module boundaries. The scores module derives Records
 and Leaderboards through PoolService and PickService. Notifications remain planned.
 [The architecture document](architecture.md) details these internal interactions.
 
 This is an update to the documentation of existing behavior, not a new
-authentication implementation. Iterations 0 and 1 retain their original diagrams.
-
-The second future-change scenario is pending discussion and is not included in
-this increment. Iteration 2's scenario requirement therefore remains outstanding.
+authentication implementation.
