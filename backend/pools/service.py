@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from shared.errors import ForbiddenError, NotFoundError, ValidationError
+from shared.errors import ConflictError, ForbiddenError, NotFoundError, ValidationError
 from shared.validation import require_json_object, required_text
 from users.models import User
 
@@ -62,6 +62,10 @@ class PoolService:
             raise NotFoundError("Bet not found.")
         if pool.decider.id != user.id:
             raise ForbiddenError("Only the pool's decider can resolve its bets.")
+        if pool.status() != PoolStatus.LOCKED:
+            raise ValidationError("This bet cannot be resolved before the pool deadline.")
+        if bet.winning_outcome_id is not None:
+            raise ConflictError("This bet is already resolved.")
 
         payload = require_json_object(payload)
         outcome_id = payload.get("winning_outcome_id")
@@ -72,7 +76,9 @@ class PoolService:
 
         resolved = self._repository.resolve_bet(pool.id, bet.id, outcome_id)
         if resolved is None:
-            raise NotFoundError("Bet not found.")
+            # The Bet was there when it was read, so a missing row means another
+            # request wrote the winner between that read and this update.
+            raise ConflictError("This bet is already resolved.")
         return resolved
 
 
