@@ -62,10 +62,10 @@ class PoolService:
             raise NotFoundError("Bet not found.")
         if pool.decider.id != user.id:
             raise ForbiddenError("Only the pool's decider can resolve its bets.")
-        if pool.status() != PoolStatus.LOCKED:
-            raise ValidationError("This bet cannot be resolved before the pool deadline.")
         if bet.winning_outcome_id is not None:
             raise ConflictError("This bet is already resolved.")
+        if pool.status() != PoolStatus.LOCKED:
+            raise ValidationError("This bet cannot be resolved before the pool deadline.")
 
         payload = require_json_object(payload)
         outcome_id = payload.get("winning_outcome_id")

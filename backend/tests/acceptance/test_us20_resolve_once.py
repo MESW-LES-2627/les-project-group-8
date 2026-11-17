@@ -72,3 +72,22 @@ def test_a_resolved_bet_stays_resolved(client, resolved_bet):
     body = response.get_json()
     assert body["status"] == "LOCKED"
     assert body["bets"][0]["winning_outcome_id"] == winner
+
+
+def test_a_resolved_bet_conflicts_before_the_deadline(client, user_repo, pool_repo):
+    # Given a Bet with a winner in a Pool whose deadline is still ahead
+    _, headers = sign_in(user_repo)
+    pool = create_pool(client, headers)
+    bet = create_bet(client, pool["id"], headers)
+    pool_repo.resolve_bet(pool["id"], bet["id"], bet["options"][0]["id"])
+
+    # When the decider resolves it again
+    response = client.post(
+        f"/api/pools/{pool['id']}/bets/{bet['id']}/resolve",
+        json={"winning_outcome_id": bet["options"][1]["id"]},
+        headers=headers,
+    )
+
+    # Then the final result outranks the deadline rule: still a conflict, not "too early"
+    assert response.status_code == 409
+    assert response.get_json() == {"error": "This bet is already resolved."}
