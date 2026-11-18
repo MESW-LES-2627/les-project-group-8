@@ -21,3 +21,6 @@ venv/
 
 # Wrangler local state (frontend)
 .wrangler/
+
+# Local copies of cited books and PDFs (not redistributable)
+docs/books/
