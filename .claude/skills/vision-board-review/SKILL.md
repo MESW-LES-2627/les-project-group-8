@@ -10,27 +10,28 @@ that checklist. This is a report: edit, create or delete no files.
 
 ## Steps
 
-1. Read the board the user names. If none is named, use the newest
-   `docs/iterations/NN/iNN.d001-vision.md`.
+1. Read the board the user names. If none is named, use the vision file in
+   the highest-numbered iteration folder, such as
+   `docs/iterations/2/i02.d001-vision.md`.
 2. Rate every criterion in the checklist, block by block, then the overall
    criteria. Skip none and add none.
 3. For each criterion give:
-   - **Verdict:** Met, Partly or Not met.
+   - **Verdict:** Met, Partly or Not met, or Unverifiable for the cases in
+     step 4.
    - **Evidence:** the board sentence the verdict rests on, quoted word for
      word. If the board says nothing on it, write "None" and rate Not met.
    - **Fix:** one line saying what to change. Write "None" when Met.
 4. Judge these overall criteria from the repo, not from the board's wording:
-   - **Connected:** Met only if the board links to the MVP
-     (`docs/iterations/NN/iNN.d002-mvp.md`) and the MVP follows from the
-     board's needs and goals. No link is Not met.
+   - **Connected:** Met if the board links to the MVP, such as
+     `docs/iterations/2/i02.d002-mvp.md`. No link is Not met.
    - **Adaptive:** run `git log --follow --format='%ad %h %s' --date=short --
      <board file>`. Met if a commit changed the board within the last three
      months of today, Not met otherwise. Quote the newest commit as evidence.
-   - **Validated**, **Shared** and **Needs-first:** the repo cannot show
-     these. Rate them "Unverifiable from the repo" unless the board links
-     evidence (interview notes, prototype results, a review record); then
-     rate them from that evidence.
-5. Give no overall or 0–10 score. End with the three fixes that matter most.
+   - **Validated**, overall **Shared** (not the Vision block's Shared) and
+     **Needs-first:** the repo cannot show these. Rate them Unverifiable
+     unless the board links evidence (interview notes, prototype results, a
+     review record); then rate them from that evidence.
+5. Give no overall or 0–10 score.
 
 ## Report format
 
@@ -44,7 +45,6 @@ One table per block, in checklist order:
 
 Copied word for word from the
 [Product Vision Board with Checklist](https://www.romanpichler.com/downloads/tools/Product-Vision-Board-with-Checklist.pdf).
-© 2024 Roman Pichler.
 
 > **PRODUCT VISION BOARD CHECKLIST**
 >
