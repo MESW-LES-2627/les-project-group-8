@@ -224,7 +224,7 @@ ranks for equal records (1, 2, 2, 4).
 
 ## Not done yet (on purpose)
 
-- **Resolution restrictions.** US17 stores a Bet's winning Outcome through `PoolService`; its resolved state is derived from that winner. Decider-only access, deadline enforcement and protection against replacing a winner remain US18–US20. Pool status still follows its shared deadline (`OPEN` / `LOCKED`).
+- **Resolution restrictions.** US17 stores a Bet's winning Outcome through `PoolService`; its resolved state is derived from that winner. US18 lets only the Pool's decider resolve. Deadline enforcement and protection against replacing a winner remain US19–US20. Pool status still follows its shared deadline (`OPEN` / `LOCKED`).
 - **Rounds.** A future design decision; #29 introduces no Round table.
 - **Transactions.** Deferred to #31. The #29 migration removes the unused `002_create_pool_fn.sql` function if installed.
 

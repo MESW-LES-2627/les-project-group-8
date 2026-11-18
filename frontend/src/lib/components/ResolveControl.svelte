@@ -7,6 +7,7 @@
 
 	let { bet }: { bet: Bet } = $props();
 	let submitting = $state(false);
+	const isDecider = $derived(Boolean(page.data.user && page.data.user.id === page.data.pool?.decider.id));
 	const form = $derived(page.form?.action === 'resolve' && page.form.betId === bet.id ? page.form : null);
 	const winner = $derived(bet.options.find((option) => option.id === bet.winning_outcome_id));
 </script>
@@ -15,7 +16,7 @@
 	<p class="mt-5 border-t border-black pt-4 text-sm" role="status">
 		Resolved — winning outcome: <strong>{winner.label}</strong>
 	</p>
-{:else if page.data.user}
+{:else if isDecider}
 	<form
 		method="POST"
 		action="?/resolve"
@@ -47,4 +48,7 @@
 			{submitting ? 'Resolving…' : 'Resolve bet'}
 		</button>
 	</form>
+{:else if form?.error}
+	<!-- The reload after a failed resolve can show that this User is no longer the decider. -->
+	<p role="alert" class="mt-5 border-t border-black pt-4 text-sm">{form.error}</p>
 {/if}
