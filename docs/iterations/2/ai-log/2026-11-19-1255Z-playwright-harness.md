@@ -17,13 +17,17 @@
 - **Where it was wrong:** `supabase gen signing-key` in CLI 3.x writes into the
   configured key file and fails if it is missing or not a JSON array, not to
   stdout as the plan assumed; the script seeds the file with `[]` and uses
-  `--append`.
+  `--append`. The first CI runs hung after the test passed: `pnpm preview`
+  runs Vite in its own process group, so Playwright's shutdown left
+  `vite preview` and `workerd` running. Found with `DEBUG=pw:webserver`
+  on CI and `ps` locally; fixed by starting Vite directly in
+  `playwright.config.ts`.
 - **How we checked:** `pnpm test:e2e` passes locally from a fresh stack, and the
   stack is gone afterwards; with the header changed to show another name, the
   spec fails; `pnpm check`, the 35 Vitest tests and the 155 backend tests pass;
   `vite preview` uses the exported local Supabase URL rather than
   `wrangler.jsonc`'s hosted one (the probe sign-up landed in the local
-  `auth.users`). The CI workflow has not run yet.
+  `auth.users`). The E2E workflow passes on PR #127.
 - **Notes:** without the exported env, `vite preview` would likely fall back to
   `wrangler.jsonc`'s vars, the hosted project (inferred, not tried), so
   `playwright.config.ts` refuses to run without a local `SUPABASE_URL`.

@@ -61,11 +61,9 @@ jobs:
 
       - name: Run e2e tests
         run: pnpm test:e2e
-        env:
-          DEBUG: pw:webserver # TEMP: diagnosing the CI hang
 
       - name: Upload report
-        if: ${{ !cancelled() }}
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
