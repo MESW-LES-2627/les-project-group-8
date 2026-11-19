@@ -8,6 +8,9 @@ The **frontend** is built for and deployed to **Cloudflare Workers**. The
 **Render** (`render.yaml`). See [docs/architecture.md](docs/architecture.md)
 for how it is organized and why.
 
+The [design report](docs/design.md) records domain discovery, models, architecture
+and design decisions by iteration.
+
 ## Requirements
 
 - Node 22+
