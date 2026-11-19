@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from tests.acceptance.steps import create_pool, leaderboard, record, seed_pick, sign_in
+from tests.acceptance.steps import create_pool, leaderboard, record, seed_record, sign_in
 
 
 @pytest.fixture
@@ -17,8 +17,7 @@ def given_records(client, pool_repo, pick_repo, user_repo):
         for wins, losses in records:
             # Equal display names still represent distinct Users.
             participant, _ = sign_in(user_repo, "Same name")
-            for winner in [0] * wins + [1] * losses:
-                seed_pick(client, pool_repo, pick_repo, participant, pool, headers, winner=winner)
+            seed_record(client, pool_repo, pick_repo, participant, pool, headers, wins, losses)
             participants.append(participant)
         return pool, participants
     return seed

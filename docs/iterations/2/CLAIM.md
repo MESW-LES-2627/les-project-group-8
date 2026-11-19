@@ -23,4 +23,4 @@ Document links resolve once tag `iter-2` is published.
 | CI/CD Pipeline | [GitHub Actions](https://github.com/MESW-LES-2627/les-project-group-8/actions) |
 | Stories in this increment | [Iteration backlog](https://github.com/MESW-LES-2627/les-project-group-8/blob/iter-2/docs/iterations/2/i02.d008-iteration-backlog.md) |
 | Retrospective | [Iteration 2 retrospective](https://github.com/MESW-LES-2627/les-project-group-8/blob/iter-2/docs/iterations/2/i02.d009-retrospective.md) |
-| AI log | [Iteration 2 AI log](https://github.com/MESW-LES-2627/les-project-group-8/blob/iter-2/docs/iterations/2/i02.d005-ai-log.md) |
+| AI critique | [Iteration 2 AI critique](https://github.com/MESW-LES-2627/les-project-group-8/blob/iter-2/docs/iterations/2/i02.d010-ai-critique.md) |
