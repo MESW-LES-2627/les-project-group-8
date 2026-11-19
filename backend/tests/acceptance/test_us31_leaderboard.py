@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from tests.acceptance.steps import create_pool, leaderboard, record, seed_record, sign_in
+from tests.acceptance.steps import create_pool, leaderboard, record, seed_pick, seed_record, sign_in
 
 
 @pytest.fixture
@@ -23,23 +23,23 @@ def given_records(client, pool_repo, pick_repo, user_repo):
     return seed
 
 
-def test_most_wins_come_first(client, given_records):
+def test_most_wins_come_first(client, pool_repo, given_records):
     # AC 31.1
     pool, (fewer, most) = given_records((1, 0), (2, 0))
-    assert leaderboard(client, pool) == [record(most, 2, 0, rank=1), record(fewer, 1, 0, rank=2)]
+    assert leaderboard(client, pool_repo, pool) == [record(most, 2, 0, rank=1), record(fewer, 1, 0, rank=2)]
 
 
-def test_equal_wins_put_fewer_losses_first(client, given_records):
+def test_equal_wins_put_fewer_losses_first(client, pool_repo, given_records):
     # AC 31.2
     pool, (more, fewer) = given_records((1, 1), (1, 0))
-    assert leaderboard(client, pool) == [record(fewer, 1, 0, rank=1), record(more, 1, 1, rank=2)]
+    assert leaderboard(client, pool_repo, pool) == [record(fewer, 1, 0, rank=1), record(more, 1, 1, rank=2)]
 
 
-def test_equal_records_share_a_competition_rank(client, given_records):
+def test_equal_records_share_a_competition_rank(client, pool_repo, given_records):
     # AC 31.3: ranks 1, 2, 2, 4; ties are listed by user id.
     pool, (last, first, *tied) = given_records((1, 1), (2, 0), (1, 0), (1, 0))
     tied.sort(key=lambda user: user.id)
-    assert leaderboard(client, pool) == [
+    assert leaderboard(client, pool_repo, pool) == [
         record(first, 2, 0, rank=1),
         record(tied[0], 1, 0, rank=2),
         record(tied[1], 1, 0, rank=2),
@@ -47,10 +47,10 @@ def test_equal_records_share_a_competition_rank(client, given_records):
     ]
 
 
-def test_pool_without_picks_has_empty_leaderboard(client, given_records):
+def test_pool_without_picks_has_empty_leaderboard(client, pool_repo, given_records):
     # AC 31.4
     pool, _ = given_records()
-    assert leaderboard(client, pool) == []
+    assert leaderboard(client, pool_repo, pool) == []
 
 
 @pytest.mark.parametrize("pool_id", [str(uuid.uuid4()), "invalid"])
@@ -59,3 +59,15 @@ def test_unknown_pool_returns_404(client, pool_id):
     response = client.get(f"/api/pools/{pool_id}/leaderboard")
     assert response.status_code == 404
     assert response.get_json() == {"error": "Pool not found."}
+
+
+def test_open_pool_has_empty_leaderboard(client, pool_repo, pick_repo, user_repo):
+    # AC 31.6: nobody sees who has picked before the deadline.
+    _, headers = sign_in(user_repo, "Creator")
+    participant, _ = sign_in(user_repo, "Participant")
+    pool = create_pool(client, headers)
+    seed_pick(client, pool_repo, pick_repo, participant, pool, headers)
+    # Not the leaderboard() step: it would pass the deadline first.
+    response = client.get(f"/api/pools/{pool['id']}/leaderboard")
+    assert response.status_code == 200
+    assert response.get_json() == []

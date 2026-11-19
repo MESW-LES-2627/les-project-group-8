@@ -220,7 +220,7 @@ table of its own, so it has no repository or fake: `ScoreService` reads the Pool
 through `PoolService` and every Pick through `PickService.list_all_picks`, which
 ignores the deadline and so has no route (US16). The public leaderboard counts only Picks on Bets with a
 winner, orders by wins descending and losses ascending, and shares competition
-ranks for equal records (1, 2, 2, 4).
+ranks for equal records (1, 2, 2, 4). It is empty while the Pool is OPEN (AC 31.6).
 
 ## Not done yet (on purpose)
 

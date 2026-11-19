@@ -26,15 +26,15 @@ async function seedUser(): Promise<{ id: string; email: string; name: string }> 
 	return { id: user!.id, email, name };
 }
 
-/** A Pool whose deadline passed yesterday. */
-async function seedPool(creatorId: string): Promise<string> {
+/** A Pool whose deadline passed yesterday, or is `deadlineInMs` from now. */
+async function seedPool(creatorId: string, deadlineInMs = -86_400_000): Promise<string> {
 	const [pool] = await write(
 		db
 			.from('pools')
 			.insert({
 				name: `Pool ${crypto.randomUUID().slice(0, 8)}`,
 				description: '',
-				deadline: new Date(Date.now() - 86_400_000).toISOString(),
+				deadline: new Date(Date.now() + deadlineInMs).toISOString(),
 				creator_id: creatorId,
 				decider_id: creatorId
 			})
@@ -124,4 +124,15 @@ test('after the deadline, a Pool with no Picks shows an empty Leaderboard (31.4)
 	const leaderboard = page.getByRole('region', { name: 'Leaderboard' });
 	await expect(leaderboard.getByText('No picks in this pool yet.')).toBeVisible();
 	await expect(leaderboard.getByRole('table')).toBeHidden();
+});
+
+test('before the deadline, a Pool with Picks shows no Leaderboard (31.6)', async ({ page }) => {
+	const viewer = await seedUser();
+	const poolId = await seedPool(viewer.id, 86_400_000);
+	await seedPick(await seedBet(poolId, ['Home', 'Away']), viewer.id, 'Home');
+
+	await openPoolAs(page, viewer.email, poolId);
+
+	await expect(page.getByRole('heading', { name: 'Bets' })).toBeVisible();
+	await expect(page.getByRole('region', { name: 'Leaderboard' })).toHaveCount(0);
 });
