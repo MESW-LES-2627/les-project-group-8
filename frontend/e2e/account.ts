@@ -14,10 +14,15 @@ export async function waitForHydration(page: Page): Promise<void> {
 	await page.waitForLoadState('networkidle');
 }
 
+/** A fresh, unique email and name for an e2e Account. */
+export function newAccount(): { email: string; name: string } {
+	const id = crypto.randomUUID().slice(0, 8);
+	return { email: `e2e-${id}@example.test`, name: `E2E ${id}` };
+}
+
 /** Signs up a fresh Account through the form; the browser ends up logged in on `/`. */
 export async function signUp(page: Page): Promise<{ email: string; name: string }> {
-	const id = crypto.randomUUID().slice(0, 8);
-	const account = { email: `e2e-${id}@example.test`, name: `E2E ${id}` };
+	const account = newAccount();
 
 	await page.goto('/signup');
 	await waitForHydration(page);

@@ -1,10 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
-import { PASSWORD, logIn } from './account.ts';
+import { PASSWORD, logIn, newAccount } from './account.ts';
 
-// Until Resolution has a UI (#73), setup writes the passed deadline, Picks and winners straight
-// to the database; the browser only reads. playwright.config.ts refuses a non-local SUPABASE_URL,
-// so this secret key is always the throwaway stack's (ADR 0005).
+// Until Resolution has a UI (#73), setup writes the passed deadline, Picks and winning Outcomes
+// straight to the database; the browser only reads. playwright.config.ts refuses a non-local
+// SUPABASE_URL, so this secret key is always the throwaway stack's (ADR 0005).
 declare const process: { env: Record<string, string | undefined> }; // no @types/node here
 const db = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!, {
 	auth: { persistSession: false }
@@ -19,9 +19,7 @@ async function write<T>(query: PromiseLike<{ data: T | null; error: unknown }>):
 
 /** Creates a User through Supabase Auth; the sign-up trigger adds the User row. */
 async function seedUser(): Promise<{ id: string; email: string; name: string }> {
-	const id = crypto.randomUUID().slice(0, 8);
-	const email = `e2e-${id}@example.test`;
-	const name = `E2E ${id}`;
+	const { email, name } = newAccount();
 	const { user } = await write<{ user: { id: string } | null }>(
 		db.auth.admin.createUser({ email, password: PASSWORD, email_confirm: true, user_metadata: { name } })
 	);
@@ -59,13 +57,13 @@ async function seedBet(poolId: string, labels: string[]): Promise<{ id: string; 
 	return { id: bet.id, outcomes: Object.fromEntries(outcomes.map((o) => [o.label, o.id])) };
 }
 
-type Bet = Awaited<ReturnType<typeof seedBet>>;
+type SeededBet = Awaited<ReturnType<typeof seedBet>>;
 
-async function seedPick(bet: Bet, userId: string, label: string): Promise<void> {
+async function seedPick(bet: SeededBet, userId: string, label: string): Promise<void> {
 	await write(db.from('picks').insert({ bet_id: bet.id, user_id: userId, outcome_id: bet.outcomes[label] }));
 }
 
-async function resolve(bet: Bet, label: string): Promise<void> {
+async function resolve(bet: SeededBet, label: string): Promise<void> {
 	await write(db.from('bets').update({ winning_outcome_id: bet.outcomes[label] }).eq('id', bet.id));
 }
 
