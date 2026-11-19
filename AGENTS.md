@@ -15,3 +15,7 @@ Single-context: one root `GLOSSARY.md` plus `docs/adr/`. See `docs/agents/domain
 ## Course evaluation
 
 Assessing an iteration or preparing for a review: follow `docs/evaluation.md`.
+
+## AI usage log
+
+At the end of a working session where AI was used: write a raw entry per `docs/ai-log.md` and commit it with the work.
