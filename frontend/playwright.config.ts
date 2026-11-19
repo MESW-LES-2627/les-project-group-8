@@ -26,7 +26,9 @@ export default defineConfig({
 			url: `http://127.0.0.1:${API_PORT}/api/health`
 		},
 		{
-			command: `pnpm build && pnpm preview --port ${PORT} --strictPort`,
+			// Vite directly, not `pnpm preview`: pnpm puts scripts in their own process group,
+			// which Playwright's shutdown misses, and CI then hangs on the surviving vite/workerd.
+			command: `vite build && vite preview --port ${PORT} --strictPort`,
 			url: `http://localhost:${PORT}`,
 			env: { API_URL: `http://127.0.0.1:${API_PORT}` },
 			timeout: 120_000
