@@ -1,7 +1,7 @@
 # Logging AI usage
 
 How we record how AI was used, so the team can write the iteration's AI
-critique (line 10 of [`evaluation.md`](evaluation.md)) from evidence instead of
+critique ([practice line 10 in `evaluation.md`](evaluation.md#10-ai-critique-bound)) from evidence instead of
 memory. The reasoning behind it:
 [grilling-ai-log-convention.md](assets/iterations/2/grilling-ai-log-convention.md).
 
@@ -34,7 +34,7 @@ of starting a new one.
 At the end of every working session where AI was used. The AI drafts the entry,
 the author reviews it, and it is committed with the work, on the same branch.
 
-Sessions about the log itself (writing or fixing entries, running the
+Sessions that only maintain the log (writing or fixing entries, running the
 coalescing prompt) are not logged.
 
 ### Fields
@@ -75,7 +75,6 @@ A full example: [2026-11-18-1343Z-ai-log-convention.md](iterations/2/ai-log/2026
   output, secrets included. When an entry needs evidence, commit a curated
   excerpt under `docs/assets/iterations/N/`, after checking it for secrets
   (keys, tokens, `.env` contents, passwords), and link it from the entry.
-- **No log about the log.** Sessions about the AI log itself are not logged.
 - **`d005-ai-log` is retired.** The existing `iNN.d005-ai-log.md` files in
   iterations 0–2 stay as they are. Don't edit them, and don't reuse the number
   `d005`.
@@ -83,8 +82,9 @@ A full example: [2026-11-18-1343Z-ai-log-convention.md](iterations/2/ai-log/2026
 ## AI critique
 
 At the end of each iteration, someone runs the prompt below with any coding
-assistant, saves the draft as `docs/iterations/N/iNN.d010-ai-critique.md`
-(for example `i03.d010-ai-critique.md`), and edits it by hand. `CLAIM.md` links
+assistant, saves the draft as `docs/iterations/N/iNN.d010-ai-critique.md`,
+where `NN` is the iteration number padded to two digits (for example
+`docs/iterations/3/i03.d010-ai-critique.md`), and edits it by hand. `CLAIM.md` links
 it as "AI critique".
 
 ### Coalescing prompt
