@@ -114,3 +114,24 @@ and no glossary change.
   e2e tests.
 - Out of scope: 24.1 and 31.1–31.4 (follow-up 1), the test schema (follow-up
   2), and component tests (#120).
+
+## 6. Tickets
+
+`/to-tickets` split the plan into sub-issues of #33, one stacked PR each,
+because smaller PRs are easier to review. Alef:
+
+> add the blocking edge. I like the granularity, smaller PRs will be easier to
+> review.
+
+| Issue | Ticket | Blocked by |
+| :- | :- | :- |
+| [#122](https://github.com/MESW-LES-2627/les-project-group-8/issues/122) | Harness: local Supabase, Playwright and CI, proven by sign-up (US5) | none |
+| [#123](https://github.com/MESW-LES-2627/les-project-group-8/issues/123) | Log in, session restored, log out, expired sessions, 2.11 | #122 |
+| [#124](https://github.com/MESW-LES-2627/les-project-group-8/issues/124) | Create a Pool, pick/detail, 16.1–16.2, 27.2 | #122 |
+| [#125](https://github.com/MESW-LES-2627/les-project-group-8/issues/125) | 24.1 and 31.1–31.4 after the deadline (follow-up 1) | #122 |
+| [#126](https://github.com/MESW-LES-2627/les-project-group-8/issues/126) | Consider a test schema (follow-up 2), `needs-triage` | none |
+
+#120 (component tests) is now also blocked by #122, which brings the
+Playwright install. The PRs stack in order #122 → #123 → #124 → #125, each
+"Part of #33"; #33 is done when its sub-issues close. The branch
+`alef/issue-33-playwright` holds this plan and becomes #122's PR.

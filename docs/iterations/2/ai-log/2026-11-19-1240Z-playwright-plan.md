@@ -15,7 +15,9 @@
   noticing that the CLI skips `003a`/`003b` and that an expired access token is
   renewed rather than redirected; asking two rounds of questions with
   recommended answers; creating the stacked branch; writing the ADR, the
-  record and this entry.
+  record and this entry; with `/to-tickets`, splitting the plan into
+  sub-issues #122–#126 of #33 with native blocking edges, and making #120
+  blocked by #122.
 - **What we decided ourselves, and why:** a second hosted Supabase project is
   ruled out by the free tier. Alef raised a test schema in the shared project
   as a future option; it becomes a follow-up issue, noting that it still shares
