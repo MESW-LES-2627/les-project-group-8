@@ -11,7 +11,8 @@ cd "$(dirname "$0")/../.."
 keys=supabase/signing_keys.json
 if [ ! -s "$keys" ]; then
 	echo '[]' > "$keys"
-	supabase gen signing-key --algorithm ES256 --append < /dev/null
+	# Removed on failure, or the next run would see a non-empty file and skip this.
+	supabase gen signing-key --algorithm ES256 --append < /dev/null || { rm -f "$keys"; exit 1; }
 fi
 
 # A stack left over from a killed run would already hold the migrations.
@@ -20,15 +21,17 @@ trap 'supabase stop --no-backup > /dev/null' EXIT
 supabase start
 
 # psql inside the database container, so the host needs no Postgres client.
-# The container name comes from project_id in supabase/config.toml.
+db=supabase_db_$(sed -n 's/^project_id = "\(.*\)"$/\1/p' supabase/config.toml)
 for migration in backend/migrations/*.sql; do
 	echo "Applying $migration"
-	docker exec -i supabase_db_les-project-group-8 \
+	docker exec -i "$db" \
 		psql -q -U postgres -d postgres -v ON_ERROR_STOP=1 < "$migration"
 done
 
 # Prefixed, because the CLI's API_URL is Supabase's while the frontend's is Flask's.
-eval "$(supabase status -o env | sed 's/^/LOCAL_/')"
+# Assigned first, so set -e stops here if `supabase status` fails.
+status=$(supabase status -o env)
+eval "$(sed 's/^/LOCAL_/' <<< "$status")"
 export SUPABASE_URL=$LOCAL_API_URL
 export SUPABASE_PUBLISHABLE_KEY=$LOCAL_PUBLISHABLE_KEY
 export SUPABASE_KEY=$LOCAL_SECRET_KEY # Flask's

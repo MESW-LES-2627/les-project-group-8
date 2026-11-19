@@ -54,7 +54,8 @@ pnpm test:e2e e2e/signup.spec.ts --headed   # extra arguments go to `playwright 
 `e2e/run.sh` starts a fresh local Supabase (ES256 signing keys, email confirmation
 off), applies `backend/migrations/*.sql` in sorted order, runs Playwright, and removes
 the stack on exit. Playwright starts Flask on :5002 and `vite preview` on :4173, so a
-dev server on :5001 or :5173 can keep running. Running `playwright test` directly
+dev server on :5001 or :5173 can keep running. It stops any other local Supabase
+stack of this project first, so two runs can't share a machine (or worktrees) at once. Running `playwright test` directly
 fails on purpose: without the local stack's URL, the frontend would fall back to the
 shared project in `wrangler.jsonc`.
 
