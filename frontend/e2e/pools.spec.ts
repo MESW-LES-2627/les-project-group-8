@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { signUp } from './account.ts';
+import { signUp, waitForHydration } from './account.ts';
 
 const RADIO = { statement: 'Who wins the derby?', options: ['Home', 'Away', 'Draw'] };
 const DROPDOWN = { statement: 'How many goals?', options: ['0–1', '2–3', '4 or more'] };
@@ -8,6 +8,7 @@ const DROPDOWN = { statement: 'How many goals?', options: ['0–1', '2–3', '4 
 async function createPool(page: Page, description = ''): Promise<{ path: string; name: string }> {
 	const name = `Pool ${crypto.randomUUID().slice(0, 8)}`;
 	await page.goto('/pools/new');
+	await waitForHydration(page);
 	await page.getByLabel('Name').fill(name);
 	await page.getByLabel('Description (optional)').fill(description);
 	await page.getByLabel('Deadline').fill('2030-06-15T12:30');
@@ -81,7 +82,7 @@ test('the creator saves Picks on a radio and a dropdown Bet, then changes one af
 	await expect(dropdown(page).locator('option:checked')).toHaveText('2–3');
 });
 
-test('before the deadline, another participant sees neither my Picks nor the authoring controls, and keeps their own Pick (16.1–16.2)', async ({
+test('before the deadline, another User sees neither the creator\'s Picks nor the authoring controls, and each keeps their own Pick (16.1–16.2)', async ({
 	page,
 	browser
 }) => {
@@ -91,13 +92,13 @@ test('before the deadline, another participant sees neither my Picks nor the aut
 	await radio(page, 'Home').check();
 	await savePick(page, RADIO.statement, 'Home');
 
-	const other = await (await browser.newContext()).newPage();
-	await signUp(other);
+	const context = await browser.newContext();
+	const other = await context.newPage();
+	const { name: otherName } = await signUp(other);
 	await other.goto(path);
 	await expect(betCard(other, RADIO.statement)).toBeVisible();
 	await expect(radio(other, 'Home')).not.toBeChecked();
 	await expect(other.getByText('Saved:')).toBeHidden();
-	await expect(other.getByText("Everyone's picks")).toBeHidden();
 	await expect(other.getByRole('heading', { name: 'Add a bet' })).toBeHidden();
 
 	await radio(other, 'Draw').check();
@@ -109,7 +110,9 @@ test('before the deadline, another participant sees neither my Picks nor the aut
 	await page.reload();
 	await expect(radio(page, 'Home')).toBeChecked();
 	await expect(page.getByText('Saved: Home')).toBeVisible();
-	await expect(page.getByText("Everyone's picks")).toBeHidden();
+	// The leaderboard lists every User with a Pick; the Bet must not show whose Pick is whose.
+	await expect(betCard(page, RADIO.statement).getByText(otherName)).toBeHidden();
+	await context.close();
 });
 
 test('a dropdown Bet lists its Outcomes in order in a labelled dropdown with none selected (27.2)', async ({
