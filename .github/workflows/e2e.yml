@@ -18,6 +18,7 @@ concurrency:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
@@ -60,9 +61,11 @@ jobs:
 
       - name: Run e2e tests
         run: pnpm test:e2e
+        env:
+          DEBUG: pw:webserver # TEMP: diagnosing the CI hang
 
       - name: Upload report
-        if: failure()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report

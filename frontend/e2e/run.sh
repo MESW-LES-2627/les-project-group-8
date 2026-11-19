@@ -43,3 +43,4 @@ fi
 
 cd frontend
 pnpm exec playwright test "$@"
+echo "TEMP: playwright exited $?"
