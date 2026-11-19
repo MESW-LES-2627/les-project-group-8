@@ -29,8 +29,11 @@ the backend only.
 | `pnpm build`   | Production build             |
 | `pnpm preview` | Preview the production build |
 | `pnpm check`   | Type-check (`svelte-check`)  |
+| `pnpm test`    | Unit tests (Vitest)          |
 
 ## Structure
+
+Unit tests (`*.test.ts`) sit next to the module they test.
 
 ```
 src/
@@ -45,6 +48,8 @@ src/
 │   ├── server/session.ts # endSession() / clearSessionCookies(), and helpers shared by login and signup
 │   ├── account.ts        # Sign-up limits (name length, password minimum)
 │   ├── form.ts           # readField() and the shared form classes
+│   ├── format.ts         # Deadline formatting and datetime-local conversion
+│   ├── pool.ts           # validatePool() and the new-Pool limits
 │   ├── redirect.ts       # loginPath() and sameSitePath(): only same-site `redirectTo` targets
 │   ├── types.ts
 │   └── index.ts

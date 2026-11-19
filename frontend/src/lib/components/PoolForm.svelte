@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { errorClass, inputClass, labelClass, submitClass } from '#lib/form.ts';
-	import type { FieldErrors } from '#lib/pool.ts';
+	import { POOL_DESCRIPTION_MAX, POOL_NAME_MAX, type PoolFieldErrors } from '#lib/pool.ts';
 	import Form from './Form.svelte';
 
 	type FormState = {
 		error: string;
-		fields?: FieldErrors;
+		fields?: PoolFieldErrors;
 		values?: {
 			name?: string;
 			description?: string;
@@ -48,7 +48,7 @@
 				id="name"
 				name="name"
 				required
-				maxlength="120"
+				maxlength={POOL_NAME_MAX}
 				value={form?.values?.name ?? ''}
 				class={inputClass}
 				aria-invalid={form?.fields?.name ? 'true' : undefined}
@@ -63,7 +63,7 @@
 			<textarea
 				id="description"
 				name="description"
-				maxlength="500"
+				maxlength={POOL_DESCRIPTION_MAX}
 				rows="3"
 				class={inputClass}
 				aria-invalid={form?.fields?.description ? 'true' : undefined}

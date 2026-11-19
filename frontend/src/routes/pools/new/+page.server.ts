@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { readField } from '#lib/form.ts';
-import { validate } from '#lib/pool.ts';
+import { validatePool } from '#lib/pool.ts';
 import { loginPath } from '#lib/redirect.ts';
 import { ApiError, createPool } from '#lib/server/api.ts';
 import { endSession } from '#lib/server/session.ts';
@@ -32,7 +32,7 @@ export const actions = {
 			description: readField(form, 'description').trim(),
 			deadline: readField(form, 'deadline').trim()
 		};
-		const { errors, input } = validate(values);
+		const { errors, input } = validatePool(values);
 		if (!input) {
 			return fail(400, {
 				error: 'Please fix the errors below.',
