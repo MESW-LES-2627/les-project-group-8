@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from users.models import User
+
 
 @dataclass(frozen=True)
 class Pick:
@@ -13,3 +15,4 @@ class Pick:
     user_id: str
     outcome_id: str
     created_at: datetime
+    user: User

@@ -12,6 +12,11 @@ on:
       - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
 
+# A new push to a PR cancels its older run; pushes to main/staging always finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     runs-on: ubuntu-latest

@@ -1,0 +1,26 @@
+name: Close finished epics
+
+# GitHub doesn't close a parent issue when its sub-issues close, so we do it here.
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  issues: write
+
+jobs:
+  close-epic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close the parent epic once all its stories are closed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          parent=$(gh api graphql -f query='query($owner:String!,$name:String!,$n:Int!){repository(owner:$owner,name:$name){issue(number:$n){parent{number state labels(first:20){nodes{name}} subIssuesSummary{total completed}}}}}' \
+            -f owner="${REPO%/*}" -f name="${REPO#*/}" -F n="$NUMBER" \
+            --jq '.data.repository.issue.parent | select(. != null and .state == "OPEN" and any(.labels.nodes[]; .name == "epic") and .subIssuesSummary.completed == .subIssuesSummary.total) | .number')
+          if [ -n "$parent" ]; then
+            gh issue close "$parent" --repo "$REPO" --comment "All stories are closed (last: #$NUMBER)."
+          fi

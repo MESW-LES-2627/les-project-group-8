@@ -1,7 +1,8 @@
 import { API_URL } from '$app/env/private';
-import type { Bet, CreateBetInput, CreatePoolInput, Pick, Pool, UserSummary } from '#lib/types.ts';
+import type { Bet, CreateBetInput, CreatePoolInput, LeaderboardEntry, Pick, Pool, UserSummary } from '#lib/types.ts';
 
 const TIMEOUT_MS = 15_000;
+const ERROR_PREVIEW_LIMIT = 2_048;
 
 export class ApiError extends Error {
 	status: number;
@@ -49,6 +50,7 @@ async function request<T>(
 		headers.set('authorization', `Bearer ${accessToken}`);
 	}
 
+	const startedAt = Date.now();
 	let response: Response;
 	try {
 		response = await fetch(url, {
@@ -57,7 +59,13 @@ async function request<T>(
 			body: body === undefined ? undefined : JSON.stringify(body),
 			signal: AbortSignal.timeout(TIMEOUT_MS)
 		});
-	} catch {
+	} catch (error) {
+		console.error('backend_request_failed', {
+			method,
+			url,
+			durationMs: Date.now() - startedAt,
+			errorType: error instanceof Error ? error.name : 'UnknownError'
+		});
 		throw new ApiError('Could not reach the backend. Is Flask running?', 0);
 	}
 
@@ -72,6 +80,26 @@ async function request<T>(
 	}
 
 	if (!response.ok) {
+		// Only preview infrastructure errors from the public listing. Other responses
+		// may contain account data or echo form input. Never log request headers/bodies.
+		const previewBody = method === 'GET' && path === '/pools' && !accessToken &&
+			(response.status === 429 || response.status >= 500) && data === null;
+		console.error('backend_http_error', {
+			method,
+			url,
+			status: response.status,
+			durationMs: Date.now() - startedAt,
+			headers: {
+				'content-type': response.headers.get('content-type'),
+				'retry-after': response.headers.get('retry-after'),
+				'server': response.headers.get('server'),
+				'cf-ray': response.headers.get('cf-ray'),
+				'cf-cache-status': response.headers.get('cf-cache-status'),
+				'x-render-request-id': response.headers.get('x-render-request-id')
+			},
+			bodyPreview: previewBody ? text.slice(0, ERROR_PREVIEW_LIMIT) : undefined,
+			bodyTruncated: previewBody ? text.length > ERROR_PREVIEW_LIMIT : undefined
+		});
 		const message =
 			data && typeof data === 'object' && 'error' in data
 				? String((data as { error: unknown }).error)
@@ -88,6 +116,10 @@ export function listPools(): Promise<Pool[]> {
 
 export function getPool(poolId: string): Promise<Pool> {
 	return request<Pool>(`/pools/${encodeURIComponent(poolId)}`);
+}
+
+export function getLeaderboard(poolId: string): Promise<LeaderboardEntry[]> {
+	return request<LeaderboardEntry[]>(`/pools/${encodeURIComponent(poolId)}/leaderboard`);
 }
 
 /** The User the access token belongs to. */
@@ -119,8 +151,21 @@ export function createBet(
 	});
 }
 
-/** Only the logged-in User's picks for the bets in this pool. */
-export async function getMyPicks(
+export function resolveBet(
+	poolId: string,
+	betId: string,
+	winningOutcomeId: string,
+	accessToken: string
+): Promise<Bet> {
+	return request<Bet>(`/pools/${encodeURIComponent(poolId)}/bets/${encodeURIComponent(betId)}/resolve`, {
+		method: 'POST',
+		body: { winning_outcome_id: winningOutcomeId },
+		accessToken
+	});
+}
+
+/** Own picks before the deadline; everyone's picks from the deadline on. */
+export async function listPicks(
 	poolId: string,
 	accessToken: string
 ): Promise<Pick[]> {

@@ -7,6 +7,13 @@ export interface UserSummary {
 	name: string;
 }
 
+export interface LeaderboardEntry {
+	user: UserSummary;
+	wins: number;
+	losses: number;
+	rank: number;
+}
+
 export interface Outcome {
 	id: string;
 	label: string;
@@ -50,6 +57,7 @@ export interface Pick {
 	id: string;
 	bet_id: string;
 	user_id: string;
+	user: UserSummary;
 	outcome_id: string;
 	created_at: string;
 }
