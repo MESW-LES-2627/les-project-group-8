@@ -1,6 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { signUp, waitForHydration } from './account.ts';
 
+// Every spec here runs in Asia/Kolkata, so the deadline check can expect an exact UTC time.
+test.use({ timezoneId: 'Asia/Kolkata' });
+
 type NewBet = { statement: string; options: string[]; presentation: 'Radio buttons' | 'Dropdown' };
 
 const RADIO: NewBet = { statement: 'Who wins the derby?', options: ['Home', 'Away', 'Draw'], presentation: 'Radio buttons' };
@@ -50,8 +53,8 @@ test('a new Pool is created empty and its page shows its name, description and d
 
 	await expect(page.getByRole('heading', { level: 1 })).toHaveText(name);
 	await expect(page.getByText('Weekend football')).toBeVisible();
-	// The page shows the deadline in UTC; the input took it in the server's local time.
-	await expect(page.getByText(/^Deadline 15 Jun 2030, \d\d:30 UTC$/)).toBeVisible();
+	// The browser is in Asia/Kolkata (UTC+05:30, no DST); 12:30 there is 07:00 UTC.
+	await expect(page.getByText('Deadline 15 Jun 2030, 07:00 UTC', { exact: true })).toBeVisible();
 	await expect(page.getByText('No bets yet.')).toBeVisible();
 });
 

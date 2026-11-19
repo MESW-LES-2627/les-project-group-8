@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { localInputToIso, toLocalInput } from '#lib/format.ts';
 	import { errorClass, inputClass, labelClass, submitClass } from '#lib/form.ts';
 	import { POOL_DESCRIPTION_MAX, POOL_NAME_MAX, type PoolFieldErrors } from '#lib/pool.ts';
 	import Form from './Form.svelte';
@@ -37,6 +38,19 @@
 		if (deadlineInput && !deadlineInput.value) {
 			setPreset(DAY);
 		}
+	});
+
+	// The input holds a local time; post it as UTC ISO, read in the User's zone, not the server's.
+	$effect(() => {
+		const formElement = deadlineInput?.form;
+		if (!formElement) {
+			return;
+		}
+		const postDeadlineAsUtc = (event: FormDataEvent) => {
+			event.formData.set('deadline', localInputToIso(String(event.formData.get('deadline'))) ?? '');
+		};
+		formElement.addEventListener('formdata', postDeadlineAsUtc);
+		return () => formElement.removeEventListener('formdata', postDeadlineAsUtc);
 	});
 </script>
 
@@ -81,7 +95,7 @@
 				type="datetime-local"
 				required
 				bind:this={deadlineInput}
-				value={form?.values?.deadline ?? ''}
+				value={toLocalInput(form?.values?.deadline ?? '')}
 				class={inputClass}
 				aria-invalid={form?.fields?.deadline ? 'true' : undefined}
 			/>
