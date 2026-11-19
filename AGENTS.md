@@ -4,6 +4,10 @@
 
 Issues live in this repo's GitHub Issues and are managed with the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
+### Stacked PRs
+
+Creating a branch on a stack, linking a branch or PR into one, or a "stack N": see `docs/agents/stacked-prs.md`.
+
 ### Triage labels
 
 The five default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human` and `wontfix`. See `docs/agents/triage-labels.md`.
