@@ -119,6 +119,12 @@ def seed_pick(client, pool_repo, pick_repo, user, pool, headers, *, winner=None,
     return bet
 
 
+def seed_record(client, pool_repo, pick_repo, user, pool, headers, wins, losses) -> None:
+    """Give the User `wins` winning and `losses` losing Picks on new resolved Bets in the Pool."""
+    for winner in [0] * wins + [1] * losses:
+        seed_pick(client, pool_repo, pick_repo, user, pool, headers, winner=winner)
+
+
 def leaderboard(client, pool) -> list:
     # Public: deliberately no Authorization header.
     response = client.get(f"/api/pools/{pool['id']}/leaderboard")
