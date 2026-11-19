@@ -1,8 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 import { signUp, waitForHydration } from './account.ts';
 
-const RADIO = { statement: 'Who wins the derby?', options: ['Home', 'Away', 'Draw'] };
-const DROPDOWN = { statement: 'How many goals?', options: ['0–1', '2–3', '4 or more'] };
+type NewBet = { statement: string; options: string[]; presentation: 'Radio buttons' | 'Dropdown' };
+
+const RADIO: NewBet = { statement: 'Who wins the derby?', options: ['Home', 'Away', 'Draw'], presentation: 'Radio buttons' };
+const DROPDOWN: NewBet = { statement: 'How many goals?', options: ['0–1', '2–3', '4 or more'], presentation: 'Dropdown' };
 
 /** Creates a Pool through the form and returns its detail page's path. */
 async function createPool(page: Page, description = ''): Promise<{ path: string; name: string }> {
@@ -17,17 +19,13 @@ async function createPool(page: Page, description = ''): Promise<{ path: string;
 	return { path: new URL(page.url()).pathname, name };
 }
 
-async function addBet(
-	page: Page,
-	bet: { statement: string; options: string[] },
-	presentation: 'Radio buttons' | 'Dropdown'
-): Promise<void> {
+async function addBet(page: Page, bet: NewBet): Promise<void> {
 	await page.getByLabel('Bet statement').fill(bet.statement);
 	for (const [i, option] of bet.options.entries()) {
 		if (i >= 2) await page.getByRole('button', { name: '+ Add option' }).click();
 		await page.getByLabel(`Option ${i + 1}`, { exact: true }).fill(option);
 	}
-	await page.getByLabel(presentation).check();
+	await page.getByLabel(bet.presentation).check();
 	await page.getByRole('button', { name: 'Add bet' }).click();
 	await expect(betCard(page, bet.statement)).toBeVisible();
 }
@@ -62,8 +60,8 @@ test('the creator saves Picks on a radio and a dropdown Bet, then changes one af
 }) => {
 	await signUp(page);
 	await createPool(page);
-	await addBet(page, RADIO, 'Radio buttons');
-	await addBet(page, DROPDOWN, 'Dropdown');
+	await addBet(page, RADIO);
+	await addBet(page, DROPDOWN);
 
 	await radio(page, 'Home').check();
 	await savePick(page, RADIO.statement, 'Home');
@@ -88,7 +86,7 @@ test('before the deadline, another User sees neither the creator\'s Picks nor th
 }) => {
 	await signUp(page);
 	const { path } = await createPool(page);
-	await addBet(page, RADIO, 'Radio buttons');
+	await addBet(page, RADIO);
 	await radio(page, 'Home').check();
 	await savePick(page, RADIO.statement, 'Home');
 
@@ -120,7 +118,7 @@ test('a dropdown Bet lists its Outcomes in order in a labelled dropdown with non
 }) => {
 	await signUp(page);
 	await createPool(page);
-	await addBet(page, DROPDOWN, 'Dropdown');
+	await addBet(page, DROPDOWN);
 
 	await expect(dropdown(page).locator('option')).toHaveText(['Select an option', ...DROPDOWN.options]);
 	await expect(dropdown(page)).toHaveValue('');
