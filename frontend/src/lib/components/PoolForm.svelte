@@ -1,12 +1,7 @@
 <script lang="ts">
 	import { errorClass, inputClass, labelClass, submitClass } from '#lib/form.ts';
+	import type { FieldErrors } from '#lib/pool.ts';
 	import Form from './Form.svelte';
-
-	type FieldErrors = {
-		name?: string;
-		description?: string;
-		deadline?: string;
-	};
 
 	type FormState = {
 		error: string;

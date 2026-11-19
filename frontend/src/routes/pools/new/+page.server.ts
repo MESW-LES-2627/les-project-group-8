@@ -1,48 +1,10 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { readField } from '#lib/form.ts';
+import { validate } from '#lib/pool.ts';
 import { loginPath } from '#lib/redirect.ts';
 import { ApiError, createPool } from '#lib/server/api.ts';
 import { endSession } from '#lib/server/session.ts';
-import type { CreatePoolInput, Pool } from '#lib/types.ts';
-
-type FieldErrors = {
-	name?: string;
-	description?: string;
-	deadline?: string;
-};
-
-function validate(values: CreatePoolInput): { errors: FieldErrors; input?: CreatePoolInput } {
-	const errors: FieldErrors = {};
-
-	if (!values.name) {
-		errors.name = 'Name cannot be empty.';
-	} else if (values.name.length > 120) {
-		errors.name = 'Name must be at most 120 characters.';
-	}
-
-	if (values.description.length > 500) {
-		errors.description = 'Description must be at most 500 characters.';
-	}
-
-	let deadline = '';
-	if (!values.deadline) {
-		errors.deadline = 'Choose a deadline.';
-	} else {
-		const date = new Date(values.deadline);
-		if (Number.isNaN(date.getTime())) {
-			errors.deadline = 'Deadline is not a valid date.';
-		} else if (date.getTime() <= Date.now()) {
-			errors.deadline = 'Deadline must be in the future.';
-		} else {
-			deadline = date.toISOString();
-		}
-	}
-
-	if (Object.keys(errors).length > 0) {
-		return { errors };
-	}
-	return { errors, input: { ...values, deadline } };
-}
+import type { Pool } from '#lib/types.ts';
 
 export function load({
 	locals,
