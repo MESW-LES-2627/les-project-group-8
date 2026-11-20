@@ -49,23 +49,34 @@ jobs:
           HEAD: ${{ github.event.pull_request.head.ref }}
           SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
-          # Walk down the stack: PRs merged into this branch earlier reach staging with it. A whole-stack merge marks
-          # members merged after the bottom PR, so each member's own run also checks its commit is in staging.
+          # Walk down the stack, since PRs merged into this branch reach staging with it; a whole-stack merge marks
+          # members merged after the bottom PR, so each member's own run walks too.
           echo "$PR $HEAD $SHA" >queue
+          : >reached
           i=1
           while line=$(sed -n "${i}p" queue) && [ -n "$line" ]; do
             read -r pr head sha <<<"$line"
-            status=$(gh api "repos/$REPO/compare/staging...$sha" --jq .status || true)
-            if [[ $status == identical || $status == behind ]]; then echo "$pr" >>reached; fi
-            if [ "$head" != main ]; then # a back-merge from main would walk every promotion PR
-              gh pr list --repo "$REPO" --state merged --base "$head" --limit 100 --json number,headRefName,mergeCommit \
-                --jq '.[] | "\(.number) \(.headRefName) \(.mergeCommit.oid)"' >>queue
-            fi
             i=$((i + 1))
+            if grep -qx "$pr" seen 2>/dev/null; then continue; fi
+            echo "$pr" >>seen
+            if ! status=$(gh api "repos/$REPO/compare/staging...$sha" --jq .status); then
+              echo "::warning::Could not tell whether #$pr is in staging."
+            elif [[ $status == identical || $status == behind ]]; then
+              echo "$pr" >>reached
+            fi
+            # main and staging take every PR, so a back-merge from them must not walk their history.
+            if [[ $head != main && $head != staging ]] &&
+              ! gh pr list --repo "$REPO" --state merged --base "$head" --limit 100 --json number,headRefName,mergeCommit \
+                --jq '.[] | "\(.number) \(.headRefName) \(.mergeCommit.oid)"' >>queue; then
+              echo "::warning::Could not list the PRs merged into $head."
+            fi
           done
           numbers=""
-          for pr in $(cat reached 2>/dev/null); do
-            for n in $(gh pr view "$pr" --repo "$REPO" --json body --jq .body | grep -oiE "$CLOSING_RE" | grep -oE '[0-9]+$' | sort -u); do
+          for pr in $(cat reached); do
+            if ! body=$(gh pr view "$pr" --repo "$REPO" --json body --jq .body); then
+              echo "::warning::Could not read #$pr."; continue
+            fi
+            for n in $(grep -oiE "$CLOSING_RE" <<<"$body" | grep -oE '[0-9]+$' | sort -u); do
               gh issue close "$n" --repo "$REPO" --comment "Closed by #$pr, whose commits are in \`staging\`." \
                 || echo "::warning::Could not close #$n."
               numbers+=" $n"

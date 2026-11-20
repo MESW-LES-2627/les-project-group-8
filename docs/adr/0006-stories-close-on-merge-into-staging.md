@@ -33,5 +33,7 @@ not live on `main`.
   PRs merged into each branch, and each member's own merge checks again, since a
   whole-stack merge marks members merged just after the bottom PR. A PR whose
   commits never reach `staging` closes nothing.
+  This needs merge commits: if a branch reaches `staging` by squash or rebase,
+  the members merged into it are not found and are closed by hand.
 - Stories merged into `staging` before this change are closed by the next
   promotion PR, with one `Closes #n` each, one last time.
