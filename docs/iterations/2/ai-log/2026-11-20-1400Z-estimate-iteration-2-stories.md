@@ -11,5 +11,5 @@
 - **What we decided ourselves, and why:** the method, scale and reference
   (US22 = 3) were fixed in the grilling session; the team approves the numbers
   in the PR.
-- **Notes:** board 24's `Estimate` field is not created or set yet; it is
-  done once the team approves the numbers.
+- **Notes:** after the team approved the numbers, the AI created board 24's
+  `Estimate` Number field, set it on all nine stories, and opened #163.
