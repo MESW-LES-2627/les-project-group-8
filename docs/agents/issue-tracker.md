@@ -16,7 +16,9 @@ Infer the repo from `git remote -v`; `gh` does this automatically when run insid
 
 ## Project board
 
-Issues are tracked on the org project **Group 8 — Iteration 2** (number `24`, owner `MESW-LES-2627`). Work is two levels deep: an **epic** (label `epic`) is a parent issue whose sub-issues are **user stories** (label `user-story`). Technical work has issue type `Task` and defects issue type `Bug`; both go on the board too, with no story. The board's `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`, so epics stay in the project. Its views:
+Issues are tracked on the org project **Group 8 — Iteration 2** (number `24`, owner `MESW-LES-2627`). Work is two levels deep: an **epic** (label `epic`) is a parent issue whose sub-issues are **user stories** (label `user-story`). Technical work has issue type `Task` and defects issue type `Bug`; both go on the board too, with no story. Stories keep the `user-story` label; never write technical work as an "As a developer…" story. The board's `Status` field has `To do`, `In progress`, `In review`, `Done`.
+
+From iteration 3, every story, Task and Bug gets points in the board's `Estimate` field at iteration planning, before work starts (Fibonacci 1, 2, 3, 5, 8; US22 = 3; split anything over 8). Report story points and task points (Tasks and Bugs) separately. Effort is measured as cycle time from the `Status` history, not logged in hours. Sub-issues of an issue already on the board are added to it automatically, in `To do`, so epics stay in the project. Its views:
 
 - **Iteration 2 board**: stories only (`label:user-story`), in swimlanes by `Parent issue`. The iteration-2 claim links it as `views/1`, so edit it in place and never recreate it.
 - **Technical work**: Tasks and Bugs (`type:Task,Bug`).
@@ -29,7 +31,8 @@ GitHub's board automation only reacts to issues **linked** to a PR, and `Closes 
 
 | When | Do |
 | :--- | :--- |
-| You start a story | Assign it (`gh issue edit <n> --add-assignee @me`) and set it `In progress`. |
+| Iteration planning | Set `Estimate` on every story, Task and Bug planned for the iteration. |
+| You start an issue (story, Task or Bug) | Assign it (`gh issue edit <n> --add-assignee @me`) and set it `In progress` before the first commit, so its cycle time is right. |
 | Its PR into `staging` opens | Set the story `In review` by hand. List it in the PR body as `Closes #<n>` (one keyword per issue); the workflow links it. |
 | The PR merges into `staging` | The workflow closes the story; `Item closed` moves it to `Done`. Once an epic's last story closes, `.github/workflows/close-epic.yml` closes the epic, whether the story was closed by the workflow or by hand. |
 | `staging` is promoted to `main` | The promotion PR lists no issues (except once, below). |
@@ -45,6 +48,13 @@ item=$(gh api graphql -f query='{repository(owner:"MESW-LES-2627",name:"les-proj
   --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number==24) | .id')
 gh project item-edit --id "$item" --project-id PVT_kwDOFEfeUs4Bqvy6 \
   --field-id PVTSSF_lADOFEfeUs4Bqvy6zhpFf7I --single-select-option-id <option-id>
+```
+
+**Set an estimate**, with `$item` found as above:
+
+```sh
+gh project item-edit --id "$item" --project-id PVT_kwDOFEfeUs4Bqvy6 \
+  --field-id PVTF_lADOFEfeUs4Bqvy6zhqtlxU --number <points>
 ```
 
 ## Pull requests as a triage surface
