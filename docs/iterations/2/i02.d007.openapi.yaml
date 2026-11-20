@@ -373,13 +373,14 @@ paths:
         Bets: a win when the Pick is the winning Outcome, a loss otherwise. Bets
         without a winner are not counted. Ordered by most wins, then fewest
         losses; Users with equal wins and losses share a rank (1, 2, 2, 4).
-        Public, like getPool (US22, US24, US31).
+        Empty while the Pool is OPEN, so nobody sees who has picked before the
+        deadline. Public, like getPool (US22, US24, US31).
       operationId: getLeaderboard
       parameters:
         - $ref: '#/components/parameters/PoolId'
       responses:
         '200':
-          description: The Leaderboard; empty when the Pool has no Picks.
+          description: The Leaderboard; empty while the Pool is OPEN or has no Picks.
           content:
             application/json:
               schema:

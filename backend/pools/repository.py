@@ -60,6 +60,7 @@ class SupabasePoolRepository:
             .update({"winning_outcome_id": winning_outcome_id})
             .eq("pool_id", pool_id)
             .eq("id", bet_id)
+            .is_("winning_outcome_id", None)
             .select(_BET_COLUMNS)
             .execute()
             .data

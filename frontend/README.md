@@ -29,10 +29,42 @@ the backend only.
 | `pnpm build`   | Production build             |
 | `pnpm preview` | Preview the production build |
 | `pnpm check`   | Type-check (`svelte-check`)  |
+| `pnpm test`    | Unit tests (Vitest)          |
+| `pnpm test:e2e` | End-to-end tests (Playwright) |
+
+## End-to-end tests
+
+Playwright specs live in `e2e/`, apart from the Vitest unit tests, and run against a
+throwaway local Supabase, never the shared project
+([ADR 0005](../docs/adr/0005-e2e-tests-use-a-throwaway-local-supabase.md)).
+
+Prerequisites:
+
+- Docker, running.
+- The [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started)
+  (`brew install supabase/tap/supabase`).
+- The backend's dependencies in `backend/.venv` (see [Getting started](../README.md#backend)), or `flask` on your `PATH`.
+- Chromium for Playwright, once: `pnpm exec playwright install chromium`.
+
+```bash
+pnpm test:e2e                 # whole suite
+pnpm test:e2e e2e/signup.spec.ts --headed   # extra arguments go to `playwright test`
+```
+
+`e2e/run.sh` starts a fresh local Supabase (ES256 signing keys, email confirmation
+off), applies `backend/migrations/*.sql` in sorted order, runs Playwright, and removes
+the stack on exit. Playwright starts Flask on :5002 and `vite preview` on :4173, so a
+dev server on :5001 or :5173 can keep running. It stops any other local Supabase
+stack of this project first, so two runs can't share a machine (or worktrees) at once. Running `playwright test` directly
+fails on purpose: without the local stack's URL, the frontend would fall back to the
+shared project in `wrangler.jsonc`.
 
 ## Structure
 
+Unit tests (`*.test.ts`) sit next to the module they test.
+
 ```
+e2e/                      # Playwright specs and run.sh (local Supabase + Playwright)
 src/
 ├── app.css               # Tailwind entrypoint (@import 'tailwindcss')
 ├── app.d.ts              # App.Locals / App.PageData typings
@@ -45,6 +77,8 @@ src/
 │   ├── server/session.ts # endSession() / clearSessionCookies(), and helpers shared by login and signup
 │   ├── account.ts        # Sign-up limits (name length, password minimum)
 │   ├── form.ts           # readField() and the shared form classes
+│   ├── format.ts         # Deadline formatting and datetime-local conversion
+│   ├── pool.ts           # validatePool() and the new-Pool limits
 │   ├── redirect.ts       # loginPath() and sameSitePath(): only same-site `redirectTo` targets
 │   ├── types.ts
 │   └── index.ts

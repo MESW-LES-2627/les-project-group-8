@@ -1,6 +1,7 @@
 """Reusable "Given" steps, so each test reads like its acceptance criterion."""
 
 import uuid
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -119,7 +120,19 @@ def seed_pick(client, pool_repo, pick_repo, user, pool, headers, *, winner=None,
     return bet
 
 
-def leaderboard(client, pool) -> list:
+def seed_record(client, pool_repo, pick_repo, user, pool, headers, wins, losses) -> None:
+    """Give the User `wins` winning and `losses` losing Picks on new resolved Bets in the Pool."""
+    for winner in [0] * wins + [1] * losses:
+        seed_pick(client, pool_repo, pick_repo, user, pool, headers, winner=winner)
+
+
+def leaderboard(client, pool_repo, pool) -> list:
+    """Move the Pool's deadline into the past, then read its Leaderboard; a Pool has none while OPEN."""
+    passed = datetime.now(timezone.utc) - timedelta(seconds=1)
+    pool_repo.pools = [
+        replace(stored, deadline=passed) if stored.id == pool["id"] else stored
+        for stored in pool_repo.pools
+    ]
     # Public: deliberately no Authorization header.
     response = client.get(f"/api/pools/{pool['id']}/leaderboard")
     assert response.status_code == 200

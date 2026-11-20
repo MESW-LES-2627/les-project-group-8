@@ -13,6 +13,7 @@ for how it is organized and why.
 - Node 22+
 - [pnpm](https://pnpm.io/)
 - Python 3.13 recommended (the version used by CI and Render)
+- Docker and the [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started), for the end-to-end tests only (`frontend/README.md`)
 
 ## Getting started
 
