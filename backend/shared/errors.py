@@ -20,6 +20,10 @@ class ForbiddenError(Exception):
     """The caller is logged in but may not do this. Returned as 403."""
 
 
+class ConflictError(Exception):
+    """The request conflicts with the resource's current state. Returned as 409."""
+
+
 def register_error_handlers(app: Flask) -> None:
     @app.errorhandler(ValidationError)
     def validation_error(err):
@@ -32,6 +36,10 @@ def register_error_handlers(app: Flask) -> None:
     @app.errorhandler(ForbiddenError)
     def forbidden_error(err):
         return jsonify(error=str(err)), 403
+
+    @app.errorhandler(ConflictError)
+    def conflict_error(err):
+        return jsonify(error=str(err)), 409
 
     @app.errorhandler(NotFoundError)
     def not_found_error(err):

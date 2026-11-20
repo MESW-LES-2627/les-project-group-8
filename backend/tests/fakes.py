@@ -76,6 +76,9 @@ class FakePoolRepository:
                 bet = pool.find_bet(bet_id)
                 if bet is None:
                     return None
+                if bet.winning_outcome_id is not None:
+                    # Mirrors the repository's update ... where winning_outcome_id is null.
+                    return None
                 resolved = replace(bet, winning_outcome_id=winning_outcome_id)
                 self.pools[index] = replace(
                     pool, bets=tuple(resolved if item.id == bet_id else item for item in pool.bets),
