@@ -4,6 +4,11 @@ name: Close finished epics
 on:
   issues:
     types: [closed]
+  workflow_call:
+    inputs:
+      issue:
+        type: number
+        required: true
 
 permissions:
   issues: write
@@ -16,7 +21,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          NUMBER: ${{ github.event.issue.number }}
+          NUMBER: ${{ inputs.issue || github.event.issue.number }}
         run: |
           parent=$(gh api graphql -f query='query($owner:String!,$name:String!,$n:Int!){repository(owner:$owner,name:$name){issue(number:$n){parent{number state labels(first:20){nodes{name}} subIssuesSummary{total completed}}}}}' \
             -f owner="${REPO%/*}" -f name="${REPO#*/}" -F n="$NUMBER" \

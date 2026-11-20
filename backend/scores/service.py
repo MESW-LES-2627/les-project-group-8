@@ -1,6 +1,7 @@
 """Count resolved picks and assign competition ranks within a pool."""
 
 from picks.service import PickService
+from pools.models import PoolStatus
 from pools.service import PoolService
 
 from .models import LeaderboardEntry
@@ -13,6 +14,9 @@ class ScoreService:
 
     def get_leaderboard(self, pool_id: str) -> list[LeaderboardEntry]:
         pool = self._pools.get_pool(pool_id)
+        if pool.status() == PoolStatus.OPEN:
+            # Nobody sees who has picked before the deadline.
+            return []
         winners = {bet.id: bet.winning_outcome_id for bet in pool.bets}
         records = {}
         for pick in self._picks.list_all_picks(pool):

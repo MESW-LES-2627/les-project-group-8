@@ -34,7 +34,7 @@ def test_other_users_wins_and_losses_are_shown(
     expected_rows = [record(rows[who][0], *rows[who][1], rank=rank) for who, rank in expected]
     # Equal ranks are listed by user id.
     expected_rows.sort(key=lambda row: (row["rank"], row["user"]["id"]))
-    assert leaderboard(client, pool) == expected_rows
+    assert leaderboard(client, pool_repo, pool) == expected_rows
 
 
 def test_other_user_without_resolved_picks_has_zero_record(client, pool_repo, pick_repo, viewer_and_other):
@@ -43,7 +43,7 @@ def test_other_user_without_resolved_picks_has_zero_record(client, pool_repo, pi
     seed_record(client, pool_repo, pick_repo, viewer, pool, headers, 1, 0)
     for _ in range(2):
         seed_pick(client, pool_repo, pick_repo, other, pool, headers)
-    assert leaderboard(client, pool) == [record(viewer, 1, 0, rank=1), record(other, 0, 0, rank=2)]
+    assert leaderboard(client, pool_repo, pool) == [record(viewer, 1, 0, rank=1), record(other, 0, 0, rank=2)]
 
 
 def test_other_user_without_picks_in_this_pool_is_absent(client, pool_repo, pick_repo, viewer_and_other):
@@ -52,4 +52,4 @@ def test_other_user_without_picks_in_this_pool_is_absent(client, pool_repo, pick
     seed_record(client, pool_repo, pick_repo, viewer, pool, headers, 1, 0)
     other_pool = create_pool(client, headers)
     seed_pick(client, pool_repo, pick_repo, other, other_pool, headers, winner=0)
-    assert leaderboard(client, pool) == [record(viewer, 1, 0)]
+    assert leaderboard(client, pool_repo, pool) == [record(viewer, 1, 0)]
