@@ -31,7 +31,7 @@ GitHub's board automation only reacts to issues **linked** to a PR, and `Closes 
 | You start a story | Assign it (`gh issue edit <n> --add-assignee @me`) and set it `In progress`. |
 | Its PR into `staging` opens | Set the story `In review` by hand. List it in the PR body as `Closes #<n>` (one keyword per issue); the workflow links it. |
 | The PR merges into `staging` | The workflow closes the story; `Item closed` moves it to `Done`. Once an epic's last story closes, `.github/workflows/close-epic.yml` closes the epic, whether the story was closed by the workflow or by hand. |
-| `staging` is promoted to `main` | The promotion PR lists no issues. |
+| `staging` is promoted to `main` | The promotion PR lists no issues (except once, below). |
 
 A PR merged into any other branch (a stack member not retargeted to `staging` first) closes nothing: close its story by hand.
 
