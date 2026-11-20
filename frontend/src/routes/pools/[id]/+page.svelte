@@ -42,6 +42,17 @@
 		<p role="alert" class="mt-6 border border-black px-3 py-2 text-sm">{form.error}</p>
 	{/if}
 
+	<!-- A Pool has no Leaderboard until its deadline has passed. -->
+	{#if pool.status !== 'OPEN'}
+		{#if data.leaderboardLoadError}
+			<p role="alert" class="mt-8 border border-black px-3 py-2 text-sm">
+				Could not load leaderboard: {data.leaderboardLoadError}
+			</p>
+		{:else}
+			<Leaderboard entries={data.leaderboard} currentUserId={data.user?.id ?? null} />
+		{/if}
+	{/if}
+
 	<section class="mt-8 space-y-4" aria-labelledby="bets-heading">
 		<h2 id="bets-heading" class="text-xl font-bold">Bets</h2>
 		{#if pool.bets.length === 0}
@@ -59,14 +70,6 @@
 			/>
 		{/each}
 	</section>
-
-	{#if data.leaderboardLoadError}
-		<p role="alert" class="mt-8 border border-black px-3 py-2 text-sm">
-			Could not load leaderboard: {data.leaderboardLoadError}
-		</p>
-	{:else}
-		<Leaderboard entries={data.leaderboard} currentUserId={data.user?.id ?? null} />
-	{/if}
 
 	{#if data.user?.id === pool.creator.id}
 		<section class="mt-10 border-t border-black pt-6" aria-labelledby="add-bet-heading">

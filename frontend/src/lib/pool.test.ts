@@ -33,6 +33,7 @@ describe('validatePool', () => {
 		[{ description: 'd'.repeat(501) }, { description: 'Description must be at most 500 characters.' }],
 		[{ deadline: '' }, { deadline: 'Choose a deadline.' }],
 		[{ deadline: 'soon' }, { deadline: 'Deadline is not a valid date.' }],
+		[{ deadline: '2026-12-01T18:00' }, { deadline: 'Deadline must include a time zone.' }],
 		[{ deadline: '2026-11-19T12:00:00Z' }, { deadline: 'Deadline must be in the future.' }],
 		[{ deadline: '2026-11-18T12:00:00Z' }, { deadline: 'Deadline must be in the future.' }]
 	])('rejects %j', (change, errors) => {

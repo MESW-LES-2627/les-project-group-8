@@ -31,6 +31,9 @@ export function validatePool(values: CreatePoolInput): { errors: PoolFieldErrors
 		const date = new Date(values.deadline);
 		if (Number.isNaN(date.getTime())) {
 			errors.deadline = 'Deadline is not a valid date.';
+		} else if (!/(Z|[+-]\d\d:\d\d)$/i.test(values.deadline)) {
+			// Without a zone, Date reads it in the server's zone, not the User's.
+			errors.deadline = 'Deadline must include a time zone.';
 		} else if (date.getTime() <= Date.now()) {
 			errors.deadline = 'Deadline must be in the future.';
 		} else {

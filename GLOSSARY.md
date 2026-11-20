@@ -42,5 +42,5 @@ A User's wins and losses over the resolved Bets they picked on within a set of P
 _Avoid_: Score, stats
 
 **Leaderboard**:
-The Users with a Pick in a Pool, ordered by their Records in that Pool: most wins first, then fewest losses. Users with equal wins and losses share a rank.
+The Users with a Pick in a Pool, ordered by their Records in that Pool: most wins first, then fewest losses. Users with equal wins and losses share a rank. A Pool has no Leaderboard until its deadline has passed.
 _Avoid_: Standings, ranking, results
