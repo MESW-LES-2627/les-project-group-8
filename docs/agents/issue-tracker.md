@@ -16,9 +16,9 @@ Infer the repo from `git remote -v`; `gh` does this automatically when run insid
 
 ## Project board
 
-Issues are tracked on the org project **Group 8 — Iteration 2** (number `24`, owner `MESW-LES-2627`). Work is two levels deep: an **epic** (label `epic`) is a parent issue whose sub-issues are **user stories** (label `user-story`). Technical work has issue type `Task` and defects issue type `Bug`; both go on the board too, with no story. Its `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`, so epics stay in the project. Its views:
+Issues are tracked on the org project **Group 8 — Iteration 2** (number `24`, owner `MESW-LES-2627`). Work is two levels deep: an **epic** (label `epic`) is a parent issue whose sub-issues are **user stories** (label `user-story`). Technical work has issue type `Task` and defects issue type `Bug`; both go on the board too, with no story. The board's `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`, so epics stay in the project. Its views:
 
-- **Iteration 2 board**: stories only (`-label:epic`), in swimlanes by `Parent issue`.
+- **Iteration 2 board**: everything but epics (`-label:epic`), stories and technical work alike, in swimlanes by `Parent issue`.
 - **Epics**: a table of epics with their `Sub-issues progress`.
 - **Roadmap**: epics only.
 
