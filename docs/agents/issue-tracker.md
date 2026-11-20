@@ -24,7 +24,7 @@ Issues are tracked on the org project **Group 8 — Iteration 2** (number `24`, 
 
 Iteration 1's board (`22`) is kept as a record.
 
-GitHub's board automation only reacts to issues **linked** to a PR, and `Closes #N` only links when the PR targets `main`. Our feature PRs target `staging`, so `.github/workflows/link-closing-issues.yml` links each PR to the issues its body closes (`Closes`, `Fixes`, `Resolves #<n>`), and closes them when it merges into `staging` (ADR 0006). `Done` means merged into `staging`, not live on `main`. This needs the `project` scope on `gh` (`gh auth refresh -h github.com -s project`) for the hand moves below. Epics are never moved by hand.
+GitHub's board automation only reacts to issues **linked** to a PR, and `Closes #N` only links when the PR targets `main`. Our feature PRs target `staging`, so `.github/workflows/link-closing-issues.yml` links each PR to the issues its body closes (`Closes`, `Fixes`, `Resolves #<n>`), and closes them once its commits are in `staging`, stack members included (ADR 0006). `Done` means merged into `staging`, not live on `main`. This needs the `project` scope on `gh` (`gh auth refresh -h github.com -s project`) for the hand moves below. Epics are never moved by hand.
 
 | When | Do |
 | :--- | :--- |
@@ -33,7 +33,7 @@ GitHub's board automation only reacts to issues **linked** to a PR, and `Closes 
 | The PR merges into `staging` | The workflow closes the story; `Item closed` moves it to `Done`. Once an epic's last story closes, `.github/workflows/close-epic.yml` closes the epic, whether the story was closed by the workflow or by hand. |
 | `staging` is promoted to `main` | The promotion PR lists no issues (except once, below). |
 
-A PR merged into any other branch (a stack member not retargeted to `staging` first) closes nothing: close its story by hand.
+A stack member merged into its parent branch closes its stories when that branch's commits reach `staging`. A PR whose commits never reach `staging` closes nothing.
 
 One time only: stories merged into `staging` before ADR 0006 are closed by the next promotion PR, with one `Closes #<n>` each.
 

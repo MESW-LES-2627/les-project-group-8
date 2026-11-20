@@ -28,7 +28,10 @@ not live on `main`.
 - Issues closed with `GITHUB_TOKEN` do not start other workflows, so
   `close-epic.yml` is called from the new workflow (`workflow_call`) instead of
   relying on its `issues: closed` trigger.
-- A PR merged into a branch other than `staging` (a stack member not retargeted
-  first) closes nothing; its issue is closed by hand.
+- A stack member merged into its parent branch closes its issues once its merge
+  commit is in `staging`: when the bottom PR merges, the workflow walks down the
+  PRs merged into each branch, and each member's own merge checks again, since a
+  whole-stack merge marks members merged just after the bottom PR. A PR whose
+  commits never reach `staging` closes nothing.
 - Stories merged into `staging` before this change are closed by the next
   promotion PR, with one `Closes #n` each, one last time.
