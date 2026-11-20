@@ -6,7 +6,8 @@
   [Skills For Real Engineers](https://github.com/mattpocock/skills).
 - **Outcome:** twelve decisions on retroactive story points, classifying
   technical work and board views, recorded in
-  [grilling-story-estimation.md](../../../assets/iterations/2/grilling-story-estimation.md).
+  [grilling-story-estimation.md](../../../assets/iterations/2/grilling-story-estimation.md),
+  then split with `to-tickets` into #158–#162.
 - **Delegated:** reading `docs/evaluation.md` and the iteration docs; pulling
   board 24's status history, PR sizes, reviews and commit times with `gh`;
   proposing each decision with a recommendation; this entry and the record.
