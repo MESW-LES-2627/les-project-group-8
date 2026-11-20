@@ -15,3 +15,5 @@
 - **How we checked:** every relative link in the critique resolves; PRs #127,
   #128, #130, #131, #132 and #136 and commit `ad9cb3c` were checked with `gh`
   and `git`.
+- **Notes:** the same session then wrote the Verdict from the raw entries,
+  and added Pedro's OpenCode row to Tools and his US23 entry to Evidence.
