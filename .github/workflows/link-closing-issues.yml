@@ -1,7 +1,7 @@
 name: Link and close issues from PR bodies
 
 # GitHub reads `Closes #N` only on PRs into main, so PRs into other branches are linked here,
-# and closed here when they merge into staging (ADR 0006).
+# and closed here once their commits are in staging, stacked PRs included (ADR 0006).
 on:
   pull_request:
     types: [opened, edited, reopened, closed]
@@ -35,24 +35,54 @@ jobs:
           done
 
   close:
-    if: github.event.action == 'closed' && github.event.pull_request.merged && github.event.pull_request.base.ref == 'staging'
+    if: github.event.action == 'closed' && github.event.pull_request.merged
     runs-on: ubuntu-latest
     outputs:
       issues: ${{ steps.close.outputs.issues }}
     steps:
-      - name: Close each issue the body closes
+      - name: Close each issue the bodies of this PR and its stack close
         id: close
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
-          BODY: ${{ github.event.pull_request.body }}
+          HEAD: ${{ github.event.pull_request.head.ref }}
+          SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
-          numbers=$(grep -oiE "$CLOSING_RE" <<<"$BODY" | grep -oE '[0-9]+$' | sort -u)
-          for n in $numbers; do
-            gh issue close "$n" --repo "$REPO" --comment "Closed by #$PR, merged into \`staging\`." \
-              || echo "::warning::Could not close #$n."
+          # Walk down the stack, since PRs merged into this branch reach staging with it; a whole-stack merge marks
+          # members merged after the bottom PR, so each member's own run walks too.
+          echo "$PR $HEAD $SHA" >queue
+          : >reached
+          i=1
+          while line=$(sed -n "${i}p" queue) && [ -n "$line" ]; do
+            read -r pr head sha <<<"$line"
+            i=$((i + 1))
+            if grep -qx "$pr" seen 2>/dev/null; then continue; fi
+            echo "$pr" >>seen
+            if ! status=$(gh api "repos/$REPO/compare/staging...$sha" --jq .status); then
+              echo "::warning::Could not tell whether #$pr is in staging."
+            elif [[ $status == identical || $status == behind ]]; then
+              echo "$pr" >>reached
+            fi
+            # main and staging take every PR, so a back-merge from them must not walk their history.
+            if [[ $head != main && $head != staging ]] &&
+              ! gh pr list --repo "$REPO" --state merged --base "$head" --limit 100 --json number,headRefName,mergeCommit \
+                --jq '.[] | "\(.number) \(.headRefName) \(.mergeCommit.oid)"' >>queue; then
+              echo "::warning::Could not list the PRs merged into $head."
+            fi
           done
+          numbers=""
+          for pr in $(cat reached); do
+            if ! body=$(gh pr view "$pr" --repo "$REPO" --json body --jq .body); then
+              echo "::warning::Could not read #$pr."; continue
+            fi
+            for n in $(grep -oiE "$CLOSING_RE" <<<"$body" | grep -oE '[0-9]+$' | sort -u); do
+              gh issue close "$n" --repo "$REPO" --comment "Closed by #$pr, whose commits are in \`staging\`." \
+                || echo "::warning::Could not close #$n."
+              numbers+=" $n"
+            done
+          done
+          numbers=$(tr ' ' '\n' <<<"$numbers" | sort -un)
           echo "issues=$(jq -cn '$ARGS.positional | map(tonumber)' --args $numbers)" >>"$GITHUB_OUTPUT"
 
   # Issues closed with GITHUB_TOKEN start no workflows, so close-epic.yml is called here.
