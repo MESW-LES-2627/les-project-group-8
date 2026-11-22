@@ -252,10 +252,12 @@ traverses `pool.bets` and reads Bet options and resolution state. It also relies
 on their behavior to decide whether a Pick can be saved. A second dependency
 is the assumption that every answer is an Outcome ID. That assumption connects
 authoring, submission, persistence, API serialization, frontend rendering, and
-scoring. Representing `ChoiceAnswer` and `TextAnswer` explicitly lets the shared
-submission flow work with a validated answer while keeping each format's rules
-in one place. The existing dependency on Pool structure remains. The two
-modules also need to agree on the Bet's declared answer type.
+scoring. Representing `ChoiceAnswer` and `TextAnswer` explicitly and placing
+format-specific validation behind an `AnswerValidationStrategy` contract lets
+the shared submission flow depend on a validation operation and its result.
+Each strategy owns the rules for its answer format. `PickService` still depends
+on Pool structure, and the strategies need the Bet's answer configuration.
+The two modules also need to agree on the Bet's declared answer type.
 
 **Distance.** `pools`, `picks`, and `scores` run in the same Flask application
 and can be changed together. Keeping answer validation inside `picks` limits
@@ -267,13 +269,25 @@ current clients. Adding text still requires a database migration and changes
 on both sides of the API.
 [OpenAPI](iterations/2/i02.d007.openapi.yaml) · [Frontend types](../frontend/src/lib/types.ts) · [Bet form](../frontend/src/lib/components/BetForm.svelte) · [Bet card](../frontend/src/lib/components/BetCard.svelte)
 
-**Volatility.** We expect the one-Pick-per-User-and-Bet rule and the deadline
-and visibility rules to stay the same across answer formats. Text limits
-and scoring criteria are open decisions in US28. A change to the text limit
-should be confined to the validation rule and its tests, with an update to
-any matching UI hint. A change to how text answers are judged will also affect
-Resolution and scoring. Keeping these decisions separate lets the team deliver
-text submission while the scoring policy is still being defined.
+**Volatility.** Volatility is the likelihood that a component will need to
+change over time. We expect answer-format validation to have higher volatility
+than the shared Pick submission flow. US28 leaves text limits open, so the text
+validator is likely to change as the team agrees on accepted input. The vision
+also includes numerical and list-selection Bets, making additional validators
+plausible. Choice validation has lower expected volatility because the existing
+rule that an Outcome must belong to its Bet is already defined and tested.
+
+The one-Pick-per-User-and-Bet invariant and identity checks have lower expected
+volatility because the planned formats use the same participation rules.
+Deadline and visibility logic may change when Rounds are introduced, as analyzed
+in Scenario 1. Resolution and scoring are likely to change when the team defines
+how text answers are judged. API serializers, frontend forms and repository
+mappings will change when a new answer format is introduced, while adjustments
+to an existing format's validation should usually stay within its strategy,
+tests and any matching UI hints. These are qualitative expectations based on
+the backlog and unresolved requirements. The Strategy contract is intended to
+keep the common submission flow stable as format-specific rules evolve, at the
+cost of maintaining that contract and the selection of strategies.
 
 **Cohesion.** The `pools` module defines which answer format a Bet accepts and
 validates its configuration. The `picks` module validates and stores a User's
@@ -290,7 +304,10 @@ both formats the same identity, deadline, and replacement behavior.
 2. **Use one typed answer on the domain Pick and one submission flow.**
    A Pick contains either `ChoiceAnswer` or `TextAnswer`. This makes the
    valid shapes explicit and adds mapping code at the API and persistence
-   boundaries.
+   boundaries. Format validation can use functions selected inside PickService
+   or Strategy implementations behind one interface. Functions have less setup
+   for two formats. Strategy localizes changes as formats gain different rules,
+   but adds an interface, implementations and a selection mechanism.
 3. **Use separate submission services for choice and text.** Each service
    could evolve independently, but both need the same identity, deadline,
    replacement, and privacy rules. With two simple formats, the additional
@@ -298,11 +315,24 @@ both formats the same identity, deadline, and replacement behavior.
 
 **Decision for the next implementation sprint.** Choose option 2. Introduce
 a Bet answer type (`choice` or `text`) independently of its presentation,
-and give Pick one typed `answer`. Keep one `PickService` and use focused
-validation functions selected by Bet type. A choice answer must name an
-Outcome belonging to the Bet. A text answer is trimmed and checked against
-one limit agreed by the team before implementation. The explicit selection
-is sufficient for two formats and a single submission flow.
+and give Pick one typed `answer`. Keep one `PickService` and apply the
+**Strategy pattern** to answer validation within the `picks` module. Define
+an `AnswerValidationStrategy` interface with an operation such as
+`validate(payload, bet_configuration) -> Answer`, returning a validated
+`ChoiceAnswer` or `TextAnswer` or raising the existing `ValidationError`.
+`ChoiceAnswerValidator` checks that the supplied Outcome belongs to the Bet.
+`TextAnswerValidator` trims text and checks the limit agreed by the team before
+implementation. A mapping from Bet type to validator selects the strategy.
+An unsupported type produces a validation error before any Pick is saved.
+
+PickService keeps the common identity, availability and replacement checks,
+invokes the selected strategy, and passes the validated answer to its
+repository. PoolService continues to validate Bet configuration when authoring.
+This choice follows the expected evolution toward further Bet types and gives
+each format one place for its validation rules. The extra interface and
+selection mapping add complexity for the initial two formats. A new format
+requires a strategy and a mapping entry, together with API, storage and UI
+support. A change to the shared validation contract can affect every strategy.
 
 Keep the existing `outcome_id` field in choice requests and responses.
 Add `answer_text` for text requests and responses. Reject requests that
@@ -325,5 +355,8 @@ text answers before they can score them.
 The sprint acceptance checks will cover creation without options, saving
 and reloading a text Pick, preserving the previous answer after an invalid
 replacement, and revealing both answer formats at the same deadline.
+Each strategy will have focused tests for valid and invalid answers. Submission
+tests will check selection by Bet type and that a validation error preserves
+the saved Pick.
 An existing choice Bet and its saved Picks must still work through the
 same API after migration.
