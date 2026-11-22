@@ -109,6 +109,8 @@ fit within the existing components; notifications remain planned.
 
 #### 4.1. Scenario 1 — Multiple Rounds and the interaction between Pools and Picks
 
+**First documented:** 2026-11-08. (commit 207e0cb)
+
 ##### Change scenario and design context
 
 The application has two related domain areas: **managing competitions** and **recording participants' Picks**. Pool management defines a Pool, its Bets, their possible Outcomes and the deadline for accepting answers. Participation records each User's Pick for a Bet and allows them to change it while answering is open. These responsibilities are implemented in the `pools` and `picks` modules, coordinated by PoolService and PickService within the same Flask application.
@@ -217,56 +219,111 @@ authentication implementation.
 
 #### 4.1. Scenario 2 — Supporting open-ended Bets alongside multiple-choice Bets
 
+**First documented:** 2026-11-20.
+
 ##### Change scenario and design context
 
-The application currently supports Bets with predefined Outcomes. Each Bet has between two and ten options, displayed as radio buttons or a dropdown. These are different presentations of the same answer type. In both cases, a Pick selects exactly one Outcome.
+An organizer running a football prediction Pool may want to ask “Who will
+score first?” without listing every possible player. [US28](iterations/2/i02.d003-user-stories.md#us28-create-and-answer-an-open-ended-bet--later)
+describes this feature, and the [vision domain model](diagrams/1/DomainModel.puml)
+already includes `OpenEndedBet`. This scenario uses the current shared Pool
+deadline and can be implemented independently of the Rounds proposal.
 
-This assumption appears throughout the implementation. [PoolService](../backend/pools/service.py) requires options when creating a Bet. [PickService](../backend/picks/service.py) loads the Pool, finds the Bet, checks its availability and validates that the submitted `outcome_id` belongs to its options. The Pick repository stores that identifier. [ScoreService](../backend/scores/service.py) subsequently compares it with the Bet’s winning Outcome to calculate wins and losses.
+Today, each Bet has two to ten predefined Outcomes. Radio buttons and dropdowns
+are two presentations of the same choice format. `PoolService` validates the
+option list when creating a Bet. `PickService` loads the Pool, finds the Bet,
+checks whether it accepts Picks, and verifies that the submitted `outcome_id`
+belongs to it. The repository stores the Outcome ID, and `ScoreService`
+compares it with the winning Outcome when computing Records.
+[PoolService](../backend/pools/service.py) · [PickService](../backend/picks/service.py) · [Pick repository](../backend/picks/repository.py) · [ScoreService](../backend/scores/service.py)
 
-[US28 — Create and answer an open-ended Bet](iterations/2/i02.d003-user-stories.md) introduces a different requirement. An organizer should be able to create a Bet without enumerating possible answers, and participants should answer using text. For example, “Who will score first?” could accept a name entered by each participant. This capability already appears as `OpenEndedBet` in the [vision domain model](diagrams/1/DomainModel.puml).
-
-The required behavior is:
-
-- An organizer can create an open-ended Bet without supplying an option list.
-- A participant can submit a text answer and retrieve it after reloading.
-- Each User still has at most one Pick per Bet and can replace it before the deadline.
-- Empty or oversized answers are rejected without replacing an existing valid Pick.
-- Identity, deadline and privacy rules apply equally to both answer types. Other participants’ answers remain hidden until the Pool deadline.
-
-This scenario is being considered independently from the round proposal for the last iteration. Our proposal covers authoring, submission, editing and visibility of open ended question in the system.
-
-The feature belongs within the existing prediction bounded context, in our analysis. The `pools`, `picks` and `scores` modules divide responsibilities within that context. Open-ended Bets use the same ownership, participation and deadline rules, so they do not justify a new context. The pools module handles Bet creation and resolution, the picks module records participants’ answers, and the scores module calculates Records and Leaderboards.
+The first implementation will let organizers create a text Bet without an
+option list and let participants submit, retrieve, and replace a text Pick.
+Both formats follow the same rules for identity, deadline, and visibility.
+Each User has at most one Pick per Bet. A blank, oversized, or otherwise
+invalid answer leaves the previous Pick intact. Before the deadline, a User
+can read only their own Picks. From the deadline onward, the existing reveal
+rule applies to both formats.
 
 ##### Coupling and cohesion analysis
 
-**Integration strength.** PickService currently has model coupling to pool management because it understands the structure of Pool, Bet and Outcome. It also has functional coupling because it applies competition rules using that structure, including the Pool’s status and the Bet’s winning Outcome.
+**Strength.** `PickService` is coupled to the Pool and Bet models because it
+traverses `pool.bets` and reads Bet options and resolution state. It also relies
+on their behavior to decide whether a Pick can be saved. A second dependency
+is the assumption that every answer is an Outcome ID. That assumption connects
+authoring, submission, persistence, API serialization, frontend rendering, and
+scoring. Representing `ChoiceAnswer` and `TextAnswer` explicitly lets the shared
+submission flow work with a validated answer while keeping each format's rules
+in one place. The existing dependency on Pool structure remains. The two
+modules also need to agree on the Bet's declared answer type.
 
-Open-ended answers expose another dependency: the assumption that every answer is an Outcome identifier. That assumption connects Bet creation, Pick validation, persistence, API payloads, frontend forms and scoring. Adding a text field to the database alone would therefore be insufficient. Existing validation would reject the answer, and existing response mapping and presentation expect an Outcome.
+**Distance.** `pools`, `picks`, and `scores` run in the same Flask application
+and can be changed together. Keeping answer validation inside `picks` limits
+the number of modules involved when a format rule changes. The answer
+representation also crosses the HTTP boundary. Flask serializers, OpenAPI,
+SvelteKit types, form actions, and components must agree on the payload and
+response fields. Keeping the existing choice payload reduces coordination for
+current clients. Adding text still requires a database migration and changes
+on both sides of the API.
+[OpenAPI](iterations/2/i02.d007.openapi.yaml) · [Frontend types](../frontend/src/lib/types.ts) · [Bet form](../frontend/src/lib/components/BetForm.svelte) · [Bet card](../frontend/src/lib/components/BetCard.svelte)
 
-Separating choice answers from text answers makes their different rules explicit. Format-specific validation can operate behind a small contract that returns a validated answer or a validation error. The shared submission flow then coordinates those checks without containing every format’s rules.
+**Volatility.** We expect the one-Pick-per-User-and-Bet rule and the deadline
+and visibility rules to stay the same across answer formats. Text limits
+and scoring criteria are open decisions in US28. A change to the text limit
+should be confined to the validation rule and its tests, with an update to
+any matching UI hint. A change to how text answers are judged will also affect
+Resolution and scoring. Keeping these decisions separate lets the team deliver
+text submission while the scoring policy is still being defined.
 
-This reduces knowledge of answer-validation details inside the submission flow. It does not eliminate PickService’s existing dependency on the Pool structure. That dependency remains a separate concern addressed by the Iteration 1 proposal.
-
-**Distance.** Distance is low within the backend because its modules share one application and deployment. The relevant boundaries are the `pools`, `picks` and `scores` packages within the same bounded context. Spreading open-ended answer validation across these packages would increase the distance between related rules and require changes in several places. Keeping answer validation together in `picks`, while `pools` defines the Bet’s configuration, keeps related responsibilities close. The frontend/backend boundary introduces greater distance: the SvelteKit forms and Flask API must agree on how choice and text answers are represented.
-
-**Volatility.** We expect answer-validation rules to have low volatility once the text limit and accepted format are defined. These are straightforward rules that are unlikely to change frequently. Keeping them in focused validation functions should therefore be sufficient, without introducing a more elaborate mechanism for interchangeable behavior.
-
-**Cohesion.** Pool management remains responsible for defining what kind of answer a Bet accepts. Pick management remains responsible for recording a User’s answer and replacing it. Validation for each answer format stays together, while identity, deadline and privacy checks remain shared. This avoids duplicating participation rules in separate choice and text submission services.
+**Cohesion.** The `pools` module defines which answer format a Bet accepts and
+validates its configuration. The `picks` module validates and stores a User's
+answer and owns the common submission and visibility rules. The `scores`
+module calculates Records and ranks. Keeping one submission flow gives
+both formats the same identity, deadline, and replacement behavior.
 
 ##### Alternatives, decision, and consequences
 
-One option is to keep the existing Pick model with two optional fields: `outcome_id` for multiple-choice answers and `answer_text` for open-ended answers. A database constraint would ensure that exactly one is filled. The services would check the Bet’s type to decide which field to validate and use. This is a simple approach with few new abstractions, but it can spread answer-specific conditions across several parts of the code, making changes harder to coordinate as more answer types are added.
+1. **Use two optional fields directly on the domain Pick.** This is the
+   smallest model change. Every consumer must interpret which field is
+   present, and the model needs an invariant to reject Picks with both
+   fields populated or both empty.
+2. **Use one typed answer on the domain Pick and one submission flow.**
+   A Pick contains either `ChoiceAnswer` or `TextAnswer`. This makes the
+   valid shapes explicit and adds mapping code at the API and persistence
+   boundaries.
+3. **Use separate submission services for choice and text.** Each service
+   could evolve independently, but both need the same identity, deadline,
+   replacement, and privacy rules. With two simple formats, the additional
+   coordination outweighs that benefit.
 
-A second option is to give Pick a single `answer` field containing either a `ChoiceAnswer`, with an Outcome identifier, or a `TextAnswer`, with text. This makes the two answer types explicit in the code, instead of representing them through two optional fields. Both use the same PickService and can still be stored in the same database table. Validation must check that the answer matches the Bet’s type. This approach adds types and conversion code, but prevents an individual answer from containing both text and an Outcome identifier, and also allows implementation of patterns such as strategy, giving different validation for each type of Pick.
+**Decision for the next implementation sprint.** Choose option 2. Introduce
+a Bet answer type (`choice` or `text`) independently of its presentation,
+and give Pick one typed `answer`. Keep one `PickService` and use focused
+validation functions selected by Bet type. A choice answer must name an
+Outcome belonging to the Bet. A text answer is trimmed and checked against
+one limit agreed by the team before implementation. The explicit selection
+is sufficient for two formats and a single submission flow.
 
-A third option is to create separate services for submitting each kind of Pick. Although this separates format-specific behavior, it risks duplicating authentication, deadlines, replacement and privacy rules. Those responsibilities would need coordinated updates whenever participation behavior changed, so we consider this a bad option.
+Keep the existing `outcome_id` field in choice requests and responses.
+Add `answer_text` for text requests and responses. Reject requests that
+supply both fields, supply neither, or use the wrong field for the Bet type.
+In PostgreSQL, keep both formats in the existing Picks table, enforce that
+exactly one answer column is populated, and retain the foreign key for
+choice Outcomes and the uniqueness of `(bet_id, user_id)`. Mark existing
+Bets as `choice` and preserve their Picks and winning Outcomes. The
+repository maps the two storage columns to the typed domain answer.
+[Pick repository](../backend/picks/repository.py) · [Schema migration](../backend/migrations/20261104210948_pool_contains_bets.sql)
 
-Our proposed decision for the next sprints is to use **distinct answer representations within the existing picks module, with one shared submission flow**, the second option. A choice answer contains an Outcome identifier, and a text answer contains text. Each Pick contains exactly one answer matching its Bet’s declared type.
+The first release will support creation, submission, editing, and reveal
+for text Bets. While the team defines how to judge equivalent text answers,
+the Resolve endpoint will reject text Bets and their Picks will contribute
+zero wins and zero losses. A User with only a text Pick can still appear
+with a `0/0` Record, as a User with only an unresolved choice Pick can today.
+The cost of this staged delivery is that organizers can collect and reveal
+text answers before they can score them.
 
-The Bet’s answer type will be separate from its presentation. Radio buttons and dropdowns remain presentations of a choice Bet. PoolService will validate the configuration appropriate to the type, while PickService will coordinate the common submission rules and delegate format-specific validation to focused functions. Existing Bets will retain choice behavior.
-
-For two simple formats, these functions and an explicit selection by Bet type are sufficient. Strategy becomes useful if validation grows into substantial interchangeable behavior, and is a pattern we are investigating for this implementation.
-
-The costs include extending API payloads, repository mappings, database constraints, frontend forms and acceptance tests. The glossary must also broaden its definitions of Bet and Pick. Existing choice answers must survive the migration unchanged, and tests must verify that both formats obey the same privacy, deadline and replacement rules.
-
-Before implementing text validation, the team must agree on the length limit. Before enabling resolution and scoring for text Bets, it must also agree on correctness criteria. Until that behavior is defined, text answers must not produce wins or losses. This is something TBD for when this stories is developed in the next iteratio.
+The sprint acceptance checks will cover creation without options, saving
+and reloading a text Pick, preserving the previous answer after an invalid
+replacement, and revealing both answer formats at the same deadline.
+An existing choice Bet and its saved Picks must still work through the
+same API after migration.
