@@ -1,6 +1,10 @@
 # Backend architecture
 
-The backend is a **modular monolith**: one Flask app, one deployment, split into modules by business area. Each module has the same four files, so once you understand one module you understand all of them.
+The backend is a **modular monolith**: one Flask app, one deployment, split into modules by business area. The users, pools and picks modules separate routes, services, repositories and models. The scores module derives Records through other services, so it needs no repository.
+
+The [Iteration 2 UML component diagram](diagrams/2/components.svg) shows the web
+application, Flask API and separate Supabase Auth and data integrations. The
+SvelteKit server calls Auth directly; application-table access goes through Flask.
 
 ## Modules
 
@@ -23,10 +27,14 @@ backend/
 │   ├── service.py
 │   ├── repository.py
 │   └── routes.py
-└── picks/             # one participant's answer to one Bet
+├── picks/             # one participant's answer to one Bet
+│   ├── models.py
+│   ├── service.py
+│   ├── repository.py
+│   └── routes.py
+└── scores/            # derived Records and Leaderboards, no persistence
     ├── models.py
     ├── service.py
-    ├── repository.py
     └── routes.py
 ```
 
@@ -49,6 +57,9 @@ flowchart LR
   subgraph picksModule [picks]
     PKR[routes] --> PKS[service] --> PKRepo[repository]
   end
+  subgraph scoresModule [scores]
+    SR[routes] --> SS[service]
+  end
   subgraph sharedModule [shared]
     AUTH[auth]
     DB[db]
@@ -58,6 +69,9 @@ flowchart LR
   App -.builds.-> UR
   App -.builds.-> PR
   App -.builds.-> PKR
+  App -.builds.-> SR
+  SS -->|"get_pool()"| PS
+  SS -->|"list_all_picks(pool)"| PKS
   PKS -->|"get_pool()"| PS
   URepo --> Supabase[(Supabase Postgres)]
   PRepo --> Supabase
@@ -106,7 +120,7 @@ deadline. Bets and Outcomes stay in `pools/`; each Bet owns its statement,
 A logged-in Account's Supabase access token reaches Flask as `Authorization: Bearer <token>`. `shared/auth.py` has two parts:
 
 - **`TokenVerifier`** checks the token locally (ADR 0001): ES256 signature against a trusted key, `exp` not passed, `aud == "authenticated"`. It returns the token's `sub`, which is the User's id. In production `TokenVerifier.from_env()` trusts the key set at `<SUPABASE_URL>/auth/v1/.well-known/jwks.json`; PyJWT's `PyJWKClient` fetches it on first use and caches it (refreshed at most every 5 minutes), so requests don't call Supabase. A token with an unknown `kid` (Supabase rotated its key) refetches the set, at most once every 30 seconds. If Supabase can't be reached when the set must be fetched, the request fails with a 500, not a 401: it is our failure, not the caller's.
-- **`create_login_guard(verifier, load_user)`** builds the `@login_required` decorator. It reads the bearer token, verifies it, loads the User through `UserService.get_user()` and calls the route with `current_user=<User>`. `app.py` builds it once and hands it to any blueprint that needs it, so any route can be guarded: it covers `GET /api/me`, Pool/Bet creation and both Pick endpoints.
+- **`create_login_guard(verifier, load_user)`** builds the `@login_required` decorator. It reads the bearer token, verifies it, loads the User through `UserService.get_user()` and calls the route with `current_user=<User>`. `app.py` builds it once and hands it to any blueprint that needs it, so any route can be guarded: it covers `GET /api/me`, Pool/Bet creation, Bet resolution and both Pick endpoints.
 
 | Request | Response |
 | :--- | :--- |
@@ -177,8 +191,11 @@ request when the Pool is not `OPEN`, the Bet has a winner, the Bet belongs to a
 different Pool, or the option does not belong to that Bet.
 The repository upserts on `(bet_id, user_id)`, so changing a Pick replaces the
 previous answer instead of adding a second one.
-`GET /api/pools/{pool_id}/picks` returns `{picks: [...]}` for the logged-in User
-and only the Bets of that Pool; the array is empty when there are no saved Picks.
+`GET /api/pools/{pool_id}/picks` requires authentication and returns `{picks: [...]}`
+for the Bets of that Pool. While the Pool is open, only the logged-in User's Picks
+are returned. At or after the deadline, it returns all participants' Picks,
+including their display names (US16). The array is empty when there are no Picks
+visible to the caller. This behavior is implemented by `PickService.list_picks()`.
 
 A `user_id` in the body is refused, just like `creator_id` when creating a pool,
 so a client cannot impersonate another User by changing an id.
@@ -198,8 +215,8 @@ so a client cannot impersonate another User by changing an id.
 
 ### 1. A modular monolith, not MVC or microservices
 
-- **Chosen:** one app, split into modules by business area (`users`, `pools`).
-- **Why:** a flat "all routes in one file" layout mixed HTTP, rules and SQL in the same functions. Microservices would add network calls and deployments for a three-endpoint app.
+- **Chosen:** one app, split into modules by business area (`users`, `pools`, `picks`, `scores`).
+- **Why:** a flat "all routes in one file" layout mixed HTTP, rules and SQL in the same functions. Microservices would add network calls and deployments between closely related business areas.
 - **Cost:** module boundaries are a convention (rule 2 above), not enforced by the language. We keep them in code review.
 
 ### 2. Keep `supabase-py` instead of raw SQL with `psycopg`
@@ -208,19 +225,25 @@ so a client cannot impersonate another User by changing an id.
 - **Why:** it was already set up on Render and needs no new secret.
 - **Cost:** the direct table requests execute separately. If an Outcomes insert fails, `create_bet` attempts to delete only the new Bet, preserving its Pool and existing Bets. A crash or failed deletion can still leave incomplete data. Transactions remain in #31.
 
-## Adding a module in a later iteration (e.g. scores)
+## Adding a module
 
-1. Create `backend/scores/` with `models.py`, `service.py`, `repository.py`, `routes.py`.
-2. `ScoreService` receives a `ScoreRepository`, plus other services if it needs pools or users. It never reads their tables.
-3. Build it in `create_app()` and register its blueprint.
-4. Add a fake to `tests/fakes.py`, write the user story with acceptance criteria, and add one acceptance test per criterion.
+1. Create a package for the business responsibility with models, a service and
+   routes. Add a repository only if it owns persisted data.
+2. Pass repositories and collaborating services through the constructor;
+   cross-module behavior goes through services rather than direct table access.
+3. Build the service in `create_app()` and register its blueprint.
+4. Cover its user-story acceptance criteria with tests and use a fake repository
+   where persistence is involved.
 
 `picks/` and `scores/` are worked examples of these four steps. `scores/` has no
 table of its own, so it has no repository or fake: `ScoreService` reads the Pool
-through `PoolService` and every Pick through `PickService.list_all_picks`, which
-ignores the deadline and so has no route (US16). The public leaderboard counts only Picks on Bets with a
-winner, orders by wins descending and losses ascending, and shares competition
-ranks for equal records (1, 2, 2, 4). It is empty while the Pool is OPEN (AC 31.6).
+through `PoolService` and every Pick through `PickService.list_all_picks()`.
+That internal operation ignores the deadline and has no route exposing raw Picks;
+the authenticated Pick route instead uses the visibility-aware `list_picks()`
+(US16). The public leaderboard is empty while the Pool is OPEN (AC 31.6).
+After the deadline, it includes Users with Picks and counts wins and losses only
+on Bets with a winning Outcome. It orders by wins descending and losses ascending,
+sharing competition ranks for equal Records (1, 2, 2, 4).
 
 ## Not done yet (on purpose)
 
