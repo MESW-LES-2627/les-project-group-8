@@ -1,7 +1,7 @@
 # Prepare iteration 3 documents
 
-- **Who:** Requesting team member; name not confirmed in this chat.
-- **Tools:** Codex; model version not recorded.
+- **Who:** João Cerqueira.
+- **Tools:** OpenAI Codex, GPT 6.1 Sol.
 - **Outcome:** Copied the existing documents into iteration 3 and prepared the [backlog](../i03.d008-iteration-backlog.md).
 - **Delegated:** Copy documents, update their local iteration links, correct stale Done statuses, mark selected stories Next, and draft backlog estimates.
 - **What we decided ourselves, and why:** The user selected US28, US30 and US32 and the technical work, deferred implementation decisions, and requested staged changes without a commit.
