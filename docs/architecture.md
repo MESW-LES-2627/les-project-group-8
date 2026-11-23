@@ -15,7 +15,7 @@ backend/
 │   ├── auth.py        # token verifier and @login_required guard (see "Who is calling")
 │   ├── db.py          # Supabase client (refuses to start without credentials)
 │   ├── errors.py      # ValidationError -> 400, AuthenticationError -> 401, ForbiddenError -> 403,
-│   │                  # NotFoundError -> 404, anything else -> 500
+│   │                  # NotFoundError -> 404, ConflictError -> 409, anything else -> 500
 │   └── validation.py  # small input checks: JSON object, required text
 ├── users/             # people who create pools
 │   ├── models.py
@@ -41,7 +41,7 @@ backend/
 | File | Responsibility | Knows about |
 | :--- | :--- | :--- |
 | `routes.py` | HTTP only: read the request, call the service, turn the result into JSON | Flask, its own service and models; `users.models.User` as the guard's `current_user` |
-| `service.py` | Business rules: validation, defaults (decider = creator), talking to other modules | its own repository, other modules' services; `users.models.User` when a User is passed in (the pool's creator) |
+| `service.py` | Business rules: validation, defaults (decider = creator), talking to other modules | its own repository, other modules' services; `users.models.User` when a User is passed in (the pool's creator, or its decider for a resolution) |
 | `repository.py` | Database access with `supabase-py`. Rows are turned into dataclasses by hand | Supabase, its own models |
 | `models.py` | Plain dataclasses (`User`, `Pool`, `Bet`, `Outcome`, `Pick`...), plus rules that only need the data itself (`Pool.status()`) | Python standard library |
 
@@ -235,17 +235,18 @@ so a client cannot impersonate another User by changing an id.
 4. Cover its user-story acceptance criteria with tests and use a fake repository
    where persistence is involved.
 
-`scores/` is an existing example without a repository: `ScoreService` reads the
-Pool through `PoolService` and every Pick through `PickService.list_all_picks()`.
+`picks/` and `scores/` are worked examples of these four steps. `scores/` has no
+table of its own, so it has no repository or fake: `ScoreService` reads the Pool
+through `PoolService` and every Pick through `PickService.list_all_picks()`.
 That internal operation ignores the deadline and has no route exposing raw Picks;
-the authenticated Pick route instead uses the visibility-aware `list_picks()`.
-The public leaderboard includes Users with Picks and counts wins and losses only
+the authenticated Pick route instead uses the visibility-aware `list_picks()`
+(US16). The public leaderboard is empty while the Pool is OPEN (AC 31.6).
+After the deadline, it includes Users with Picks and counts wins and losses only
 on Bets with a winning Outcome. It orders by wins descending and losses ascending,
 sharing competition ranks for equal Records (1, 2, 2, 4).
 
 ## Not done yet (on purpose)
 
-- **Resolution restrictions.** US17 stores a Bet's winning Outcome through `PoolService`; its resolved state is derived from that winner. US18 lets only the Pool's decider resolve. Deadline enforcement and protection against replacing a winner remain US19–US20. Pool status still follows its shared deadline (`OPEN` / `LOCKED`).
 - **Rounds.** A future design decision; #29 introduces no Round table.
 - **Transactions.** Deferred to #31. The #29 migration removes the unused `002_create_pool_fn.sql` function if installed.
 

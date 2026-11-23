@@ -1,7 +1,7 @@
 import adapter from '@sveltejs/adapter-cloudflare';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	plugins: [
@@ -17,5 +17,10 @@ export default defineConfig({
 			// See https://svelte.dev/docs/kit/adapter-cloudflare
 			adapter: adapter()
 		})
-	]
+	],
+	test: {
+		environment: 'node',
+		// Unit tests only; Playwright specs (#33) live outside src/.
+		include: ['src/**/*.test.ts']
+	}
 });

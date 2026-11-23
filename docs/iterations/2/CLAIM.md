@@ -22,5 +22,6 @@ Document links resolve once tag `iter-2` is published.
 | Staging | [Staging app](https://les-frontend-staging.les-h.workers.dev) |
 | CI/CD Pipeline | [GitHub Actions](https://github.com/MESW-LES-2627/les-project-group-8/actions) |
 | Stories in this increment | [Iteration backlog](https://github.com/MESW-LES-2627/les-project-group-8/blob/iter-2/docs/iterations/2/i02.d008-iteration-backlog.md) |
+| Story board | [Iteration 2 board](https://github.com/orgs/MESW-LES-2627/projects/24/views/1) |
 | Retrospective | [Iteration 2 retrospective](https://github.com/MESW-LES-2627/les-project-group-8/blob/iter-2/docs/iterations/2/i02.d009-retrospective.md) |
-| AI log | [Iteration 2 AI log](https://github.com/MESW-LES-2627/les-project-group-8/blob/iter-2/docs/iterations/2/i02.d005-ai-log.md) |
+| AI critique | [Iteration 2 AI critique](https://github.com/MESW-LES-2627/les-project-group-8/blob/iter-2/docs/iterations/2/i02.d010-ai-critique.md) |

@@ -16,21 +16,30 @@ Infer the repo from `git remote -v`; `gh` does this automatically when run insid
 
 ## Project board
 
-Issues are tracked on the org project **Group 8 — Iteration 2** (number `24`, owner `MESW-LES-2627`). Work is two levels deep: an **epic** (label `epic`) is a parent issue whose sub-issues are **user stories** (label `user-story`). Its `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`, so epics stay in the project. Its views:
+Issues are tracked on the org project **Group 8 — Iteration 2** (number `24`, owner `MESW-LES-2627`). Work is two levels deep: an **epic** (label `epic`) is a parent issue whose sub-issues are **user stories** (label `user-story`). Technical work has issue type `Task` and defects issue type `Bug`; both go on the board too, with no story. Stories keep the `user-story` label; never write technical work as an "As a developer…" story. The board's `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`, so epics stay in the project. Its views:
 
-- **Iteration 2 board**: stories only (`-label:epic`), in swimlanes by `Parent issue`.
+- **Iteration 2 board**: stories only (`label:user-story`), in swimlanes by `Parent issue`. The iteration-2 claim links it as `views/1`, so edit it in place and never recreate it.
+- **Technical work**: Tasks and Bugs (`type:Task,Bug`).
 - **Epics**: a table of epics with their `Sub-issues progress`.
 - **Roadmap**: epics only.
 
 Iteration 1's board (`22`) is kept as a record.
 
-GitHub's board automation only reacts to issues **linked** to a PR, and `Closes #N` only links when the PR targets `main`. Our feature PRs target `staging`, so nothing moves on its own: **you move the story cards.** This needs the `project` scope on `gh` (`gh auth refresh -h github.com -s project`). Epics are never moved by hand.
+From iteration 3, every story, Task and Bug gets points in the board's `Estimate` field at iteration planning, before work starts (Fibonacci 1, 2, 3, 5, 8, with reference story US22 #77 = 3; split anything over 8). Report story points and task points (Tasks and Bugs) separately. Cycle time is read from the `Status` history; hours are not logged.
+
+GitHub's board automation only reacts to issues **linked** to a PR, and `Closes #N` only links when the PR targets `main`. Our feature PRs target `staging`, so `.github/workflows/link-closing-issues.yml` links each PR to the issues its body closes (`Closes`, `Fixes`, `Resolves #<n>`), and closes them once its commits are in `staging`, stack members included (ADR 0006). `Done` means merged into `staging`, not live on `main`. This needs the `project` scope on `gh` (`gh auth refresh -h github.com -s project`) for the hand moves below. Epics are never moved by hand.
 
 | When | Do |
 | :--- | :--- |
-| You start a story | Assign it (`gh issue edit <n> --add-assignee @me`) and set it `In progress`. |
-| Its PR into `staging` opens | Set the story `In review`. List it in the PR body as `Part of #<n>`. |
-| `staging` is promoted to `main` | The story closes, through `Closes #<n>` in the promotion PR (one keyword per issue); `Item closed` moves it to `Done`. Once an epic's last story closes, `.github/workflows/close-epic.yml` closes the epic. |
+| Iteration planning (from iteration 3) | Set `Estimate` on every story, Task and Bug planned for the iteration. |
+| You start an issue (story, Task or Bug) | Assign it (`gh issue edit <n> --add-assignee @me`) and set it `In progress` before the first commit, so its cycle time is right. |
+| Its PR into `staging` opens | Set the issue `In review` by hand. List it in the PR body as `Closes #<n>` (one keyword per issue); the workflow links it. |
+| The PR merges into `staging` | The workflow closes the issue; `Item closed` moves it to `Done`. Once an epic's last story closes, `.github/workflows/close-epic.yml` closes the epic, whether the story was closed by the workflow or by hand. |
+| `staging` is promoted to `main` | The promotion PR lists no issues (except once, below). |
+
+A stack member merged into its parent branch closes its stories when that branch's commits reach `staging`. A PR whose commits never reach `staging` closes nothing.
+
+One time only: stories merged into `staging` before ADR 0006 are closed by the next promotion PR, with one `Closes #<n>` each.
 
 **Set a status** (option ids: `To do` `f75ad846`, `In progress` `47fc9ee4`, `In review` `1d04f341`, `Done` `98236657`):
 
@@ -39,6 +48,13 @@ item=$(gh api graphql -f query='{repository(owner:"MESW-LES-2627",name:"les-proj
   --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number==24) | .id')
 gh project item-edit --id "$item" --project-id PVT_kwDOFEfeUs4Bqvy6 \
   --field-id PVTSSF_lADOFEfeUs4Bqvy6zhpFf7I --single-select-option-id <option-id>
+```
+
+**Set an estimate**, with `$item` found as above:
+
+```sh
+gh project item-edit --id "$item" --project-id PVT_kwDOFEfeUs4Bqvy6 \
+  --field-id PVTF_lADOFEfeUs4Bqvy6zhqtlxU --number <points>
 ```
 
 ## Pull requests as a triage surface

@@ -1,16 +1,12 @@
 <script lang="ts">
+	import { localInputToIso, toLocalInput } from '#lib/format.ts';
 	import { errorClass, inputClass, labelClass, submitClass } from '#lib/form.ts';
+	import { POOL_DESCRIPTION_MAX, POOL_NAME_MAX, type PoolFieldErrors } from '#lib/pool.ts';
 	import Form from './Form.svelte';
-
-	type FieldErrors = {
-		name?: string;
-		description?: string;
-		deadline?: string;
-	};
 
 	type FormState = {
 		error: string;
-		fields?: FieldErrors;
+		fields?: PoolFieldErrors;
 		values?: {
 			name?: string;
 			description?: string;
@@ -43,6 +39,19 @@
 			setPreset(DAY);
 		}
 	});
+
+	// The input holds a local time; post it as UTC ISO, read in the User's zone, not the server's.
+	$effect(() => {
+		const formElement = deadlineInput?.form;
+		if (!formElement) {
+			return;
+		}
+		const postDeadlineAsUtc = (event: FormDataEvent) => {
+			event.formData.set('deadline', localInputToIso(String(event.formData.get('deadline'))) ?? '');
+		};
+		formElement.addEventListener('formdata', postDeadlineAsUtc);
+		return () => formElement.removeEventListener('formdata', postDeadlineAsUtc);
+	});
 </script>
 
 <Form error={form?.error} class="space-y-5">
@@ -53,7 +62,7 @@
 				id="name"
 				name="name"
 				required
-				maxlength="120"
+				maxlength={POOL_NAME_MAX}
 				value={form?.values?.name ?? ''}
 				class={inputClass}
 				aria-invalid={form?.fields?.name ? 'true' : undefined}
@@ -68,7 +77,7 @@
 			<textarea
 				id="description"
 				name="description"
-				maxlength="500"
+				maxlength={POOL_DESCRIPTION_MAX}
 				rows="3"
 				class={inputClass}
 				aria-invalid={form?.fields?.description ? 'true' : undefined}
@@ -86,7 +95,7 @@
 				type="datetime-local"
 				required
 				bind:this={deadlineInput}
-				value={form?.values?.deadline ?? ''}
+				value={toLocalInput(form?.values?.deadline ?? '')}
 				class={inputClass}
 				aria-invalid={form?.fields?.deadline ? 'true' : undefined}
 			/>

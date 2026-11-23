@@ -5,6 +5,21 @@
 	"compatibility_flags": ["nodejs_als"],
 	// Keep this within ~30 days of today.
 	"compatibility_date": "2026-10-18",
+	// Inherited by staging. Keep telemetry enabled across Wrangler deployments.
+	"observability": {
+		"enabled": true,
+		"logs": {
+			"enabled": true,
+			"invocation_logs": true,
+			"persist": true,
+			"head_sampling_rate": 1
+		},
+		"traces": {
+			"enabled": true,
+			"persist": true,
+			"head_sampling_rate": 1
+		}
+	},
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
