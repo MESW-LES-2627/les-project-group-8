@@ -29,7 +29,7 @@ the backend only.
 | `pnpm build`   | Production build             |
 | `pnpm preview` | Preview the production build |
 | `pnpm check`   | Type-check (`svelte-check`)  |
-| `pnpm test`    | Unit tests (Vitest)          |
+| `pnpm test`    | Unit and component tests (Vitest; components run in Chromium) |
 | `pnpm test:e2e` | End-to-end tests (Playwright) |
 
 ## End-to-end tests
@@ -61,7 +61,7 @@ shared project in `wrangler.jsonc`.
 
 ## Structure
 
-Unit tests (`*.test.ts`) sit next to the module they test.
+Unit tests (`*.test.ts`) and component tests (`*.svelte.test.ts`) sit next to the module they test.
 
 ```
 e2e/                      # Playwright specs and run.sh (local Supabase + Playwright)
