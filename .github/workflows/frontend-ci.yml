@@ -47,7 +47,25 @@ jobs:
         run: pnpm check
 
       - name: Test
-        run: pnpm test
+        run: pnpm test --coverage
+
+      # Report only, no threshold; what is measured is in vite.config.ts.
+      - name: Coverage summary
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo "## Frontend coverage (line and branch, report only)"
+            echo '```text'
+            cat coverage/coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload HTML coverage report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-html
+          path: frontend/coverage
 
       - name: Build
         run: pnpm build
