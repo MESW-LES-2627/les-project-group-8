@@ -28,3 +28,6 @@ vite.config.ts.timestamp-*
 
 # Vitest coverage
 /coverage/
+
+# Vitest browser-mode failure screenshots
+/.vitest/

@@ -46,6 +46,10 @@ jobs:
       - name: Type-check
         run: pnpm check
 
+      # The `client` Vitest project runs component tests in Chromium.
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Test
         run: pnpm test --coverage
 
