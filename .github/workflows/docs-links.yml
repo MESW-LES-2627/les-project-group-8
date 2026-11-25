@@ -1,0 +1,32 @@
+name: Docs links
+
+# No paths filter: docs link into code, so any change can break a docs link.
+on:
+  pull_request:
+  workflow_dispatch:
+
+# A new push to a PR cancels its older run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Offline: local files and #anchors only. Our iter-N tag permalinks (as in
+      # CLAIM.md) are remapped to this checkout, so they're checked before the tag exists.
+      - name: Check Markdown links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --offline
+            --include-fragments
+            --no-progress
+            --exclude-path node_modules
+            --exclude-path .claude/worktrees
+            --remap 'https://github\.com/MESW-LES-2627/les-project-group-8/(blob|tree)/iter-[0-9.]+/?(.*) file://${{ github.workspace }}/$2'
+            '**/*.md'
