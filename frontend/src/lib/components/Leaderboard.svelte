@@ -13,7 +13,7 @@
 		<p class="mt-4 text-sm text-neutral-600">No picks in this pool yet.</p>
 	{:else}
 		<table class="mt-4 w-full border border-black text-left text-sm">
-			<thead class="border-b border-black">
+			<thead class="border-b-4 border-black bg-neutral-100">
 				<tr>
 					<th scope="col" class="p-3">Rank</th>
 					<th scope="col" class="p-3">Participant</th>
