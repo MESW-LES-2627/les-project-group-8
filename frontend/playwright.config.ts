@@ -13,10 +13,12 @@ const PORT = 4173;
 // SHOWCASE=1 runs the showcase specs instead: screenshots of each screen for the PR visual
 // diff (screenshots.yml), not checks, so the e2e suite never runs them.
 const showcase = !!process.env.SHOWCASE;
+// STORIES=1 runs the story specs: one recording per user story, for the GIF gallery (stories.yml).
+const stories = !!process.env.STORIES;
 
 export default defineConfig({
 	testDir: 'e2e',
-	testMatch: showcase ? '*.showcase.ts' : '*.spec.ts',
+	testMatch: stories ? '*.story.ts' : showcase ? '*.showcase.ts' : '*.spec.ts',
 	...(showcase && { snapshotPathTemplate: 'showcase/{arg}{ext}' }),
 	forbidOnly: !!process.env.CI,
 	reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',

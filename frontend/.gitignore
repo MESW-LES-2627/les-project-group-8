@@ -34,3 +34,4 @@ vite.config.ts.timestamp-*
 
 # Showcase screenshots (playwright.config.ts)
 /showcase/
+/stories/

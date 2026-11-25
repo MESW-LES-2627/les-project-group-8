@@ -67,6 +67,14 @@ frontend PRs. The e2e suite skips them; `SHOWCASE=1` runs them instead:
 SHOWCASE=1 pnpm test:e2e --update-snapshots=all   # writes showcase/*.png (git-ignored)
 ```
 
+Story specs (`e2e/*.story.ts`) hold one test per Done user story with a UI, titled `USn …`.
+`.github/workflows/stories.yml` records them on each push to `staging` and publishes
+`stories/USn.gif` and a `stories/README.md` gallery on the `screenshots` branch:
+
+```bash
+STORIES=1 pnpm test:e2e   # writes stories/<test title>.webm (git-ignored)
+```
+
 ## Structure
 
 Unit tests (`*.test.ts`) and component tests (`*.svelte.test.ts`) sit next to the module they test.
@@ -74,6 +82,7 @@ Unit tests (`*.test.ts`) and component tests (`*.svelte.test.ts`) sit next to th
 ```
 e2e/                      # Playwright specs and run.sh (local Supabase + Playwright)
 showcase/                 # showcase screenshots (git-ignored)
+stories/                  # story recordings (git-ignored)
 src/
 ├── app.css               # Tailwind entrypoint (@import 'tailwindcss')
 ├── app.d.ts              # App.Locals / App.PageData typings
