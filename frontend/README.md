@@ -61,10 +61,12 @@ shared project in `wrangler.jsonc`.
 
 Showcase specs (`e2e/*.showcase.ts`) screenshot screens with fixed data and a frozen
 clock, for the before/after comment that `.github/workflows/screenshots.yml` posts on
-frontend PRs. The e2e suite skips them; `SHOWCASE=1` runs them instead:
+frontend PRs. The e2e suite skips them; `SHOWCASE=1` runs them instead, and
+`SHOWCASE=mobile` runs them in a phone viewport:
 
 ```bash
-SHOWCASE=1 pnpm test:e2e --update-snapshots=all   # writes showcase/*.png (git-ignored)
+SHOWCASE=1 pnpm test:e2e --update-snapshots=all        # writes showcase/*.png (git-ignored)
+SHOWCASE=mobile pnpm test:e2e --update-snapshots=all   # writes showcase/*-mobile.png
 ```
 
 Story specs (`e2e/*.story.ts`) hold one test per Done user story with a UI, titled `USn …`.

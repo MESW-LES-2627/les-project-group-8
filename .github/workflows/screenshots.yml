@@ -1,6 +1,7 @@
 name: Screenshots
 
-# Before/after screenshots of every screen a PR changes, in one PR comment edited on each push.
+# Before/after screenshots of every screen a PR changes, in one PR comment edited on each push,
+# in a desktop and in a mobile viewport (screens named `-mobile`), each in a run of its own.
 # The PR's showcase specs (frontend/e2e/*.showcase.ts) run against its base, then against the
 # PR itself: Playwright's toHaveScreenshot compares them. A visual change never fails this
 # workflow, only a crash of the PR's showcase specs. Not a required check.
@@ -84,7 +85,8 @@ jobs:
           pip install -r ../backend/requirements.txt
           pnpm install --frozen-lockfile
           pnpm exec playwright install chromium
-          SHOWCASE=1 pnpm test:e2e --update-snapshots=all
+          SHOWCASE=desktop pnpm test:e2e --update-snapshots=all
+          SHOWCASE=mobile pnpm test:e2e --update-snapshots=all
 
       - name: Capture the PR
         env:
@@ -97,18 +99,21 @@ jobs:
           # A changed screen fails its test, a new one is written: neither is a crash.
           # No results.json means Playwright never ran: the error above is the cause.
           # shortcut: tells a visual change from a crash by Playwright's error text; check it on a Playwright upgrade.
-          PLAYWRIGHT_JSON_OUTPUT_NAME=results.json SHOWCASE=1 \
-            pnpm test:e2e --update-snapshots=missing --reporter=list,json || { [ -f results.json ] && node -e '
-              const visual = /pixels \(ratio [\d.]+ of all image pixels\) are different|Expected an image \d+px by \d+px, received/;
-              const errors = (suite) => [
-                ...(suite.suites ?? []).flatMap(errors),
-                ...(suite.specs ?? []).flatMap((s) => s.tests.flatMap((t) => t.results.flatMap((r) => r.errors)))
-              ];
-              const report = require("./results.json");
-              const crashes = [...report.errors, ...report.suites.flatMap(errors)].filter((e) => !visual.test(e.message ?? ""));
-              crashes.forEach((e) => console.error(e.message));
-              process.exit(crashes.length ? 1 : 0);
-            '; }
+          for viewport in desktop mobile; do
+            rm -f results.json # a stale one would hide a failed start on this pass
+            PLAYWRIGHT_JSON_OUTPUT_NAME=results.json SHOWCASE=$viewport \
+              pnpm test:e2e --update-snapshots=missing --reporter=list,json || { [ -f results.json ] && node -e '
+                const visual = /pixels \(ratio [\d.]+ of all image pixels\) are different|Expected an image \d+px by \d+px, received/;
+                const errors = (suite) => [
+                  ...(suite.suites ?? []).flatMap(errors),
+                  ...(suite.specs ?? []).flatMap((s) => s.tests.flatMap((t) => t.results.flatMap((r) => r.errors)))
+                ];
+                const report = require("./results.json");
+                const crashes = [...report.errors, ...report.suites.flatMap(errors)].filter((e) => !visual.test(e.message ?? ""));
+                crashes.forEach((e) => console.error(e.message));
+                process.exit(crashes.length ? 1 : 0);
+              '; } || exit 1
+          done
 
       - name: Publish
         env:
@@ -127,9 +132,12 @@ jobs:
           for actual in $(find test-results -name '*-actual.png'); do
             name=$(basename "$actual" -actual.png)
             dir=$(dirname "$actual")
-            cp "$dir/$name-expected.png" "$out/$name-before.png"
-            cp "$actual" "$out/$name-after.png"
-            cp "$dir/$name-diff.png" "$out/$name-diff.png" 2> /dev/null || true
+            # Playwright names these after the screenshot, without the -mobile of its file in showcase/.
+            screen=$name
+            [[ $dir == test-results/mobile/* ]] && screen=$name-mobile
+            cp "$dir/$name-expected.png" "$out/$screen-before.png"
+            cp "$actual" "$out/$screen-after.png"
+            cp "$dir/$name-diff.png" "$out/$screen-diff.png" 2> /dev/null || true
           done
           # New screens, or every screen when the base could not be captured.
           for shot in showcase/*.png; do
