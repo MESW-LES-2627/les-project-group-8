@@ -1,0 +1,9 @@
+# Implement US28 open-ended Bets with the Strategy pattern
+
+- **Who:** João Cerqueira.
+- **Tools:** Claude Code desktop app (Claude Opus 5.5).
+- **Outcome:** Free-text Bets end to end for [US28 #179](https://github.com/MESW-LES-2627/les-project-group-8/issues/179), and the Strategy pattern documented in [design.md §5.1](../../../design.md#51-strategy--validating-a-picks-answer-by-the-bets-answer-type).
+- **Delegated:** Read the issue and the Iteration 2 Scenario 2 decision, proposed a plan and the pattern, then wrote the migration, backend (`picks/answers.py` strategies, typed `Pick.answer`, `answer_type` on Bets, text Bets refused by Resolve), frontend (answer-type toggle, text input, revealed answers), OpenAPI changes, tests, the design-pattern section and its UML diagram.
+- **What we decided ourselves, and why:** The user required a design pattern documented in design.md and approved the plan before any code was written. Strategy follows the decision the team recorded in Scenario 2, rather than a pattern picked to satisfy the requirement.
+- **How we checked:** Backend `pytest`: 216 passed, 2 skipped (integration). New acceptance tests cover AC 28.1–28.10; unit tests cover each strategy and strategy selection. The frontend `svelte-check`, vitest and the new Playwright test were not run locally (no Node on the machine); CI runs them.
+- **Notes:** AC 28.9 says "a visitor"; listing Picks still requires login, as for choice Bets (US15), so the test uses a third signed-in User. The browser text input has no `maxlength`, because browsers count UTF-16 units while the API counts code points; the SvelteKit action checks code points.

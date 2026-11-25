@@ -126,3 +126,30 @@ test('a dropdown Bet lists its Outcomes in order in a labelled dropdown with non
 	await expect(dropdown(page).locator('option')).toHaveText(['Select an option', ...DROPDOWN.options]);
 	await expect(dropdown(page)).toHaveValue('');
 });
+
+test('the creator adds a free-text Bet, answers it, and changes the answer after a reload (28.1, 28.3, 28.6)', async ({
+	page
+}) => {
+	const statement = 'Who scores first?';
+	await signUp(page);
+	await createPool(page);
+	await page.getByLabel('Bet statement').fill(statement);
+	await page.getByLabel('Free text').check();
+	await expect(page.getByLabel('Option 1', { exact: true })).toHaveCount(0);
+	await page.getByRole('button', { name: 'Add bet' }).click();
+
+	const card = betCard(page, statement);
+	const answer = card.getByRole('textbox', { name: 'Your answer' });
+	await expect(answer).toBeVisible();
+	await expect(card.getByRole('radio')).toHaveCount(0);
+
+	await answer.fill('  Ana  ');
+	await card.getByRole('button', { name: 'Save answer' }).click();
+	await expect(card.getByText('Saved: Ana')).toBeVisible();
+
+	await page.reload();
+	await expect(answer).toHaveValue('Ana');
+	await answer.fill('Bruno');
+	await card.getByRole('button', { name: 'Change answer' }).click();
+	await expect(card.getByText('Saved: Bruno')).toBeVisible();
+});

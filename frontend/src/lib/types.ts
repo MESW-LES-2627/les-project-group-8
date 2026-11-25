@@ -1,6 +1,8 @@
 export type PoolStatus = 'OPEN' | 'LOCKED';
 export type BetStatus = PoolStatus | 'RESOLVED';
 export type BetPresentation = 'radio' | 'dropdown';
+/** What kind of answer a Bet accepts; presentation only applies to choice Bets. */
+export type AnswerType = 'choice' | 'text';
 
 export interface UserSummary {
 	id: string;
@@ -35,6 +37,7 @@ export interface Bet {
 	id: string;
 	pool_id: string;
 	statement: string;
+	answer_type: AnswerType;
 	presentation: BetPresentation;
 	winning_outcome_id: string | null;
 	options: Outcome[];
@@ -47,17 +50,20 @@ export interface CreatePoolInput {
 	deadline: string;
 }
 
-export interface CreateBetInput {
-	statement: string;
-	options: string[];
-	presentation: BetPresentation;
-}
+export type CreateBetInput =
+	| { answer_type: 'choice'; statement: string; options: string[]; presentation: BetPresentation }
+	| { answer_type: 'text'; statement: string };
+
+/** The body of a saved Pick: an Outcome for choice Bets, free text for text Bets. */
+export type PickAnswer = { outcome_id: string } | { answer_text: string };
 
 export interface Pick {
 	id: string;
 	bet_id: string;
 	user_id: string;
 	user: UserSummary;
-	outcome_id: string;
+	/** Exactly one of these is set, matching the Bet's answer type. */
+	outcome_id: string | null;
+	answer_text: string | null;
 	created_at: string;
 }

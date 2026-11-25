@@ -4,7 +4,7 @@ import uuid
 from dataclasses import replace
 from datetime import datetime, timezone
 
-from picks.models import Pick
+from picks.models import Answer, Pick
 from pools.models import Bet, NewBet, NewPool, Outcome, Pool
 from users.models import User
 
@@ -63,6 +63,7 @@ class FakePoolRepository:
             winning_outcome_id=None,
             created_at=datetime.now(timezone.utc),
             presentation=new_bet.presentation,
+            answer_type=new_bet.answer_type,
         )
         for index, pool in enumerate(self.pools):
             if pool.id == pool_id:
@@ -120,18 +121,18 @@ class FakePickRepository:
         self,
         bet_id: str,
         user_id: str,
-        outcome_id: str,
+        answer: Answer,
     ) -> Pick:
         key = (bet_id, user_id)
         existing = self.picks.get(key)
         pick = (
-            replace(existing, outcome_id=outcome_id)
+            replace(existing, answer=answer)
             if existing
             else Pick(
                 id=str(uuid.uuid4()),
                 bet_id=bet_id,
                 user_id=user_id,
-                outcome_id=outcome_id,
+                answer=answer,
                 created_at=datetime.now(timezone.utc),
                 user=self._users.get(user_id),
             )

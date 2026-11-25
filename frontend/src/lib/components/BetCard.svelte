@@ -26,12 +26,19 @@
 			error?: string;
 			saved?: boolean;
 			outcomeId?: string;
+			answerText?: string;
 		} | null;
 	} = $props();
 	let submitting = $state(false);
 	const status = $derived<BetStatus>(bet.winning_outcome_id ? 'RESOLVED' : poolStatus);
 	const selected = $derived(form?.outcomeId ?? pick?.outcome_id ?? '');
-	const picked = $derived(bet.options.find((option) => option.id === pick?.outcome_id));
+	const isText = $derived(bet.answer_type === 'text');
+	// What the User saved, as it reads on screen: an option's label or their own text.
+	const picked = $derived(
+		isText ? (pick?.answer_text ?? undefined) : bet.options.find((option) => option.id === pick?.outcome_id)?.label
+	);
+	// After a failed submission, keep what was typed rather than the saved answer.
+	const typed = $derived(form?.error ? (form.answerText ?? '') : (pick?.answer_text ?? ''));
 </script>
 
 <article class="border border-black p-5">
@@ -42,7 +49,7 @@
 		</p>
 	{/if}
 	{#if form?.saved}
-		<p role="status" class="mt-4 text-sm font-bold">Pick saved.</p>
+		<p role="status" class="mt-4 text-sm font-bold">{isText ? 'Answer saved.' : 'Pick saved.'}</p>
 	{/if}
 
 	{#if status === 'OPEN' && loggedIn && user}
@@ -63,7 +70,20 @@
 			}}
 		>
 			<input type="hidden" name="bet_id" value={bet.id} />
-			{#if bet.presentation === 'dropdown'}
+			{#if isText}
+				<label for={`answer-${bet.id}`} class={labelClass}>Your answer</label>
+				<!-- No maxlength: browsers count UTF-16 units, the API counts code points (500). -->
+				<input
+					id={`answer-${bet.id}`}
+					name="answer_text"
+					required
+					autocomplete="off"
+					value={typed}
+					class={inputClass}
+					aria-describedby={`answer-hint-${bet.id}`}
+				/>
+				<p id={`answer-hint-${bet.id}`} class="mt-1 text-xs text-neutral-600">Up to 500 characters.</p>
+			{:else if bet.presentation === 'dropdown'}
 				<label for={`outcome-${bet.id}`} class={labelClass}>Your pick</label>
 				<select id={`outcome-${bet.id}`} name="outcome_id" required class={inputClass}>
 					<option value="">Select an option</option>
@@ -88,36 +108,44 @@
 				</fieldset>
 			{/if}
 			<div class="flex flex-wrap items-center gap-4 border-t border-black pt-4">
-				<button type="submit" disabled={submitting} class={submitClass}>{submitting ? 'Saving…' : pick ? 'Change pick' : 'Save pick'}</button>
+				<button type="submit" disabled={submitting} class={submitClass}>{submitting ? 'Saving…' : pick ? (isText ? 'Change answer' : 'Change pick') : (isText ? 'Save answer' : 'Save pick')}</button>
 				{#if picked}
-					<span class="text-xs text-neutral-600">Saved: {picked.label}</span>
+					<span class="text-xs text-neutral-600">Saved: {picked}</span>
 				{/if}
 			</div>
 		</form>
 	{:else}
-		<ul class="mt-4 grid gap-2 sm:grid-cols-2">
-			{#each bet.options as option (option.id)}
-				<li class="border border-black px-3 py-2 text-sm">
-					{option.label}
-					{#if bet.winning_outcome_id === option.id}
-						<strong class="ml-2 text-xs">Winner</strong>
-					{/if}
-				</li>
-			{/each}
-		</ul>
+		{#if !isText}
+			<ul class="mt-4 grid gap-2 sm:grid-cols-2">
+				{#each bet.options as option (option.id)}
+					<li class="border border-black px-3 py-2 text-sm">
+						{option.label}
+						{#if bet.winning_outcome_id === option.id}
+							<strong class="ml-2 text-xs">Winner</strong>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
 		{#if status !== 'OPEN'}
-			<p class="mt-4 text-sm font-bold">Picks are closed.</p>
+			<p class="mt-4 text-sm font-bold">{isText ? 'Answers are closed.' : 'Picks are closed.'}</p>
 		{/if}
 		{#if !loggedIn}
-			<p class="mt-3 text-sm">{status === 'OPEN' ? 'Log in to save your pick.' : 'Log in to see your saved pick.'}</p>
+			<p class="mt-3 text-sm">
+				{#if isText}
+					{status === 'OPEN' ? 'Log in to save your answer.' : 'Log in to see your saved answer.'}
+				{:else}
+					{status === 'OPEN' ? 'Log in to save your pick.' : 'Log in to see your saved pick.'}
+				{/if}
+			</p>
 			<a href={loginHref} class="mt-3 inline-block text-sm underline">Log in</a>
 		{:else if !user}
 			<p class="mt-3 text-sm">This account has no User profile yet.</p>
 			<a href="/no-user" class="mt-3 inline-block text-sm underline">What now?</a>
 		{:else if picked}
-			<p class="mt-3 text-sm">Your pick: <strong>{picked.label}</strong></p>
+			<p class="mt-3 text-sm">{isText ? 'Your answer' : 'Your pick'}: <strong>{picked}</strong></p>
 		{:else}
-			<p class="mt-3 text-sm text-neutral-600">You did not pick an option.</p>
+			<p class="mt-3 text-sm text-neutral-600">{isText ? 'You did not answer.' : 'You did not pick an option.'}</p>
 		{/if}
 	{/if}
 	<BetPicks {bet} />

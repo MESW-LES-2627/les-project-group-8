@@ -5,9 +5,10 @@ info:
     Iteration 3 API contract. Browsing pools is public; creating one requires a
     logged-in User, who becomes its creator and decider. Users are not created
     through the API: each Account gets its User when it signs up. Pools are
-    created empty with one shared deadline. Their creator adds Bets with two to
-    ten ordered options and radio/dropdown presentation. Each participant can
-    save or replace one Pick per Bet. Once the deadline has passed, everyone's
+    created empty with one shared deadline. Their creator adds choice Bets with
+    two to ten ordered options and radio/dropdown presentation, or text Bets that
+    collect free-text answers. Each participant can save or replace one Pick per
+    Bet. Text Bets cannot be resolved yet and count towards no Record. Once the deadline has passed, everyone's
     Picks are visible and the Pool's decider resolves each Bet by choosing its
     winning Outcome, once. Each Pool has a Leaderboard of its participants'
     Records: wins and losses over its resolved Bets. Rounds are outside this
@@ -275,8 +276,10 @@ paths:
                 $ref: '#/components/schemas/Pick'
         '400':
           description: >
-            Invalid Pool, Bet or option; a user_id in the body; unrelated Bet/option
-            references; a closed Pool or Bet; or a body that is not a JSON object.
+            Invalid Pool, Bet or option; a blank or over-long text answer; the wrong
+            answer field for the Bet's answer type, or both fields; a user_id in
+            the body; unrelated Bet/option references; a closed Pool or Bet; or a
+            body that is not a JSON object. The saved Pick is left unchanged.
           content:
             application/json:
               schema:
@@ -288,6 +291,9 @@ paths:
                 unknownOutcome:
                   value:
                     error: "Field 'outcome_id' must be one of the bet's options."
+                blankText:
+                  value:
+                    error: "Field 'answer_text' cannot be empty."
                 closedPool:
                   value:
                     error: "Picks are closed for this pool."
@@ -325,8 +331,8 @@ paths:
         '400':
           description: >
             Missing, malformed or unknown winning_outcome_id, or one from another
-            Bet (US17); the deadline is still in the future (US19); or a body that
-            is not a JSON object.
+            Bet (US17); the deadline is still in the future (US19); a text Bet,
+            which cannot be resolved yet (US28); or a body that is not a JSON object.
           content:
             application/json:
               schema:
@@ -469,11 +475,19 @@ components:
 
     CreateBetRequest:
       type: object
-      description: Must not contain pool_id, deadline, creator_id, decider_id or winning_outcome_id (400).
+      description: >
+        Must not contain pool_id, deadline, creator_id, decider_id or winning_outcome_id (400).
+        A choice Bet requires options; a text Bet must not contain options or presentation (400).
       required:
         - statement
-        - options
       properties:
+        answer_type:
+          type: string
+          enum:
+            - choice
+            - text
+          default: choice
+          description: What kind of answer participants give. Text Bets have no options.
         statement:
           type: string
           minLength: 1
@@ -481,7 +495,9 @@ components:
           example: "Real Madrid wins in 90 minutes."
         options:
           type: array
-          description: Two to ten non-empty labels in authored order, distinct after trimming and case folding.
+          description: >
+            Required for choice Bets. Two to ten non-empty labels in authored order,
+            distinct after trimming and case folding.
           minItems: 2
           maxItems: 10
           uniqueItems: true
@@ -556,6 +572,7 @@ components:
         - id
         - pool_id
         - statement
+        - answer_type
         - presentation
         - options
         - winning_outcome_id
@@ -570,14 +587,20 @@ components:
         statement:
           type: string
           example: "Real Madrid wins in 90 minutes."
+        answer_type:
+          type: string
+          enum:
+            - choice
+            - text
         presentation:
           type: string
+          description: Only meaningful for choice Bets; text Bets report the default.
           enum:
             - radio
             - dropdown
         options:
           type: array
-          minItems: 2
+          description: Two to ten Outcomes for choice Bets; empty for text Bets.
           maxItems: 10
           items:
             $ref: '#/components/schemas/Outcome'
@@ -611,14 +634,19 @@ components:
       type: object
       description: >
         Must not contain user_id (400): the participant is the logged-in User.
-      required:
-        - outcome_id
+        Send outcome_id for a choice Bet or answer_text for a text Bet, never both.
       properties:
         outcome_id:
           type: string
           format: uuid
-          description: Exactly one option id that belongs to this Bet.
+          description: Exactly one option id that belongs to this Bet (choice Bets).
           example: "11111111-2222-3333-4444-555555555551"
+        answer_text:
+          type: string
+          description: >
+            Free-text answer (text Bets), stored as plain text after trimming.
+            1 to 500 Unicode code points after trimming.
+          example: "Ana"
 
     ResolveBetRequest:
       type: object
@@ -663,6 +691,7 @@ components:
         - user_id
         - user
         - outcome_id
+        - answer_text
         - created_at
       properties:
         id:
@@ -682,7 +711,14 @@ components:
         outcome_id:
           type: string
           format: uuid
+          nullable: true
+          description: Set for choice Bets, null for text Bets.
           example: "11111111-2222-3333-4444-555555555551"
+        answer_text:
+          type: string
+          nullable: true
+          description: Set for text Bets, null for choice Bets.
+          example: null
         created_at:
           type: string
           format: date-time
