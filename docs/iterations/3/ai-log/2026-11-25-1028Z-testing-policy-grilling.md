@@ -7,3 +7,10 @@
 - **What we decided ourselves, and why:** Coverage measures what each layer is responsible for, instead of the AI's "measure everything", with exclusions matching the policy so the number isn't circular. Hand checks don't count as coverage: the JWKS caching gets an automated test, and migration data preservation becomes an issue. Codecov, mutation testing and branch protection are deferred to issues.
 - **Where it was wrong:** The handoff said there was no testing policy; d004 already named several untested parts, just without a rule. The AI also first proposed leaving the JWKS methods as known misses "checked by hand", which Alef rejected (Q13–Q14 in the record).
 - **How we checked:** Checked the record's links and the issue numbers after filing.
+
+## Tickets
+
+- **Outcome:** Tickets [#200](https://github.com/MESW-LES-2627/les-project-group-8/issues/200)–[#203](https://github.com/MESW-LES-2627/les-project-group-8/issues/203), with `/to-tickets`.
+- **Delegated:** Split the record into four tickets, file them with points, parents and native blocking edges.
+- **What we decided ourselves, and why:** Alef asked to relate the tickets to the existing coverage Tasks: backend tickets became sub-issues of #185, frontend of #186. Alef set the granularity and asked for points.
+- **Where it was wrong:** Nothing found. Alef's "#187" was a slip for #186; the AI checked #187's body before linking anything.
