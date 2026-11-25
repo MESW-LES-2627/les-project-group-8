@@ -73,6 +73,7 @@ Unit tests (`*.test.ts`) and component tests (`*.svelte.test.ts`) sit next to th
 
 ```
 e2e/                      # Playwright specs and run.sh (local Supabase + Playwright)
+showcase/                 # showcase screenshots (git-ignored)
 src/
 ├── app.css               # Tailwind entrypoint (@import 'tailwindcss')
 ├── app.d.ts              # App.Locals / App.PageData typings

@@ -17,7 +17,7 @@ const showcase = !!process.env.SHOWCASE;
 export default defineConfig({
 	testDir: 'e2e',
 	testMatch: showcase ? '*.showcase.ts' : '*.spec.ts',
-	snapshotPathTemplate: 'showcase/{arg}{ext}',
+	...(showcase && { snapshotPathTemplate: 'showcase/{arg}{ext}' }),
 	forbidOnly: !!process.env.CI,
 	reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
 	use: {
