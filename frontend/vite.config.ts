@@ -28,6 +28,7 @@ export default defineConfig({
 			provider: 'v8',
 			include: ['src/lib/*.ts', 'src/env.ts'],
 			exclude: ['**/*.test.ts', 'src/lib/types.ts', 'src/lib/index.ts'],
+			reportOnFailure: true, // so a red run still gets its summary and artifact
 			reporter: ['text', ['text', { file: 'coverage.txt' }], 'html']
 		}
 	}
