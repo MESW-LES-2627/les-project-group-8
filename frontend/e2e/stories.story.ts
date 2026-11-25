@@ -32,7 +32,7 @@ function people() {
 }
 
 /** Runs `act` as a signed-up `account` in a browser of its own, off camera. */
-async function as(browser: Browser, account: { email: string; name: string }, act: (page: Page) => Promise<void>) {
+async function offCamera(browser: Browser, account: { email: string; name: string }, act: (page: Page) => Promise<void>) {
 	const context = await browser.newContext();
 	const page = await context.newPage();
 	await signUp(page, account);
@@ -73,21 +73,25 @@ test('US1 Create an account', async ({ record }) => {
 	await expect(page.getByRole('banner').getByText('Ana', { exact: true })).toBeVisible();
 });
 
-test('US2 Create a pool', async ({ record }) => {
+test('US2 Create a two-option pool', async ({ record }) => {
 	const page = await record();
 	await signUp(page, people().ana);
-	await createPool(page, 'Weekend derby', 'Saturday’s derby, before kick-off.');
-	await expect(page.getByText('Pool created. Add your first bet below.')).toBeVisible();
+	const penalties: NewBet = { statement: 'Will it go to penalties?', options: ['Yes', 'No'], presentation: 'Radio buttons' };
+	await poolWith(page, 'Weekend derby', [penalties]);
 	await expect(page.getByText('Picks open')).toBeVisible();
 	await expect(page.getByText('By Ana Silva')).toBeVisible();
+	await expect(betCard(page, penalties.statement).getByRole('radio')).toHaveCount(2);
 });
 
 test('US3 See the pools', async ({ record }) => {
 	const page = await record();
 	await signUp(page, people().ana);
-	await createPool(page, 'Spring league', 'The older one.');
-	await createPool(page, 'Autumn cup', 'The newest one.');
+	await closePool(await createPool(page, 'Spring league', 'The older one, already closed.'));
+	await createPool(page, 'Autumn cup', 'The newest one, still open.');
 	await open(page, '/');
+	const card = (name: string) => page.getByRole('article').filter({ has: page.getByRole('heading', { name }) });
+	await expect(card('Spring league').getByText('Picks closed')).toBeVisible();
+	await expect(card('Autumn cup').getByText('Picks open')).toBeVisible();
 	// Other stories' Pools share the list, so only the order of these two is checked.
 	const names = await page.getByRole('article').getByRole('heading').allTextContents();
 	expect(names.indexOf('Autumn cup')).toBeLessThan(names.indexOf('Spring league'));
@@ -110,15 +114,15 @@ test('US6 Set a deadline in my local time', async ({ record }) => {
 
 test('US7 Share a pool link', async ({ record, browser }) => {
 	let link = '';
-	await as(browser, people().ana, async (page) => {
+	await offCamera(browser, people().ana, async (page) => {
 		link = await poolWith(page, 'Weekend derby');
 	});
 	const page = await record(); // a friend who never signed up
+	const response = await page.goto('/pools/00000000-0000-0000-0000-000000000000');
+	expect(response?.status()).toBe(404);
 	await open(page, link);
 	await expect(page.getByRole('heading', { name: 'Weekend derby' })).toBeVisible();
 	await expect(page.getByText('Log in to save your pick.').first()).toBeVisible();
-	const response = await page.goto('/pools/00000000-0000-0000-0000-000000000000');
-	expect(response?.status()).toBe(404);
 });
 
 test('US8 Open a single pool', async ({ record }) => {
@@ -193,7 +197,7 @@ test('US15 See everyone’s picks after the deadline', async ({ record, browser 
 	await signUp(page, ana);
 	const path = await poolWith(page, 'Weekend derby', [WINNER]);
 	await pickOutcome(page, WINNER.statement, 'Home');
-	await as(browser, ben, async (other) => {
+	await offCamera(browser, ben, async (other) => {
 		await open(other, path);
 		await pickOutcome(other, WINNER.statement, 'Away');
 	});
@@ -208,7 +212,7 @@ test('US15 See everyone’s picks after the deadline', async ({ record, browser 
 test('US16 Not see others’ picks before the deadline', async ({ record, browser }) => {
 	const { ana, ben } = people();
 	let path = '';
-	await as(browser, ana, async (other) => {
+	await offCamera(browser, ana, async (other) => {
 		path = await poolWith(other, 'Weekend derby', [WINNER]);
 		await pickOutcome(other, WINNER.statement, 'Home');
 	});
@@ -223,16 +227,17 @@ test('US17 Resolve a Bet by choosing the winner', async ({ record }) => {
 	const page = await record();
 	await signUp(page, people().ana);
 	const path = await poolWith(page, 'Weekend derby', [WINNER]);
+	await pickOutcome(page, WINNER.statement, 'Home');
 	await closePool(path);
 	await open(page, path);
 	await resolve(page, WINNER.statement, 'Home');
-	await expect(betCard(page, WINNER.statement).getByText('Winner', { exact: true })).toBeVisible();
+	await expect(page.getByRole('region', { name: 'Correct pickers — Home' })).toContainText('Ana Silva');
 });
 
 test('US18 Resolve only as the decider', async ({ record, browser }) => {
 	const { ana, ben } = people();
 	let path = '';
-	await as(browser, ana, async (other) => {
+	await offCamera(browser, ana, async (other) => {
 		path = await poolWith(other, 'Weekend derby', [WINNER]);
 	});
 	await closePool(path);
@@ -283,11 +288,11 @@ test('US23 See the correct pickers on a resolved Bet', async ({ record, browser 
 	await signUp(page, ana);
 	const path = await poolWith(page, 'Weekend derby', [WINNER]);
 	await pickOutcome(page, WINNER.statement, 'Home');
-	await as(browser, ben, async (other) => {
+	await offCamera(browser, ben, async (other) => {
 		await open(other, path);
 		await pickOutcome(other, WINNER.statement, 'Home');
 	});
-	await as(browser, cleo, async (other) => {
+	await offCamera(browser, cleo, async (other) => {
 		await open(other, path);
 		await pickOutcome(other, WINNER.statement, 'Away');
 	});
@@ -362,11 +367,11 @@ test('US31 See a pool’s leaderboard', async ({ record, browser }) => {
 	const path = await poolWith(page, 'Cup final');
 	await pick(page, 'Home', '2–3');
 	// After resolving: Ana 2–0, Ben 1–1, Cleo 0–2, so no tie leaves the order to chance.
-	await as(browser, ben, async (other) => {
+	await offCamera(browser, ben, async (other) => {
 		await open(other, path);
 		await pick(other, 'Home', '0–1');
 	});
-	await as(browser, cleo, async (other) => {
+	await offCamera(browser, cleo, async (other) => {
 		await open(other, path);
 		await pick(other, 'Away', '4 or more');
 	});

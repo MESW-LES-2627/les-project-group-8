@@ -59,6 +59,7 @@ jobs:
       - name: Install Chromium and ffmpeg
         run: |
           pnpm exec playwright install --with-deps chromium
+          sudo apt-get update
           sudo apt-get install -y --no-install-recommends ffmpeg
 
       # Each test saves its recording as stories/<test title>.webm.
@@ -88,10 +89,10 @@ jobs:
             echo '# Story gallery'
             echo
             echo "One GIF per user story, recorded from \`frontend/e2e/stories.story.ts\` at $GITHUB_SHA."
-            echo 'Rewritten by `.github/workflows/stories.yml` on each push to `staging`.'
+            echo 'Rewritten by `.github/workflows/stories.yml` on each push to `staging` and each manual run.'
           } > "$out/README.md"
           ls stories | sort -V | while IFS= read -r file; do
-            title=${file%.webm}
+            title=${file%.webm} # shortcut: assumes every story test's title starts with "USn "; check it if a test breaks that.
             id=${title%% *}
             ffmpeg -loglevel error -i "stories/$file" \
               -vf 'fps=8,scale=800:-1:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse' "$out/$id.gif"

@@ -40,7 +40,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: 3.2.0 # keep in sync with e2e.yml
+          version: 3.2.0 # keep in sync with e2e.yml and stories.yml
 
       - name: Setup Python
         uses: actions/setup-python@v5
