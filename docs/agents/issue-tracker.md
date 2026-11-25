@@ -12,6 +12,8 @@ Epics and user stories for this repo live as GitHub issues. Use the `gh` CLI for
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
 - **Close**: `gh issue close <number> --comment "..."`
 
+- **Link to a repo file from an issue, PR or comment body**: use an absolute URL, `https://github.com/MESW-LES-2627/les-project-group-8/blob/<commit-sha>/<path>`. GitHub resolves a relative path such as `docs/foo.md` against the page URL there (`…/pull/docs/foo.md`), not the repo, so the link breaks. Use a commit SHA instead of a branch name so the link still works after the branch is deleted.
+
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
 
 ## Project board
