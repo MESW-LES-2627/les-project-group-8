@@ -10,7 +10,7 @@
 	<title>Log in · LES</title>
 </svelte:head>
 
-<h1 class="text-3xl font-bold tracking-tight">Log in</h1>
+<h1 class="text-3xl font-bold tracking-tight">Sign in</h1>
 <p class="mt-1 text-sm text-neutral-600">
 	No account yet? <a href="/signup" class="underline">Sign up</a>
 </p>
