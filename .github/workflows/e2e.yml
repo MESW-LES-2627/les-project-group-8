@@ -29,7 +29,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: 3.2.0
+          version: 3.2.0 # keep in sync with screenshots.yml
 
       - name: Setup Python
         uses: actions/setup-python@v5
