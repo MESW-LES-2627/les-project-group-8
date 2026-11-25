@@ -406,9 +406,9 @@ know any format's rules.
 
 | Strategy role | Our element | Where |
 | :- | :- | :- |
-| Strategy | `AnswerValidationStrategy` (a `typing.Protocol`) with `validate(payload, bet) -> Answer` | [answers.py:21](../backend/picks/answers.py#L21) |
-| Concrete strategy | `ChoiceAnswerValidator`: the `outcome_id` must be one of `bet.options`; `answer_text` is refused | [answers.py:27](../backend/picks/answers.py#L27) |
-| Concrete strategy | `TextAnswerValidator`: trim, 1–`max_length` (500) code points; `outcome_id` is refused | [answers.py:40](../backend/picks/answers.py#L40) |
+| Strategy | `AnswerValidationStrategy`, an abstract base class (`abc.ABC`) with the abstract method `validate(payload, bet) -> Answer` | [answers.py:22](../backend/picks/answers.py#L22) |
+| Concrete strategy | `ChoiceAnswerValidator(AnswerValidationStrategy)`: the `outcome_id` must be one of `bet.options`; `answer_text` is refused | [answers.py:30](../backend/picks/answers.py#L30) |
+| Concrete strategy | `TextAnswerValidator(AnswerValidationStrategy)`: trim, 1–`max_length` (500) code points; `outcome_id` is refused | [answers.py:43](../backend/picks/answers.py#L43) |
 | Context | `PickService`, holding a `Mapping[AnswerType, AnswerValidationStrategy]` | [service.py:16–25](../backend/picks/service.py#L16-L25) |
 | Context → Strategy call | `save_pick` looks up `self._validators[bet.answer_type]` and calls `validate` after the shared checks and before `create_or_replace` | [service.py:65–71](../backend/picks/service.py#L65-L71) |
 | Client that configures the context | `create_app` passes `default_answer_validators()` into `PickService` | [answers.py:60](../backend/picks/answers.py#L60), [app.py:43](../backend/app.py#L43) |
@@ -424,7 +424,7 @@ classDiagram
         +save_pick(pool_id, bet_id, payload, user) Pick
     }
     class AnswerValidationStrategy {
-        <<Protocol>>
+        <<abstract>>
         +validate(payload, bet) Answer
     }
     class ChoiceAnswerValidator {
@@ -459,11 +459,18 @@ classDiagram
 *Figure: the Strategy pattern as it appears in the `picks` module.*
 [PlantUML source](diagrams/3/answer-validation-strategy.puml)
 
-Two choices follow from Python. The Strategy is a `Protocol`, so the concrete
-validators satisfy it structurally and don't inherit from it; the tests also
-pass a small `RecordingValidator` stub that is not related to either class.
-Selection is a mapping injected through the constructor, not a factory method
-on the Bet, so `pools` does not import anything from `picks`.
+Two choices follow from Python, which has no `interface` keyword. The
+Strategy is an abstract base class: `AnswerValidationStrategy` subclasses
+`abc.ABC` and marks `validate` with `@abstractmethod`. Each concrete validator
+declares that it implements the interface by subclassing it, which is the
+realization arrow in the figure. Python refuses to instantiate the interface
+itself, or any subclass that leaves `validate` unimplemented, with a
+`TypeError`; a unit test checks this. The test stub `RecordingValidator`
+implements the same interface. The concrete strategies inherit no behavior,
+only the contract, and `PickService` uses them through composition: it holds
+them in a mapping injected through the constructor, not through subclassing.
+The mapping, not a factory method on the Bet, also keeps `pools` from
+importing anything from `picks`.
 
 Evidence: [strategy and selection unit tests](../backend/tests/unit/test_answer_validators.py)
 and [US28 acceptance tests](../backend/tests/acceptance/test_us28_open_ended.py).

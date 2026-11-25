@@ -5,7 +5,12 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from picks.answers import ChoiceAnswerValidator, TextAnswerValidator, default_answer_validators
+from picks.answers import (
+    AnswerValidationStrategy,
+    ChoiceAnswerValidator,
+    TextAnswerValidator,
+    default_answer_validators,
+)
 from picks.models import ChoiceAnswer, TextAnswer
 from picks.service import PickService
 from pools.models import AnswerType, Bet, NewBet, NewPool, Outcome, UserSummary
@@ -66,14 +71,25 @@ class TestTextAnswerValidator:
             validator.validate({"answer_text": "abcd"}, TEXT_BET)
 
 
+def test_strategy_interface_cannot_be_instantiated_or_left_unimplemented():
+    class Incomplete(AnswerValidationStrategy):
+        pass
+
+    with pytest.raises(TypeError):
+        AnswerValidationStrategy()
+    with pytest.raises(TypeError):
+        Incomplete()
+
+
 def test_default_mapping_covers_every_answer_type():
     validators = default_answer_validators()
     assert set(validators) == set(AnswerType)
+    assert all(isinstance(v, AnswerValidationStrategy) for v in validators.values())
     assert isinstance(validators[AnswerType.CHOICE], ChoiceAnswerValidator)
     assert isinstance(validators[AnswerType.TEXT], TextAnswerValidator)
 
 
-class RecordingValidator:
+class RecordingValidator(AnswerValidationStrategy):
     """Stands in for a strategy to see what the context hands it."""
 
     def __init__(self, answer):

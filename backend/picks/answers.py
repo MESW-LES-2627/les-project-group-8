@@ -6,7 +6,8 @@ answer type, so that part is delegated to the strategy selected for `bet.answer_
 A new answer type adds a strategy here and an entry in `default_answer_validators`.
 """
 
-from typing import Mapping, Protocol
+from abc import ABC, abstractmethod
+from typing import Mapping
 
 from pools.models import AnswerType, Bet
 from shared.errors import ValidationError
@@ -18,13 +19,15 @@ MAX_TEXT_ANSWER_LENGTH = 500
 _ANSWER_FIELDS = ("outcome_id", "answer_text")
 
 
-class AnswerValidationStrategy(Protocol):
+class AnswerValidationStrategy(ABC):
+    """The Strategy interface. Every answer type implements it by subclassing."""
+
+    @abstractmethod
     def validate(self, payload: dict, bet: Bet) -> Answer:
         """Return the validated answer in `payload` for `bet`, or raise ValidationError."""
-        ...
 
 
-class ChoiceAnswerValidator:
+class ChoiceAnswerValidator(AnswerValidationStrategy):
     """A choice answer is the id of one of the Bet's own Outcomes."""
 
     def validate(self, payload: dict, bet: Bet) -> ChoiceAnswer:
@@ -37,7 +40,7 @@ class ChoiceAnswerValidator:
         return ChoiceAnswer(outcome_id)
 
 
-class TextAnswerValidator:
+class TextAnswerValidator(AnswerValidationStrategy):
     """A text answer is plain text of 1 to `max_length` code points after trimming."""
 
     def __init__(self, max_length: int = MAX_TEXT_ANSWER_LENGTH):
