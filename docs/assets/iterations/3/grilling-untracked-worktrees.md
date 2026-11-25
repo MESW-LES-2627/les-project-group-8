@@ -4,7 +4,8 @@
 - **Who:** Alef Keuffer, with Claude Code (Claude Opus 5.5) running the
   `grill-with-docs` skill (`grilling` + `domain-modeling`) from Matt Pocock's
   [Skills For Real Engineers](https://github.com/mattpocock/skills).
-- **Result:** the plan below, to be turned into a ticket with `/to-tickets`.
+- **Result:** the plan below, filed as
+  [#191](https://github.com/MESW-LES-2627/les-project-group-8/issues/191).
 - **Summary:** see the
   [raw AI-log entry](../../../iterations/3/ai-log/2026-11-25-0726Z-untracked-worktrees.md).
 
