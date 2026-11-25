@@ -31,3 +31,6 @@ vite.config.ts.timestamp-*
 
 # Vitest browser-mode failure screenshots
 /.vitest/
+
+# Showcase screenshots (playwright.config.ts)
+/showcase/

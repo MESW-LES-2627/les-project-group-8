@@ -59,6 +59,14 @@ stack of this project first, so two runs can't share a machine (or worktrees) at
 fails on purpose: without the local stack's URL, the frontend would fall back to the
 shared project in `wrangler.jsonc`.
 
+Showcase specs (`e2e/*.showcase.ts`) screenshot screens with fixed data and a frozen
+clock, for the before/after comment that `.github/workflows/screenshots.yml` posts on
+frontend PRs. The e2e suite skips them; `SHOWCASE=1` runs them instead:
+
+```bash
+SHOWCASE=1 pnpm test:e2e --update-snapshots=all   # writes showcase/*.png (git-ignored)
+```
+
 ## Structure
 
 Unit tests (`*.test.ts`) and component tests (`*.svelte.test.ts`) sit next to the module they test.

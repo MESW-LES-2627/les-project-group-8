@@ -10,8 +10,14 @@ if (!process.env.SUPABASE_URL?.startsWith('http://127.0.0.1:')) {
 const API_PORT = 5002;
 const PORT = 4173;
 
+// SHOWCASE=1 runs the showcase specs instead: screenshots of each screen for the PR visual
+// diff (screenshots.yml), not checks, so the e2e suite never runs them.
+const showcase = !!process.env.SHOWCASE;
+
 export default defineConfig({
 	testDir: 'e2e',
+	testMatch: showcase ? '*.showcase.ts' : '*.spec.ts',
+	snapshotPathTemplate: 'showcase/{arg}{ext}',
 	forbidOnly: !!process.env.CI,
 	reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
 	use: {
