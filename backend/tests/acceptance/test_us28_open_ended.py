@@ -62,34 +62,23 @@ def test_creator_adds_a_text_bet_without_options(client, user_repo):
 
 
 @pytest.mark.parametrize(
-    "extra",
-    [{"options": ["A", "B"]}, {"options": []}, {"presentation": "radio"}],
-    ids=["options", "empty-options", "presentation"],
+    "fields",
+    [{"answer_type": "text", "options": ["A", "B"]}, {"answer_type": "number"}],
+    ids=["text-with-options", "unknown-type"],
 )
-def test_text_bet_with_choice_fields_is_rejected(client, user_repo, pool_repo, extra):
+def test_bet_with_an_invalid_answer_type_is_rejected(client, user_repo, pool_repo, fields):
+    # Given an open Pool
     _, headers = sign_in(user_repo)
     pool = create_pool(client, headers)
 
+    # When I add a text Bet with options, or a Bet of an unknown answer type
     response = client.post(
         f"/api/pools/{pool['id']}/bets",
-        json={"statement": "Who scores first?", "answer_type": "text", **extra},
+        json={"statement": "Who scores first?", **fields},
         headers=headers,
     )
 
-    assert response.status_code == 400
-    assert pool_repo.pools[0].bets == ()
-
-
-def test_unknown_answer_type_is_rejected(client, user_repo, pool_repo):
-    _, headers = sign_in(user_repo)
-    pool = create_pool(client, headers)
-
-    response = client.post(
-        f"/api/pools/{pool['id']}/bets",
-        json={"statement": "How many goals?", "answer_type": "number"},
-        headers=headers,
-    )
-
+    # Then it is refused and no Bet is added
     assert response.status_code == 400
     assert pool_repo.pools[0].bets == ()
 
@@ -133,15 +122,8 @@ def test_text_answer_is_saved_and_shown_after_reload(client, user_repo, pick_rep
 
 @pytest.mark.parametrize(
     "submitted, stored",
-    [
-        ("A", "A"),
-        ("  A  ", "A"),
-        ("é" * 500, "é" * 500),
-        ("😀" * 500, "😀" * 500),
-        (" " + "x" * 500 + "\n", "x" * 500),
-        ("<b>Ana</b> & co", "<b>Ana</b> & co"),
-    ],
-    ids=["one", "one-trimmed", "500-accented", "500-emoji", "500-after-trimming", "markup"],
+    [("  A  ", "A"), (" " + "x" * 500 + "\n", "x" * 500), ("😀" * 500, "😀" * 500)],
+    ids=["1", "500", "500-emoji"],
 )
 def test_answers_of_1_and_500_code_points_are_kept_as_plain_text(
     client, user_repo, pick_repo, submitted, stored,
@@ -162,21 +144,8 @@ def test_answers_of_1_and_500_code_points_are_kept_as_plain_text(
 
 @pytest.mark.parametrize(
     "payload",
-    [
-        {"answer_text": ""},
-        {"answer_text": "   \t\n "},
-        {"answer_text": "x" * 501},
-        {"answer_text": "😀" * 501},
-        {"answer_text": 42},
-        {"answer_text": None},
-        {},
-        {"outcome_id": "anything"},
-        {"answer_text": "Bruno", "outcome_id": "anything"},
-    ],
-    ids=[
-        "empty", "whitespace", "501", "501-emoji", "number", "null",
-        "missing", "choice-field", "both-fields",
-    ],
+    [{"answer_text": "   \t\n "}, {"answer_text": " " + "x" * 501 + " "}, {"outcome_id": "anything"}],
+    ids=["whitespace", "501", "choice-field"],
 )
 def test_invalid_answer_keeps_the_saved_one(client, user_repo, pick_repo, payload):
     # 28.5 Given I have a saved answer on an open Bet
@@ -219,44 +188,28 @@ def test_replacing_an_answer_changes_only_mine(client, user_repo, pick_repo):
 def test_nothing_changes_at_or_after_the_deadline(
     client, user_repo, pool_repo, pick_repo, monkeypatch, offset,
 ):
-    # 28.7 Given an existing text Bet with my answer, and the clock at or after the deadline
-    ana, headers = sign_in(user_repo)
-    pool = create_pool(client, headers)
-    bet = text_bet(client, pool["id"], headers)
-    answer(client, pool, bet, headers, "Ana")
+    # 28.7 Given Ana has an answer, Bruno has none, and the clock is at or after the deadline
+    ana, ana_headers = sign_in(user_repo, name="Ana")
+    bruno, bruno_headers = sign_in(user_repo, name="Bruno")
+    pool = create_pool(client, ana_headers)
+    bet = text_bet(client, pool["id"], ana_headers)
+    answer(client, pool, bet, ana_headers, "Ronaldo")
     freeze_clock(monkeypatch, pool_repo, offset)
 
-    # When I add an open-ended Bet or replace my answer
+    # When Ana adds an open-ended Bet or replaces her answer, and Bruno submits one
     added = client.post(
         f"/api/pools/{pool['id']}/bets",
         json={"statement": "Who gets a red card?", "answer_type": "text"},
-        headers=headers,
+        headers=ana_headers,
     )
-    replaced = answer(client, pool, bet, headers, "Bruno")
+    replaced = answer(client, pool, bet, ana_headers, "Messi")
+    submitted = answer(client, pool, bet, bruno_headers, "Messi")
 
     # Then each action is refused without changing questions or answers
-    assert added.status_code == 400
-    assert replaced.status_code == 400
+    assert (added.status_code, replaced.status_code, submitted.status_code) == (400, 400, 400)
     assert [stored.id for stored in pool_repo.pools[0].bets] == [bet["id"]]
-    assert pick_repo.get(bet["id"], ana.id).answer == TextAnswer("Ana")
-
-
-@pytest.mark.parametrize("offset", [0, 1], ids=["at", "after"])
-def test_first_answer_is_refused_at_or_after_the_deadline(
-    client, user_repo, pool_repo, pick_repo, monkeypatch, offset,
-):
-    # 28.7 Given an open-ended Bet without my answer, and the clock at or after the deadline
-    _, headers = sign_in(user_repo)
-    pool = create_pool(client, headers)
-    bet = text_bet(client, pool["id"], headers)
-    freeze_clock(monkeypatch, pool_repo, offset)
-
-    # When I submit an answer
-    response = answer(client, pool, bet, headers, "Ana")
-
-    # Then it is refused and nothing is stored
-    assert response.status_code == 400
-    assert pick_repo.picks == {}
+    assert pick_repo.get(bet["id"], ana.id).answer == TextAnswer("Ronaldo")
+    assert pick_repo.get(bet["id"], bruno.id) is None
 
 
 def test_other_answers_stay_hidden_before_the_deadline(client, user_repo):

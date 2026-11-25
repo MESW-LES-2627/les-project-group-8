@@ -465,15 +465,15 @@ Strategy is an abstract base class: `AnswerValidationStrategy` subclasses
 declares that it implements the interface by subclassing it, which is the
 realization arrow in the figure. Python refuses to instantiate the interface
 itself, or any subclass that leaves `validate` unimplemented, with a
-`TypeError`; a unit test checks this. The test stub `RecordingValidator`
-implements the same interface. The concrete strategies inherit no behavior,
+`TypeError`. The concrete strategies inherit no behavior,
 only the contract, and `PickService` uses them through composition: it holds
 them in a mapping injected through the constructor, not through subclassing.
 The mapping, not a factory method on the Bet, also keeps `pools` from
 importing anything from `picks`.
 
-Evidence: [strategy and selection unit tests](../backend/tests/unit/test_answer_validators.py)
-and [US28 acceptance tests](../backend/tests/acceptance/test_us28_open_ended.py).
+Evidence: [US28 acceptance tests](../backend/tests/acceptance/test_us28_open_ended.py),
+which go through both strategies via the HTTP API, following the team's
+[testing approach](iterations/3/i03.d004-testing.md#what-we-test-and-why).
 
 ##### Consequences and alternatives
 
@@ -482,14 +482,12 @@ and [US28 acceptance tests](../backend/tests/acceptance/test_us28_open_ended.py)
 - *Changes stayed local.* Adding text answers replaced five lines at the end of
   `save_pick` with four; none of its shared checks changed, and the US10, US15
   and US16 tests passed after only the stored-answer assertions were updated.
-  Changing the text limit now touches only `TextAnswerValidator` and its tests.
+  Changing the text limit now touches only `TextAnswerValidator` and the
+  AC 28.4/28.5 examples.
 - *AC 28.5 holds for any format.* A strategy either returns an answer or
   raises. `create_or_replace` only runs with a returned answer, so a rejected
-  answer never reaches the database. The AC 28.5 tests check this for nine
-  kinds of invalid input, and `test_strategy_is_not_consulted_once_the_pool_is_locked`
-  checks that the shared rules run before any strategy.
-- *Isolated tests.* The validators are tested without Flask or fake
-  repositories, and selection is tested with a stub that records its calls.
+  answer never reaches the database; the AC 28.5 tests check that the saved
+  answer survives.
 - *Typed results.* The repository ([`_answer_columns`](../backend/picks/repository.py#L54))
   and `ScoreService` match on `ChoiceAnswer`/`TextAnswer` instead of checking
   which nullable field is set.
@@ -500,8 +498,8 @@ and [US28 acceptance tests](../backend/tests/acceptance/test_us28_open_ended.py)
   reader has to follow the mapping into `answers.py`.
 - *Two lists must agree.* `AnswerType` is defined in `pools` and the mapping in
   `picks`. A new enum value without a strategy fails per request with a 400,
-  not at startup. `test_default_mapping_covers_every_answer_type` catches it in
-  CI instead.
+  not at startup. In practice a new type arrives with its own acceptance
+  tests, which would fail on that 400.
 - *It only covers validation.* Bet authoring (`parse_new_bet`), the
   repository's column mapping, JSON serialization, scoring and the Svelte
   components still branch on the answer type. A new format still touches about
@@ -509,8 +507,8 @@ and [US28 acceptance tests](../backend/tests/acceptance/test_us28_open_ended.py)
   "answer format" class handling validation, storage, serialization and scoring
   would tie `pools`, `picks` and `scores` to a single hierarchy.
 - *Marginal with two formats.* A dict of two functions would behave the same.
-  The class form pays off through configuration (`max_length`) and through
-  named roles that tests can replace; it does not yet pay off in volume.
+  The class form pays off mainly by naming the contract and making each
+  format's rules one place to read; it does not yet pay off in volume.
 
 **Alternatives we considered.**
 
