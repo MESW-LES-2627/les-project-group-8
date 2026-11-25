@@ -21,6 +21,14 @@ export default defineConfig({
 	test: {
 		environment: 'node',
 		// Unit tests only; Playwright specs (#33) live outside src/.
-		include: ['src/**/*.test.ts']
+		include: ['src/**/*.test.ts'],
+		// Only what unit tests own; routes, hooks, lib/server and components are e2e's.
+		// Untested files listed here still count, so they show as gaps.
+		coverage: {
+			provider: 'v8',
+			include: ['src/lib/*.ts', 'src/env.ts'],
+			exclude: ['**/*.test.ts', 'src/lib/types.ts', 'src/lib/index.ts'],
+			reporter: ['text', ['text', { file: 'coverage.txt' }], 'html']
+		}
 	}
 });
