@@ -10,7 +10,7 @@ if (!process.env.SUPABASE_URL?.startsWith('http://127.0.0.1:')) {
 const API_PORT = 5002;
 const PORT = 4173;
 
-// SHOWCASE=1 runs the showcase specs instead: screenshots of each screen for the PR visual
+// SHOWCASE=1 (or desktop) runs the showcase specs instead: screenshots of each screen for the PR visual
 // diff (screenshots.yml), not checks, so the e2e suite never runs them. SHOWCASE=mobile takes
 // them in a phone viewport: its own run, so it gets an empty database too and the same screens.
 const showcase = !!process.env.SHOWCASE;
