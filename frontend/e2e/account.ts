@@ -20,10 +20,8 @@ export function newAccount(): { email: string; name: string } {
 	return { email: `e2e-${id}@example.test`, name: `E2E ${id}` };
 }
 
-/** Signs up a fresh Account through the form; the browser ends up logged in on `/`. */
-export async function signUp(page: Page): Promise<{ email: string; name: string }> {
-	const account = newAccount();
-
+/** Signs up an Account (a fresh one by default) through the form; the browser ends up logged in on `/`. */
+export async function signUp(page: Page, account = newAccount()): Promise<{ email: string; name: string }> {
 	await page.goto('/signup');
 	await waitForHydration(page);
 	await page.getByLabel('Email').fill(account.email);
