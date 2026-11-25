@@ -1,0 +1,176 @@
+name: Screenshots
+
+# Before/after screenshots of every screen a PR changes, in one PR comment edited on each push.
+# The PR's showcase specs (frontend/e2e/*.showcase.ts) run against its base, then against the
+# PR itself: Playwright's toHaveScreenshot compares them. A visual change never fails this
+# workflow, only a crash of the PR's showcase specs. Not a required check.
+on:
+  pull_request:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/screenshots.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# shortcut: a fork PR's token is read-only, so its push and comment fail; use pull_request_target if forks ever open PRs.
+permissions:
+  contents: write # the screenshots branch
+  pull-requests: write # the comment
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 3.2.0 # keep in sync with e2e.yml
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13" # keep in sync with backend-ci.yml
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.6.0 # keep in sync with frontend-ci.yml
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22 # keep in sync with frontend-ci.yml
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # The base's app with the PR's showcase specs and config, in a second worktree.
+      - name: Check out the base
+        run: |
+          git fetch --depth=1 origin ${{ github.event.pull_request.base.sha }}
+          git worktree add "$RUNNER_TEMP/base" FETCH_HEAD
+          rm -rf "$RUNNER_TEMP/base/frontend/e2e"
+          cp -R e2e playwright.config.ts "$RUNNER_TEMP/base/frontend/"
+
+      # Its screens become the expected images. If this fails, the comment shows the PR's only.
+      - name: Capture the base
+        id: base
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/base/frontend
+        run: |
+          pip install -r ../backend/requirements.txt
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install chromium
+          SHOWCASE=1 pnpm test:e2e --update-snapshots=all
+
+      - name: Capture the PR
+        env:
+          BASE_CAPTURED: ${{ steps.base.outcome == 'success' }}
+        run: |
+          pip install -r ../backend/requirements.txt
+          if [ "$BASE_CAPTURED" = true ]; then
+            cp -R "$RUNNER_TEMP/base/frontend/showcase" .
+          fi
+          # A changed screen fails its test, a new one is written: neither is a crash.
+          PLAYWRIGHT_JSON_OUTPUT_NAME=results.json SHOWCASE=1 \
+            pnpm test:e2e --update-snapshots=missing --reporter=list,json || node -e '
+              const visual = /pixels \(ratio [\d.]+ of all image pixels\) are different|Expected an image \d+px by \d+px, received/;
+              const errors = (suite) => [
+                ...(suite.suites ?? []).flatMap(errors),
+                ...(suite.specs ?? []).flatMap((s) => s.tests.flatMap((t) => t.results.flatMap((r) => r.errors)))
+              ];
+              const report = require("./results.json");
+              const crashes = [...report.errors, ...report.suites.flatMap(errors)].filter((e) => !visual.test(e.message ?? ""));
+              crashes.forEach((e) => console.error(e.message));
+              process.exit(crashes.length ? 1 : 0);
+            '
+
+      - name: Publish
+        env:
+          BASE_CAPTURED: ${{ steps.base.outcome == 'success' }}
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          out=$RUNNER_TEMP/shots
+          mkdir -p "$out"
+          # Changed screens: Playwright's expected, actual and diff images.
+          for actual in $(find test-results -name '*-actual.png'); do
+            name=$(basename "$actual" -actual.png)
+            dir=$(dirname "$actual")
+            cp "$dir/$name-expected.png" "$out/$name-before.png"
+            cp "$actual" "$out/$name-after.png"
+            cp "$dir/$name-diff.png" "$out/$name-diff.png" 2> /dev/null || true
+          done
+          # New screens, or every screen when the base could not be captured.
+          for shot in showcase/*.png; do
+            name=$(basename "$shot" .png)
+            if [ "$BASE_CAPTURED" != true ] || [ ! -e "$RUNNER_TEMP/base/frontend/showcase/$name.png" ]; then
+              cp "$shot" "$out/$name-after.png"
+            fi
+          done
+
+          if ls "$out"/*.png > /dev/null 2>&1; then
+            # shortcut: pr/<n>/ is overwritten on each push and never pruned; delete the branch if it grows too big.
+            if git fetch origin screenshots; then
+              git worktree add --detach "$RUNNER_TEMP/branch" FETCH_HEAD
+            else
+              git worktree add --orphan -b screenshots "$RUNNER_TEMP/branch"
+            fi
+            cd "$RUNNER_TEMP/branch"
+            rm -rf "pr/$PR"
+            mkdir -p "pr/$PR"
+            cp "$out"/*.png "pr/$PR/"
+            git add -A
+            git diff --cached --quiet || git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m "PR #$PR at ${{ github.event.pull_request.head.sha }}"
+            # Another PR's run may have pushed since the fetch.
+            until git push origin HEAD:screenshots; do git pull --rebase origin screenshots; done
+            # The commit, not the branch, so older comments keep their images.
+            raw=https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$(git rev-parse HEAD)/pr/$PR
+            cd - > /dev/null
+          fi
+
+          img() { if [ -e "$out/$1" ]; then echo "<img src=\"$raw/$1\" width=\"300\">"; else echo "—"; fi; }
+          {
+            echo '<!-- screenshots -->'
+            echo '### Screenshots'
+            echo
+            if [ -z "${raw:-}" ]; then
+              echo 'No visual changes.'
+            else
+              [ "$BASE_CAPTURED" = true ] || printf 'After only (base could not be captured).\n\n'
+              echo '| Screen | Before | After | Diff |'
+              echo '| - | - | - | - |'
+              for after in "$out"/*-after.png; do
+                name=$(basename "$after" -after.png)
+                echo "| $name | $(img "$name-before.png") | $(img "$name-after.png") | $(img "$name-diff.png") |"
+              done
+            fi
+            echo
+            echo "[Workflow run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          } > "$RUNNER_TEMP/comment.md"
+
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.body | startswith("<!-- screenshots -->")) | .id' | head -n 1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@"$RUNNER_TEMP/comment.md" > /dev/null
+          else
+            gh pr comment "$PR" --body-file "$RUNNER_TEMP/comment.md"
+          fi
