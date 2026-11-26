@@ -47,7 +47,7 @@ def create_app(user_repo=None, pool_repo=None, pick_repo=None, token_verifier=No
     def health():
         return jsonify(status="ok")
 
-    app.register_blueprint(create_users_blueprint(login_required), url_prefix="/api")
+    app.register_blueprint(create_users_blueprint(user_service, login_required), url_prefix="/api")
     app.register_blueprint(create_pools_blueprint(pool_service, login_required), url_prefix="/api")
     app.register_blueprint(create_picks_blueprint(pick_service, login_required), url_prefix="/api")
     app.register_blueprint(create_scores_blueprint(score_service), url_prefix="/api")
