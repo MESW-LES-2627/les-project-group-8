@@ -11,7 +11,7 @@
 
 ## Story refinement follow-up
 
-- **Outcome:** Refined [US28, US33, US30 and US32](../i03.d003-user-stories.md#refinement-plan-for-the-selected-stories) and their [backlog dependencies](../i03.d008-iteration-backlog.md#dependencies-and-delivery-order).
+- **Outcome:** Refined [US28, US33, US30 and US32](../i03.d003-user-stories.md) and their [backlog dependencies](../i03.d008-iteration-backlog.md).
 - **Delegated:** Split the large open-ended capability into collecting predictions and resolving them; draft independent Given/When/Then checks, MVP mappings, estimates and planned test evidence against evaluation.md.
 - **What we decided ourselves, and why:** The user confirmed that the decider marks each answer correct or incorrect. The user requested no assignments before Issues exist, and no commit or push. Text limits, final-confirmation behavior and Pool-selection defaults remain explicit proposals for review.
 - **How we checked:** Check AC counts and unique IDs, story/backlog estimates and links, and the acyclic US28 → US33 dependency. No new automated behavior tests or deployment checks are claimed.

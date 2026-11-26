@@ -10,15 +10,33 @@ if (!process.env.SUPABASE_URL?.startsWith('http://127.0.0.1:')) {
 const API_PORT = 5002;
 const PORT = 4173;
 
+// SHOWCASE=1 (or desktop) runs the showcase specs instead: screenshots of each screen for the PR visual
+// diff (screenshots.yml), not checks, so the e2e suite never runs them. SHOWCASE=mobile takes
+// them in a phone viewport: its own run, so it gets an empty database too and the same screens.
+const showcase = !!process.env.SHOWCASE;
+const mobile = process.env.SHOWCASE === 'mobile';
+// STORIES=1 runs the story specs: one recording per user story, for the GIF gallery (stories.yml).
+const stories = !!process.env.STORIES;
+
 export default defineConfig({
 	testDir: 'e2e',
+	testMatch: stories ? '*.story.ts' : showcase ? '*.showcase.ts' : '*.spec.ts',
+	...(showcase && {
+		snapshotPathTemplate: `showcase/{arg}${mobile ? '-mobile' : ''}{ext}`,
+		// Apart, so the second viewport's run does not clear the first one's diffs.
+		outputDir: `test-results/${mobile ? 'mobile' : 'desktop'}`
+	}),
 	forbidOnly: !!process.env.CI,
 	reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
 	use: {
 		baseURL: `http://localhost:${PORT}`,
 		trace: 'retain-on-failure'
 	},
-	projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+	projects: [
+		mobile
+			? { name: 'mobile', use: { ...devices['Pixel 7'] } }
+			: { name: 'chromium', use: { ...devices['Desktop Chrome'] } }
+	],
 	webServer: [
 		{
 			command: `flask --app app run --port ${API_PORT}`,

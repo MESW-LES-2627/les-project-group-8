@@ -25,3 +25,13 @@ vite.config.ts.timestamp-*
 # Playwright
 /test-results/
 /playwright-report/
+
+# Vitest coverage
+/coverage/
+
+# Vitest browser-mode failure screenshots
+/.vitest/
+
+# Showcase screenshots (playwright.config.ts)
+/showcase/
+/stories/

@@ -23,13 +23,20 @@ jobs:
       run:
         working-directory: frontend
     steps:
+      # Supabase's ports (supabase/config.toml) sit in Linux's ephemeral range (32768-60999): an outbound
+      # connection can take one and fail `supabase start` with "address already in use". First step, so no
+      # connection holds one yet; working-directory `.` because frontend/ is not checked out yet.
+      - name: Reserve Supabase's ports
+        working-directory: .
+        run: sudo sysctl -w net.ipv4.ip_local_reserved_ports=54320-54329
+
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: 3.2.0
+          version: 3.2.0 # keep in sync with screenshots.yml and stories.yml
 
       - name: Setup Python
         uses: actions/setup-python@v5

@@ -75,6 +75,15 @@ A full example: [2026-11-18-1343Z-ai-log-convention.md](iterations/2/ai-log/2026
   output, secrets included. When an entry needs evidence, commit a curated
   excerpt under `docs/assets/iterations/N/`, after checking it for secrets
   (keys, tokens, `.env` contents, passwords), and link it from the entry.
+- **Links.** A dead link, `#section` included, fails the PR's docs-links
+  check, and in a claim it caps that line at 4. So:
+  - Write the entry last, after the session's files are final, hand edits
+    included.
+  - Link to things that won't move: a PR, issue, commit or whole file.
+  - Use a `#section` only if that heading is on your branch.
+  - Run `lychee --offline --include-fragments <file>` if you have
+    [lychee](https://lychee.cli.rs) installed; otherwise CI catches it.
+  - Whoever deletes or renames a heading fixes the links to it.
 - **`d005-ai-log` is retired.** The existing `iNN.d005-ai-log.md` files in
   iterations 0–2 stay as they are. Don't edit them, and don't reuse the number
   `d005`.
@@ -112,7 +121,8 @@ Write docs/iterations/<N>/i<NN>.d010-ai-critique.md with these sections:
 
 Rules:
 - Use only what the entries say. Don't invent tools, decisions or misses.
-- Every link must point at a file, commit or PR that exists. Check each one.
+- Every link must point at a file, commit or PR that exists. Check each one,
+  following the Links rule in docs/ai-log.md.
 - Group by what actually happened; don't impose fixed stages.
 - If the entries lack something a section needs, say so in that section
   instead of filling it.

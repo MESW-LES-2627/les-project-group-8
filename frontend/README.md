@@ -29,7 +29,7 @@ the backend only.
 | `pnpm build`   | Production build             |
 | `pnpm preview` | Preview the production build |
 | `pnpm check`   | Type-check (`svelte-check`)  |
-| `pnpm test`    | Unit tests (Vitest)          |
+| `pnpm test`    | Unit and component tests (Vitest; components run in Chromium) |
 | `pnpm test:e2e` | End-to-end tests (Playwright) |
 
 ## End-to-end tests
@@ -59,12 +59,32 @@ stack of this project first, so two runs can't share a machine (or worktrees) at
 fails on purpose: without the local stack's URL, the frontend would fall back to the
 shared project in `wrangler.jsonc`.
 
+Showcase specs (`e2e/*.showcase.ts`) screenshot screens with fixed data and a frozen
+clock, for the before/after comment that `.github/workflows/screenshots.yml` posts on
+frontend PRs. The e2e suite skips them; `SHOWCASE=1` (or `desktop`) runs them instead, and
+`SHOWCASE=mobile` runs them in a phone viewport:
+
+```bash
+SHOWCASE=1 pnpm test:e2e --update-snapshots=all        # writes showcase/*.png (git-ignored)
+SHOWCASE=mobile pnpm test:e2e --update-snapshots=all   # writes showcase/*-mobile.png
+```
+
+Story specs (`e2e/*.story.ts`) hold one test per Done user story with a UI, titled `USn …`.
+`.github/workflows/stories.yml` records them on each push to `staging` and publishes
+`stories/USn.gif` and a `stories/README.md` gallery on the `screenshots` branch:
+
+```bash
+STORIES=1 pnpm test:e2e   # writes stories/<test title>.webm (git-ignored)
+```
+
 ## Structure
 
-Unit tests (`*.test.ts`) sit next to the module they test.
+Unit tests (`*.test.ts`) and component tests (`*.svelte.test.ts`) sit next to the module they test.
 
 ```
 e2e/                      # Playwright specs and run.sh (local Supabase + Playwright)
+showcase/                 # showcase screenshots (git-ignored)
+stories/                  # story recordings (git-ignored)
 src/
 ├── app.css               # Tailwind entrypoint (@import 'tailwindcss')
 ├── app.d.ts              # App.Locals / App.PageData typings
