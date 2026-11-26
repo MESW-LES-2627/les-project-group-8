@@ -1,5 +1,6 @@
 """Count resolved picks and assign competition ranks within a pool."""
 
+from picks.models import ChoiceAnswer
 from picks.service import PickService
 from pools.models import PoolStatus
 from pools.service import PoolService
@@ -24,8 +25,9 @@ class ScoreService:
                 records[pick.user_id] = LeaderboardEntry(pick.user_id, pick.user.name)
             record = records[pick.user_id]
             winning_outcome_id = winners[pick.bet_id]
+            # Only choice Bets are resolved for now, so text Picks count neither way.
             if winning_outcome_id is not None:
-                if pick.outcome_id == winning_outcome_id:
+                if pick.answer == ChoiceAnswer(winning_outcome_id):
                     record.wins += 1
                 else:
                     record.losses += 1

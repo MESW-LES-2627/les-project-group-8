@@ -4,9 +4,9 @@ from datetime import datetime
 
 from users.models import User
 
-from .models import Pick
+from .models import Answer, ChoiceAnswer, Pick, TextAnswer
 
-_PICK_COLUMNS = "id, bet_id, user_id, outcome_id, created_at, user:users!user_id(id, name)"
+_PICK_COLUMNS = "id, bet_id, user_id, outcome_id, answer_text, created_at, user:users!user_id(id, name)"
 
 
 class SupabasePickRepository:
@@ -22,11 +22,11 @@ class SupabasePickRepository:
     def _picks_for(self, bet_ids: tuple[str, ...]):
         return self._db.table("picks").select(_PICK_COLUMNS).in_("bet_id", list(bet_ids))
 
-    def create_or_replace(self, bet_id: str, user_id: str, outcome_id: str) -> Pick:
+    def create_or_replace(self, bet_id: str, user_id: str, answer: Answer) -> Pick:
         row = (
             self._db.table("picks")
             .upsert(
-                {"bet_id": bet_id, "user_id": user_id, "outcome_id": outcome_id},
+                {"bet_id": bet_id, "user_id": user_id, **_answer_columns(answer)},
                 on_conflict="bet_id,user_id",
             )
             .select(_PICK_COLUMNS)
@@ -45,7 +45,23 @@ def _to_pick(row: dict) -> Pick:
         id=str(row["id"]),
         bet_id=str(row["bet_id"]),
         user_id=str(row["user_id"]),
-        outcome_id=str(row["outcome_id"]),
+        answer=_to_answer(row),
         created_at=datetime.fromisoformat(row["created_at"]),
         user=User(id=str(row["user"]["id"]), name=row["user"]["name"]),
     )
+
+
+def _answer_columns(answer: Answer) -> dict:
+    """Both columns are always written, so replacing a Pick clears the other one."""
+    match answer:
+        case ChoiceAnswer(outcome_id):
+            return {"outcome_id": outcome_id, "answer_text": None}
+        case TextAnswer(text):
+            return {"outcome_id": None, "answer_text": text}
+    raise TypeError(f"Unknown answer: {answer!r}")
+
+
+def _to_answer(row: dict) -> Answer:
+    if row.get("answer_text") is not None:
+        return TextAnswer(row["answer_text"])
+    return ChoiceAnswer(str(row["outcome_id"]))

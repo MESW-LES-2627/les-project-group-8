@@ -1,0 +1,70 @@
+@startuml
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Segoe UI"
+skinparam classAttributeIconSize 0
+hide empty members
+
+title Strategy pattern — answer validation in the picks module (US28)
+
+package "picks" {
+  class PickService <<Context>> {
+    - _validators : Mapping[AnswerType, AnswerValidationStrategy]
+    + save_pick(pool_id, bet_id, payload, user) : Pick
+  }
+
+  interface AnswerValidationStrategy <<Strategy>> {
+    + validate(payload : dict, bet : Bet) : Answer
+  }
+
+  class ChoiceAnswerValidator <<ConcreteStrategy>> {
+    + validate(payload, bet) : ChoiceAnswer
+  }
+
+  class TextAnswerValidator <<ConcreteStrategy>> {
+    - _max_length : int = 500
+    + validate(payload, bet) : TextAnswer
+  }
+
+  class "default_answer_validators()" as Factory <<function>>
+
+  class ChoiceAnswer {
+    + outcome_id : str
+  }
+  class TextAnswer {
+    + text : str
+  }
+
+  class SupabasePickRepository {
+    + create_or_replace(bet_id, user_id, answer : Answer) : Pick
+  }
+}
+
+package "pools" {
+  class Bet {
+    + answer_type : AnswerType
+    + options : tuple[Outcome, ...]
+  }
+  enum AnswerType {
+    CHOICE
+    TEXT
+  }
+}
+
+PickService o--> "1..*" AnswerValidationStrategy : selects by\nbet.answer_type
+AnswerValidationStrategy <|.. ChoiceAnswerValidator
+AnswerValidationStrategy <|.. TextAnswerValidator
+Factory ..> ChoiceAnswerValidator : creates
+Factory ..> TextAnswerValidator : creates
+ChoiceAnswerValidator ..> ChoiceAnswer : returns
+TextAnswerValidator ..> TextAnswer : returns
+AnswerValidationStrategy ..> Bet : reads
+PickService ..> SupabasePickRepository : saves validated Answer
+Bet --> AnswerType
+
+note right of PickService
+  Shared rules stay here: user_id refused,
+  Bet in Pool, deadline, unresolved Bet,
+  one Pick per (Bet, User).
+end note
+@enduml

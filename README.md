@@ -64,6 +64,10 @@ local, staging and production share one database. See
 [ADR 0004](docs/adr/0004-pools-contain-bets.md); applying the migration alone
 breaks clients of the old schema and API. Rounds remain future scope.
 
+The US28 migration (`backend/migrations/20261125120000_open_ended_bets.sql`)
+adds free-text Bets. Apply it together with the backend that reads
+`bets.answer_type` and `picks.answer_text`; existing Bets become `choice` Bets.
+
 ## Deploying the frontend
 
 The frontend uses `@sveltejs/adapter-cloudflare`. Log in to Cloudflare once, then

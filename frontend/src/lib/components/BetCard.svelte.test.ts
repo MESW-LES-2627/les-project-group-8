@@ -13,6 +13,7 @@ const bet: Bet = {
 	id: 'b1',
 	pool_id: 'p1',
 	statement: 'Who wins?',
+	answer_type: 'choice',
 	presentation: 'radio',
 	winning_outcome_id: null,
 	options: [
@@ -22,7 +23,9 @@ const bet: Bet = {
 	created_at: ''
 };
 const user = { id: 'u1', name: 'Ana' };
-const pick: Pick = { id: 'k1', bet_id: 'b1', user_id: 'u1', user, outcome_id: 'o2', created_at: '' };
+const pick: Pick = { id: 'k1', bet_id: 'b1', user_id: 'u1', user, outcome_id: 'o2', answer_text: null, created_at: '' };
+const textBet: Bet = { ...bet, answer_type: 'text', options: [] };
+const answer: Pick = { ...pick, outcome_id: null, answer_text: 'Ronaldo' };
 const base = { bet, poolStatus: 'OPEN' as const, loggedIn: true, user, loginHref: '/login?next=/pools/p1' };
 
 describe('BetCard', () => {
@@ -90,6 +93,51 @@ describe('BetCard', () => {
 			const screen = await render(BetCard, { ...base, user: null });
 			await expect.element(screen.getByText('This account has no User profile yet.')).toBeVisible();
 			await expect.element(screen.getByRole('link', { name: 'What now?' })).toHaveAttribute('href', '/no-user');
+		});
+	});
+
+	describe('a free-text Bet', () => {
+		it('offers a text box holding the saved answer', async () => {
+			const screen = await render(BetCard, { ...base, bet: textBet, pick: answer });
+			await expect.element(screen.getByRole('textbox', { name: 'Your answer' })).toHaveValue('Ronaldo');
+			await expect.element(screen.getByText('Saved: Ronaldo')).toBeVisible();
+			await expect.element(screen.getByRole('button', { name: 'Change answer' })).toBeVisible();
+			await expect.element(screen.getByRole('radio')).not.toBeInTheDocument();
+		});
+
+		it('keeps the typed answer and shows the error after a failed save', async () => {
+			const screen = await render(BetCard, {
+				...base,
+				bet: textBet,
+				pick: answer,
+				form: { error: 'Answers must be at most 500 characters.', answerText: 'Messi' }
+			});
+			await expect.element(screen.getByRole('alert')).toHaveTextContent('Answers must be at most 500 characters.');
+			await expect.element(screen.getByRole('textbox', { name: 'Your answer' })).toHaveValue('Messi');
+		});
+
+		it('confirms a saved answer', async () => {
+			const screen = await render(BetCard, { ...base, bet: textBet, pick: answer, form: { saved: true } });
+			await expect.element(screen.getByRole('status')).toHaveTextContent('Answer saved.');
+		});
+
+		it.each([
+			['the saved answer', answer, 'Your answer: Ronaldo'],
+			['that the User did not answer', undefined, 'You did not answer.']
+		] as const)('shows %s once answers are closed, with no option list', async (_, saved, text) => {
+			const screen = await render(BetCard, { ...base, poolStatus: 'LOCKED', bet: textBet, pick: saved });
+			await expect.element(screen.getByText('Answers are closed.')).toBeVisible();
+			await expect.element(screen.getByText(text)).toBeVisible();
+			await expect.element(screen.getByRole('textbox')).not.toBeInTheDocument();
+			await expect.element(screen.getByRole('listitem')).not.toBeInTheDocument();
+		});
+
+		it.each([
+			['OPEN', 'Log in to save your answer.'],
+			['LOCKED', 'Log in to see your saved answer.']
+		] as const)('asks a visitor to log in while the Pool is %s', async (poolStatus, text) => {
+			const screen = await render(BetCard, { ...base, poolStatus, bet: textBet, loggedIn: false, user: null });
+			await expect.element(screen.getByText(text)).toBeVisible();
 		});
 	});
 

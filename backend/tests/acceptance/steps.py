@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from picks.models import ChoiceAnswer
 from users.models import User
 
 # Throwaway ES256 key pair: the app under test trusts SIGNING_KEY's public half,
@@ -114,7 +115,7 @@ def iso(moment: datetime) -> str:
 def seed_pick(client, pool_repo, pick_repo, user, pool, headers, *, winner=None, choice=0) -> dict:
     """Add a Bet as the Pool's creator, store the User's Pick on it, and resolve it if `winner` is set."""
     bet = create_bet(client, pool["id"], headers)
-    pick_repo.create_or_replace(bet["id"], user.id, bet["options"][choice]["id"])
+    pick_repo.create_or_replace(bet["id"], user.id, ChoiceAnswer(bet["options"][choice]["id"]))
     if winner is not None:
         pool_repo.resolve_bet(pool["id"], bet["id"], bet["options"][winner]["id"])
     return bet

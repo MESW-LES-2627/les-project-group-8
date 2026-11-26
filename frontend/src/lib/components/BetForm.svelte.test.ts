@@ -17,6 +17,24 @@ describe('BetForm', () => {
 		await expect.element(screen.getByRole('button', { name: 'Add bet' })).toBeEnabled();
 	});
 
+	it('hides the options and presentation for a free-text Bet', async () => {
+		const screen = await render(BetForm);
+		await expect.element(screen.getByRole('radio', { name: 'Multiple choice' })).toBeChecked();
+		await screen.getByRole('radio', { name: 'Free text' }).click();
+		await expect.element(screen.getByLabelText('Option 1')).not.toBeInTheDocument();
+		await expect.element(screen.getByRole('radio', { name: 'Radio buttons' })).not.toBeInTheDocument();
+		await screen.getByRole('radio', { name: 'Multiple choice' }).click();
+		await expect.element(screen.getByLabelText('Option 1')).toBeVisible();
+	});
+
+	it('restores a failed free-text submission as free text', async () => {
+		const screen = await render(BetForm, {
+			form: { error: 'Statement cannot be empty.', values: { statement: '', answer_type: 'text', options: [], presentation: '' } }
+		});
+		await expect.element(screen.getByRole('radio', { name: 'Free text' })).toBeChecked();
+		await expect.element(screen.getByLabelText('Option 1')).not.toBeInTheDocument();
+	});
+
 	it('adds options up to ten', async () => {
 		const screen = await render(BetForm);
 		const add = screen.getByRole('button', { name: '+ Add option' });

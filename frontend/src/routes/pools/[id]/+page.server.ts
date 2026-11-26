@@ -3,19 +3,24 @@ import { readField } from '#lib/form.ts';
 import { loginPath } from '#lib/redirect.ts';
 import { ApiError, createBet, getLeaderboard, listPicks, getPool, resolveBet, savePick } from '#lib/server/api.ts';
 import { clearSessionCookies, endSession } from '#lib/server/session.ts';
-import type { BetPresentation, CreateBetInput, LeaderboardEntry, Pick, Pool } from '#lib/types.ts';
+import type { BetPresentation, CreateBetInput, LeaderboardEntry, Pick, PickAnswer, Pool } from '#lib/types.ts';
 
 type BetValues = {
 	statement: string;
+	answer_type: string;
 	options: string[];
 	presentation: string;
 };
 
 type BetErrors = {
 	statement?: string;
+	answer_type?: string;
 	options?: string;
 	presentation?: string;
 };
+
+/** Mirrors the API's limit, which counts code points rather than UTF-16 units. */
+const MAX_ANSWER_LENGTH = 500;
 
 function validateBet(values: BetValues): { fields: BetErrors; input?: CreateBetInput } {
 	const fields: BetErrors = {};
@@ -24,6 +29,18 @@ function validateBet(values: BetValues): { fields: BetErrors; input?: CreateBetI
 		fields.statement = 'Statement cannot be empty.';
 	} else if (values.statement.length > 500) {
 		fields.statement = 'Statement must be at most 500 characters.';
+	}
+
+	if (values.answer_type !== 'choice' && values.answer_type !== 'text') {
+		fields.answer_type = 'Choose multiple choice or free text.';
+		return { fields };
+	}
+
+	if (values.answer_type === 'text') {
+		if (Object.keys(fields).length > 0) {
+			return { fields };
+		}
+		return { fields, input: { answer_type: 'text', statement: values.statement } };
 	}
 
 	if (values.options.length < 2 || values.options.length > 10) {
@@ -46,7 +63,29 @@ function validateBet(values: BetValues): { fields: BetErrors; input?: CreateBetI
 	if (Object.keys(fields).length > 0) {
 		return { fields };
 	}
-	return { fields, input: { ...values, presentation } };
+	return {
+		fields,
+		input: { answer_type: 'choice', statement: values.statement, options: values.options, presentation }
+	};
+}
+
+/** A choice form sends `outcome_id`; a text form sends `answer_text`. */
+function readAnswer(form: FormData): { answer?: PickAnswer; outcomeId: string; answerText: string; error?: string } {
+	if (form.has('answer_text')) {
+		const answerText = readField(form, 'answer_text').trim();
+		if (!answerText) {
+			return { outcomeId: '', answerText, error: 'Write an answer before saving.' };
+		}
+		if (Array.from(answerText).length > MAX_ANSWER_LENGTH) {
+			return { outcomeId: '', answerText, error: `Answers must be at most ${MAX_ANSWER_LENGTH} characters.` };
+		}
+		return { answer: { answer_text: answerText }, outcomeId: '', answerText };
+	}
+	const outcomeId = readField(form, 'outcome_id').trim();
+	if (!outcomeId) {
+		return { outcomeId, answerText: '', error: 'Choose an option before saving.' };
+	}
+	return { answer: { outcome_id: outcomeId }, outcomeId, answerText: '' };
 }
 
 export async function load({
@@ -159,6 +198,7 @@ export const actions = {
 		const form = await request.formData();
 		const values: BetValues = {
 			statement: readField(form, 'statement').trim(),
+			answer_type: readField(form, 'answer_type') || 'choice',
 			options: form.getAll('options').map((value) =>
 				typeof value === 'string' ? value.trim() : ''
 			),
@@ -216,13 +256,14 @@ export const actions = {
 
 		const form = await request.formData();
 		const betId = readField(form, 'bet_id').trim();
-		const outcomeId = readField(form, 'outcome_id').trim();
-		if (!betId || !outcomeId) {
+		const { answer, outcomeId, answerText, error: answerError } = readAnswer(form);
+		if (!betId || !answer) {
 			return fail(400, {
 				action: 'pick' as const,
 				betId,
 				outcomeId,
-				error: 'Choose an option before saving.'
+				answerText,
+				error: answerError ?? 'Choose an option before saving.'
 			});
 		}
 
@@ -230,7 +271,7 @@ export const actions = {
 			await savePick(
 				params.id,
 				betId,
-				outcomeId,
+				answer,
 				locals.session.access_token
 			);
 		} catch (err) {
@@ -246,6 +287,7 @@ export const actions = {
 					action: 'pick' as const,
 					betId,
 					outcomeId,
+					answerText,
 					error: err.message
 				});
 			}
@@ -253,6 +295,7 @@ export const actions = {
 				action: 'pick' as const,
 				betId,
 				outcomeId,
+				answerText,
 				error: err instanceof Error ? err.message : 'Could not save your pick.'
 			});
 		}
@@ -261,6 +304,7 @@ export const actions = {
 			action: 'pick' as const,
 			betId,
 			outcomeId,
+			answerText,
 			saved: true
 		};
 	}

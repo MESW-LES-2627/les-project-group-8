@@ -7,7 +7,7 @@ from flask import Blueprint, jsonify, request
 from shared.auth import LoginGuard
 from users.models import User
 
-from .models import Pick
+from .models import ChoiceAnswer, Pick, TextAnswer
 from .service import PickService
 
 
@@ -35,7 +35,9 @@ def pick_to_json(pick: Pick) -> dict:
         "bet_id": pick.bet_id,
         "user_id": pick.user_id,
         "user": {"id": pick.user.id, "name": pick.user.name},
-        "outcome_id": pick.outcome_id,
+        # Exactly one of the two is set, matching the Bet's answer type.
+        "outcome_id": pick.answer.outcome_id if isinstance(pick.answer, ChoiceAnswer) else None,
+        "answer_text": pick.answer.text if isinstance(pick.answer, TextAnswer) else None,
         "created_at": _utc_iso(pick.created_at),
     }
 

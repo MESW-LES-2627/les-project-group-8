@@ -2,10 +2,10 @@
 
 from datetime import datetime
 
-from .models import Bet, BetPresentation, NewBet, NewPool, Outcome, Pool, UserSummary
+from .models import AnswerType, Bet, BetPresentation, NewBet, NewPool, Outcome, Pool, UserSummary
 
 _BET_COLUMNS = (
-    "id, pool_id, statement, winning_outcome_id, created_at, presentation,"
+    "id, pool_id, statement, winning_outcome_id, created_at, presentation, answer_type,"
     " outcomes!outcomes_bet_id_fkey(id, label, position)"
 )
 
@@ -72,19 +72,22 @@ class SupabasePoolRepository:
             "pool_id": pool_id,
             "statement": new_bet.statement,
             "presentation": new_bet.presentation.value,
+            "answer_type": new_bet.answer_type.value,
         }).execute().data[0]["id"]
 
         # Keep the existing cleanup approach until #31 introduces transactions.
-        try:
-            self._db.table("outcomes").insert(
-                [
-                    {"bet_id": bet_id, "label": label, "position": position}
-                    for position, label in enumerate(new_bet.options)
-                ]
-            ).execute()
-        except Exception:
-            self._db.table("bets").delete().eq("id", bet_id).execute()
-            raise
+        # Text Bets have no options, so there is nothing to insert.
+        if new_bet.options:
+            try:
+                self._db.table("outcomes").insert(
+                    [
+                        {"bet_id": bet_id, "label": label, "position": position}
+                        for position, label in enumerate(new_bet.options)
+                    ]
+                ).execute()
+            except Exception:
+                self._db.table("bets").delete().eq("id", bet_id).execute()
+                raise
 
         row = (
             self._db.table("bets")
@@ -124,4 +127,5 @@ def _to_bet(row: dict) -> Bet:
         winning_outcome_id=row.get("winning_outcome_id"),
         created_at=datetime.fromisoformat(row["created_at"]),
         presentation=BetPresentation(row["presentation"]),
+        answer_type=AnswerType(row["answer_type"]),
     )

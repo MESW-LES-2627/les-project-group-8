@@ -9,6 +9,7 @@ Run locally with `flask run`; Gunicorn uses `app:create_app()`.
 
 from flask import Flask, jsonify
 
+from picks.answers import default_answer_validators
 from picks.repository import SupabasePickRepository
 from picks.routes import create_picks_blueprint
 from picks.service import PickService
@@ -39,7 +40,7 @@ def create_app(user_repo=None, pool_repo=None, pick_repo=None, token_verifier=No
 
     user_service = UserService(user_repo)
     pool_service = PoolService(pool_repo)
-    pick_service = PickService(pick_repo, pools=pool_service)
+    pick_service = PickService(pick_repo, pools=pool_service, validators=default_answer_validators())
     score_service = ScoreService(pools=pool_service, picks=pick_service)
     login_required = create_login_guard(token_verifier, user_service.get_user)
 

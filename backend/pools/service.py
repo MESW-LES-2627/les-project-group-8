@@ -7,7 +7,7 @@ from shared.errors import ConflictError, ForbiddenError, NotFoundError, Validati
 from shared.validation import require_json_object, required_text
 from users.models import User
 
-from .models import Bet, BetPresentation, NewBet, NewPool, Pool, PoolStatus, UserSummary
+from .models import AnswerType, Bet, BetPresentation, NewBet, NewPool, Pool, PoolStatus, UserSummary
 
 MAX_NAME_LENGTH = 120
 MAX_DESCRIPTION_LENGTH = 500
@@ -38,7 +38,7 @@ class PoolService:
             raise ValidationError("Field 'creator_id' is not accepted: the creator is the logged-in user.")
         if "decider_id" in payload:
             raise ValidationError("Field 'decider_id' is not accepted: the creator is also the decider.")
-        if any(field in payload for field in ("statement", "options", "presentation", "bets")):
+        if any(field in payload for field in ("statement", "options", "presentation", "answer_type", "bets")):
             raise ValidationError("Pools are created empty. Add bets separately.")
         new_pool = parse_new_pool(payload, creator=UserSummary.of(creator))
         return self._repository.create_pool(new_pool)
@@ -62,6 +62,9 @@ class PoolService:
             raise NotFoundError("Bet not found.")
         if pool.decider.id != user.id:
             raise ForbiddenError("Only the pool's decider can resolve its bets.")
+        if bet.answer_type != AnswerType.CHOICE:
+            # Judging free-text answers is a later story (US33); until then text Bets stay unresolved.
+            raise ValidationError("Only multiple-choice bets can be resolved.")
         if bet.winning_outcome_id is not None:
             raise ConflictError("This bet is already resolved.")
         if pool.status() != PoolStatus.LOCKED:
@@ -95,10 +98,18 @@ def parse_new_pool(payload, creator: UserSummary, now: datetime | None = None) -
 
 def parse_new_bet(payload) -> NewBet:
     payload = require_json_object(payload)
+    statement = required_text(payload, "statement", MAX_STATEMENT_LENGTH)
+    answer_type = _answer_type(payload.get("answer_type"))
+    if answer_type == AnswerType.TEXT:
+        for field in ("options", "presentation"):
+            if field in payload:
+                raise ValidationError(f"Field '{field}' is not accepted for a text bet.")
+        return NewBet(statement=statement, options=(), answer_type=answer_type)
     return NewBet(
-        statement=required_text(payload, "statement", MAX_STATEMENT_LENGTH),
+        statement=statement,
         options=_options(payload.get("options")),
         presentation=_presentation(payload.get("presentation")),
+        answer_type=answer_type,
     )
 
 
@@ -125,6 +136,14 @@ def _options(raw) -> tuple[str, ...]:
     if len({option.casefold() for option in options}) != len(options):
         raise error
     return options
+
+
+def _answer_type(raw) -> AnswerType:
+    if raw is None:
+        return AnswerType.CHOICE
+    if not isinstance(raw, str) or raw.lower() not in {item.value for item in AnswerType}:
+        raise ValidationError("Field 'answer_type' must be 'choice' or 'text'.")
+    return AnswerType(raw.lower())
 
 
 def _presentation(raw) -> BetPresentation:

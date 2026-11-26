@@ -1,5 +1,5 @@
 import { API_URL } from '$app/env/private';
-import type { Bet, CreateBetInput, CreatePoolInput, LeaderboardEntry, Pick, Pool, UserSummary } from '#lib/types.ts';
+import type { Bet, CreateBetInput, CreatePoolInput, LeaderboardEntry, Pick, PickAnswer, Pool, UserSummary } from '#lib/types.ts';
 
 const TIMEOUT_MS = 15_000;
 const ERROR_PREVIEW_LIMIT = 2_048;
@@ -180,12 +180,12 @@ export async function listPicks(
 export function savePick(
 	poolId: string,
 	betId: string,
-	outcomeId: string,
+	answer: PickAnswer,
 	accessToken: string
 ): Promise<Pick> {
 	return request<Pick>(`/pools/${encodeURIComponent(poolId)}/bets/${encodeURIComponent(betId)}/picks`, {
 		method: 'POST',
-		body: { outcome_id: outcomeId },
+		body: answer,
 		accessToken
 	});
 }

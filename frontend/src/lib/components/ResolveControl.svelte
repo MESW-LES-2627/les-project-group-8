@@ -17,6 +17,8 @@
 	<p class="mt-5 border-t border-black pt-4 text-sm" role="status">
 		Resolved — winning outcome: <strong>{winner.label}</strong>
 	</p>
+{:else if isDecider && locked && bet.answer_type === 'text'}
+	<p class="mt-5 border-t border-black pt-4 text-sm text-neutral-600">Free-text bets cannot be resolved yet.</p>
 {:else if isDecider && locked}
 	<form
 		method="POST"

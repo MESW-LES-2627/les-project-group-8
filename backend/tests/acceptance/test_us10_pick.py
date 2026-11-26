@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 
 import pytest
 
+from picks.models import ChoiceAnswer
+
 from tests.acceptance.steps import (
     bearer,
     create_bet,
@@ -55,7 +57,7 @@ def test_pick_is_saved_with_bet_user_outcome_and_time(
     assert pick["outcome_id"] == outcome["id"]
     created = datetime.fromisoformat(pick["created_at"].replace("Z", "+00:00"))
     assert before <= created <= after
-    assert pick_repo.get(bet["id"], ana.id).outcome_id == outcome["id"]
+    assert pick_repo.get(bet["id"], ana.id).answer == ChoiceAnswer(outcome["id"])
 
 
 def test_pick_without_login_is_rejected(
@@ -271,7 +273,7 @@ def test_pick_is_replaced_not_duplicated(
     # Then my pick is replaced, not duplicated
     assert response.status_code == 201
     assert len(pick_repo.picks) == 1
-    assert pick_repo.get(bet["id"], ana.id).outcome_id == second["id"]
+    assert pick_repo.get(bet["id"], ana.id).answer == ChoiceAnswer(second["id"])
 
 
 def test_two_participants_keep_their_own_picks(

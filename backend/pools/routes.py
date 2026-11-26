@@ -64,6 +64,7 @@ def bet_to_json(bet: Bet) -> dict:
         "id": bet.id,
         "pool_id": bet.pool_id,
         "statement": bet.statement,
+        "answer_type": bet.answer_type.value,
         "presentation": bet.presentation.value,
         "winning_outcome_id": bet.winning_outcome_id,
         "options": [{"id": option.id, "label": option.label} for option in bet.options],

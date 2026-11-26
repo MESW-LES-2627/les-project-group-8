@@ -1,6 +1,6 @@
 # Design Report — PoolWithFriends
 
-[Iteration 0](#iteration-0) · [Iteration 1](#iteration-1) · [Iteration 2](#iteration-2)
+[Iteration 0](#iteration-0) · [Iteration 1](#iteration-1) · [Iteration 2](#iteration-2) · [Iteration 3](#iteration-3)
 
 ## Iteration 0
 
@@ -360,3 +360,172 @@ tests will check selection by Bet type and that a validation error preserves
 the saved Pick.
 An existing choice Bet and its saved Picks must still work through the
 same API after migration.
+
+## Iteration 3
+
+### 5. Design patterns
+
+#### 5.1. Strategy — validating a Pick's answer by the Bet's answer type
+
+**Story:** [US28 Create and answer an open-ended Bet](https://github.com/MESW-LES-2627/les-project-group-8/issues/179).
+**Follows:** the decision in [Scenario 2](#41-scenario-2--supporting-open-ended-bets-alongside-multiple-choice-bets).
+
+##### Problem in context
+
+Before US28, every answer was the id of one of the Bet's Outcomes.
+`PickService.save_pick` ran the rules every Pick shares and then checked the
+`outcome_id` inline, as its last step before writing
+([`save_pick` before US28, lines 55–61](https://github.com/MESW-LES-2627/les-project-group-8/blob/5457dfb58ed400ece87c899bdf5ea5475524d15e/backend/picks/service.py#L55-L61)).
+The shared rules are: the participant is the logged-in User, the Bet belongs to
+the Pool, the Pool is open, and the Bet is unresolved.
+
+US28 adds text Bets, whose answers follow different rules. A text answer is
+trimmed, must be 1–500 Unicode code points, is kept as plain text, and must not
+come with an `outcome_id`. Everything else stays the same for both formats:
+identity (AC 28.10), the deadline (AC 28.7), replacing only your own Pick
+(AC 28.6) and privacy until the deadline (AC 28.8). An invalid answer must leave
+the saved one unchanged (AC 28.5).
+
+The design problem is where the format-specific rules should live. The
+submission flow carries the identity, deadline and replacement rules already
+tested by US10, US15 and US16. It should not be edited each time a format is
+added or a format's rule changes. Scenario 2 expects both kinds of change: the
+text limit was open until refinement, and the vision lists numeric and list
+Bets. The validated answer must also exist before the repository is called,
+so that a rejected answer can never overwrite a saved one.
+
+##### The pattern
+
+We applied **Strategy** ([Refactoring.Guru](https://refactoring.guru/design-patterns/strategy);
+Gamma et al., *Design Patterns*, 1994). What varies is one algorithm, "turn this
+request body into a valid answer for this Bet". It is chosen per request from
+data (`bet.answer_type`), and the steps around it are the same for every format.
+`PickService` runs the shared checks, asks the strategy for the answer type to
+validate the body, and passes the typed result to the repository. It does not
+know any format's rules.
+
+| Strategy role | Our element | Where |
+| :- | :- | :- |
+| Strategy | `AnswerValidationStrategy`, an abstract base class (`abc.ABC`) with the abstract method `validate(payload, bet) -> Answer` | [answers.py:22](../backend/picks/answers.py) |
+| Concrete strategy | `ChoiceAnswerValidator(AnswerValidationStrategy)`: the `outcome_id` must be one of `bet.options`; `answer_text` is refused | [answers.py:30](../backend/picks/answers.py) |
+| Concrete strategy | `TextAnswerValidator(AnswerValidationStrategy)`: trim, 1–`max_length` (500) code points; `outcome_id` is refused | [answers.py:43](../backend/picks/answers.py) |
+| Context | `PickService`, holding a `Mapping[AnswerType, AnswerValidationStrategy]` | [service.py:16–25](../backend/picks/service.py) |
+| Context → Strategy call | `save_pick` looks up `self._validators[bet.answer_type]` and calls `validate` after the shared checks and before `create_or_replace` | [service.py:65–71](../backend/picks/service.py) |
+| Client that configures the context | `create_app` passes `default_answer_validators()` into `PickService` | [answers.py:60](../backend/picks/answers.py), [app.py:43](../backend/app.py) |
+| Data passed to the strategy | The `Bet` (its `options` and `answer_type`) | [pools/models.py:15](../backend/pools/models.py) |
+| Strategy results | `ChoiceAnswer` and `TextAnswer`, stored as `Pick.answer` | [picks/models.py:10–23](../backend/picks/models.py) |
+
+```mermaid
+classDiagram
+    direction LR
+    class PickService {
+        <<Context>>
+        -_validators: Mapping~AnswerType, AnswerValidationStrategy~
+        +save_pick(pool_id, bet_id, payload, user) Pick
+    }
+    class AnswerValidationStrategy {
+        <<abstract>>
+        +validate(payload, bet) Answer
+    }
+    class ChoiceAnswerValidator {
+        +validate(payload, bet) ChoiceAnswer
+    }
+    class TextAnswerValidator {
+        -_max_length: int = 500
+        +validate(payload, bet) TextAnswer
+    }
+    class Bet {
+        +answer_type: AnswerType
+        +options: tuple~Outcome~
+    }
+    class ChoiceAnswer {
+        +outcome_id: str
+    }
+    class TextAnswer {
+        +text: str
+    }
+    class SupabasePickRepository {
+        +create_or_replace(bet_id, user_id, answer) Pick
+    }
+    PickService o--> "1..*" AnswerValidationStrategy : selects by bet.answer_type
+    AnswerValidationStrategy <|.. ChoiceAnswerValidator
+    AnswerValidationStrategy <|.. TextAnswerValidator
+    AnswerValidationStrategy ..> Bet : reads
+    ChoiceAnswerValidator ..> ChoiceAnswer : returns
+    TextAnswerValidator ..> TextAnswer : returns
+    PickService ..> SupabasePickRepository : saves the validated answer
+```
+
+*Figure: the Strategy pattern as it appears in the `picks` module.*
+[PlantUML source](diagrams/3/answer-validation-strategy.puml)
+
+Two choices follow from Python, which has no `interface` keyword. The
+Strategy is an abstract base class: `AnswerValidationStrategy` subclasses
+`abc.ABC` and marks `validate` with `@abstractmethod`. Each concrete validator
+declares that it implements the interface by subclassing it, which is the
+realization arrow in the figure. Python refuses to instantiate the interface
+itself, or any subclass that leaves `validate` unimplemented, with a
+`TypeError`. The concrete strategies inherit no behavior,
+only the contract, and `PickService` uses them through composition: it holds
+them in a mapping injected through the constructor, not through subclassing.
+The mapping, not a factory method on the Bet, also keeps `pools` from
+importing anything from `picks`.
+
+Evidence: [US28 acceptance tests](../backend/tests/acceptance/test_us28_open_ended.py),
+which go through both strategies via the HTTP API, following the team's
+[testing approach](iterations/3/i03.d004-testing.md#testing-policy).
+
+##### Consequences and alternatives
+
+**What the pattern gave us.**
+
+- *Changes stayed local.* Adding text answers replaced five lines at the end of
+  `save_pick` with four; none of its shared checks changed, and the US10, US15
+  and US16 tests passed after only the stored-answer assertions were updated.
+  Changing the text limit now touches only `TextAnswerValidator` and the
+  AC 28.4/28.5 examples.
+- *AC 28.5 holds for any format.* A strategy either returns an answer or
+  raises. `create_or_replace` only runs with a returned answer, so a rejected
+  answer never reaches the database; the AC 28.5 tests check that the saved
+  answer survives.
+- *Typed results.* The repository ([`_answer_columns`](../backend/picks/repository.py))
+  and `ScoreService` match on `ChoiceAnswer`/`TextAnswer` instead of checking
+  which nullable field is set.
+
+**What it cost.**
+
+- *Indirection.* `save_pick` no longer shows what a valid choice answer is: a
+  reader has to follow the mapping into `answers.py`.
+- *Two lists must agree.* `AnswerType` is defined in `pools` and the mapping in
+  `picks`. A new enum value without a strategy fails per request with a 400,
+  not at startup. In practice a new type arrives with its own acceptance
+  tests, which would fail on that 400.
+- *It only covers validation.* Bet authoring (`parse_new_bet`), the
+  repository's column mapping, JSON serialization, scoring and the Svelte
+  components still branch on the answer type. A new format still touches about
+  six places. We kept those as simple conditionals, because one polymorphic
+  "answer format" class handling validation, storage, serialization and scoring
+  would tie `pools`, `picks` and `scores` to a single hierarchy.
+- *Marginal with two formats.* A dict of two functions would behave the same.
+  The class form pays off mainly by naming the contract and making each
+  format's rules one place to read; it does not yet pay off in volume.
+
+**Alternatives we considered.**
+
+| | Strategy (chosen) | `if/elif` on `answer_type` in `save_pick` | Polymorphic `Bet` subclasses (`TextBet.validate_answer`) |
+| :- | :- | :- | :- |
+| Adding a format | New class and mapping entry; `save_pick` unchanged | Edit `save_pick`, next to the identity and deadline rules | New `Bet` subclass in `pools` |
+| Changing the text limit | `TextAnswerValidator` only | Inside `save_pick` | Inside `pools` |
+| Module dependencies | `picks` → `pools` (unchanged) | Unchanged | `pools` would need `picks`' answer types: a `pools` ↔ `picks` cycle |
+| Reading the flow | Two files | One method | Two modules |
+| Size today | 1 protocol, 2 classes, 1 mapping | About 15 lines added to `save_pick` | Bet hierarchy and repository mapping per subclass |
+
+The `if/elif` version is the credible competitor. It is simpler to read and
+would have been enough for US28 alone. We rejected it because every future
+format or rule change would edit the method that enforces identity and the
+deadline, which are the rules with the most acceptance tests behind them, and
+because the field-exclusion rules for each format would sit side by side in one
+method. Polymorphic Bets were rejected because validating a Pick is the `picks`
+module's job, and moving it into `Bet` would reverse the dependency between the
+modules. Separate submission services per format were ruled out in Scenario 2:
+they would duplicate the shared rules.

@@ -12,6 +12,13 @@ class PoolStatus(str, Enum):
     LOCKED = "LOCKED"
 
 
+class AnswerType(str, Enum):
+    """What kind of answer a Bet accepts, independently of how it is presented."""
+
+    CHOICE = "choice"
+    TEXT = "text"
+
+
 class BetPresentation(str, Enum):
     """How a Bet renders its options."""
 
@@ -53,6 +60,7 @@ class NewBet:
     statement: str
     options: tuple[str, ...]
     presentation: BetPresentation = BetPresentation.RADIO
+    answer_type: AnswerType = AnswerType.CHOICE
 
 
 @dataclass(frozen=True)
@@ -64,6 +72,7 @@ class Bet:
     winning_outcome_id: str | None
     created_at: datetime
     presentation: BetPresentation = BetPresentation.RADIO
+    answer_type: AnswerType = AnswerType.CHOICE
 
 
 @dataclass(frozen=True)

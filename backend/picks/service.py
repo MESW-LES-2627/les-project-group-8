@@ -1,18 +1,28 @@
 """Business rules for picks."""
 
-from pools.models import Pool, PoolStatus
+from typing import Mapping
+
+from pools.models import AnswerType, Pool, PoolStatus
 from pools.service import PoolService
 from shared.errors import NotFoundError, ValidationError
 from shared.validation import require_json_object
 from users.models import User
 
+from .answers import AnswerValidationStrategy, default_answer_validators
 from .models import Pick
 
 
 class PickService:
-    def __init__(self, repository, pools: PoolService):
+    def __init__(
+        self,
+        repository,
+        pools: PoolService,
+        validators: Mapping[AnswerType, AnswerValidationStrategy] | None = None,
+    ):
         self._repository = repository
         self._pools = pools
+        # One strategy per answer type; see picks/answers.py.
+        self._validators = validators if validators is not None else default_answer_validators()
 
     def list_picks(self, pool_id, user: User) -> list[Pick]:
         pool = self._pools.get_pool(pool_id)
@@ -52,10 +62,10 @@ class PickService:
         if bet.winning_outcome_id is not None:
             raise ValidationError("Picks are closed for this bet.")
 
-        outcome_id = payload.get("outcome_id")
-        if not isinstance(outcome_id, str) or outcome_id not in {
-            option.id for option in bet.options
-        }:
-            raise ValidationError("Field 'outcome_id' must be one of the bet's options.")
+        validator = self._validators.get(bet.answer_type)
+        if validator is None:
+            raise ValidationError("This bet's answer type is not supported.")
+        # Raises before anything is written, so an invalid answer keeps the saved Pick.
+        answer = validator.validate(payload, bet)
 
-        return self._repository.create_or_replace(bet.id, user.id, outcome_id)
+        return self._repository.create_or_replace(bet.id, user.id, answer)
