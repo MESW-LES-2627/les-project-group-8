@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { PASSWORD_MIN, validateName } from '#lib/account.ts';
+import { NAME_MAX, PASSWORD_MIN } from '#lib/account.ts';
 import { readField } from '#lib/form.ts';
 import { authFailureStatus, redirectIfLoggedIn } from '#lib/server/session.ts';
 
@@ -24,7 +24,7 @@ export const actions = {
 		const form = await request.formData();
 		const email = readField(form, 'email').trim();
 		const password = readField(form, 'password');
-		const { name, error: nameError } = validateName(readField(form, 'name'));
+		const name = readField(form, 'name').trim();
 		// Never echo the password back into the form.
 		const values: Values = { email, name };
 
@@ -35,8 +35,10 @@ export const actions = {
 		if (password.length < PASSWORD_MIN) {
 			fields.password = `Password must be at least ${PASSWORD_MIN} characters.`;
 		}
-		if (nameError) {
-			fields.name = nameError;
+		if (!name) {
+			fields.name = 'Name cannot be empty.';
+		} else if (name.length > NAME_MAX) {
+			fields.name = `Name must be at most ${NAME_MAX} characters.`;
 		}
 		if (Object.keys(fields).length > 0) {
 			return failure(400, 'Please fix the errors below.', values, fields);

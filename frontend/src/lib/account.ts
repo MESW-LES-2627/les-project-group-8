@@ -6,8 +6,8 @@ export const NAME_MAX = 80;
 export const PASSWORD_MIN = 6;
 
 /**
- * Checks a display name after trimming it, which is what both the sign-up trigger
- * and `PATCH /api/me` save. `name` is always the trimmed value, for redisplay.
+ * Checks a display name after trimming it, the same rule the sign-up trigger and
+ * `PATCH /api/me` save with. `name` is always the trimmed value, for redisplay.
  */
 export function validateName(raw: string): { name: string; error?: string } {
 	const name = raw.trim();
