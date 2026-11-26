@@ -75,6 +75,11 @@ checked by hand. Alef:
 
 That led to the JWKS test (Q13) and the policy rule (Q14).
 
+**Amended after review on [#206](https://github.com/MESW-LES-2627/les-project-group-8/pull/206).**
+PyJWT's refetch on a new `kid` and its cooldown are a dependency's behaviour,
+so they are not tested; `for_jwks` only configures them. The JWKS test keeps
+the one-fetch check, which tests our wiring.
+
 ## 4. Not decided here
 
 - No glossary change: none of this is domain language.
