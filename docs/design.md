@@ -406,14 +406,14 @@ know any format's rules.
 
 | Strategy role | Our element | Where |
 | :- | :- | :- |
-| Strategy | `AnswerValidationStrategy`, an abstract base class (`abc.ABC`) with the abstract method `validate(payload, bet) -> Answer` | [answers.py:22](../backend/picks/answers.py#L22) |
-| Concrete strategy | `ChoiceAnswerValidator(AnswerValidationStrategy)`: the `outcome_id` must be one of `bet.options`; `answer_text` is refused | [answers.py:30](../backend/picks/answers.py#L30) |
-| Concrete strategy | `TextAnswerValidator(AnswerValidationStrategy)`: trim, 1–`max_length` (500) code points; `outcome_id` is refused | [answers.py:43](../backend/picks/answers.py#L43) |
-| Context | `PickService`, holding a `Mapping[AnswerType, AnswerValidationStrategy]` | [service.py:16–25](../backend/picks/service.py#L16-L25) |
-| Context → Strategy call | `save_pick` looks up `self._validators[bet.answer_type]` and calls `validate` after the shared checks and before `create_or_replace` | [service.py:65–71](../backend/picks/service.py#L65-L71) |
-| Client that configures the context | `create_app` passes `default_answer_validators()` into `PickService` | [answers.py:60](../backend/picks/answers.py#L60), [app.py:43](../backend/app.py#L43) |
-| Data passed to the strategy | The `Bet` (its `options` and `answer_type`) | [pools/models.py:15](../backend/pools/models.py#L15) |
-| Strategy results | `ChoiceAnswer` and `TextAnswer`, stored as `Pick.answer` | [picks/models.py:10–23](../backend/picks/models.py#L10-L23) |
+| Strategy | `AnswerValidationStrategy`, an abstract base class (`abc.ABC`) with the abstract method `validate(payload, bet) -> Answer` | [answers.py:22](../backend/picks/answers.py) |
+| Concrete strategy | `ChoiceAnswerValidator(AnswerValidationStrategy)`: the `outcome_id` must be one of `bet.options`; `answer_text` is refused | [answers.py:30](../backend/picks/answers.py) |
+| Concrete strategy | `TextAnswerValidator(AnswerValidationStrategy)`: trim, 1–`max_length` (500) code points; `outcome_id` is refused | [answers.py:43](../backend/picks/answers.py) |
+| Context | `PickService`, holding a `Mapping[AnswerType, AnswerValidationStrategy]` | [service.py:16–25](../backend/picks/service.py) |
+| Context → Strategy call | `save_pick` looks up `self._validators[bet.answer_type]` and calls `validate` after the shared checks and before `create_or_replace` | [service.py:65–71](../backend/picks/service.py) |
+| Client that configures the context | `create_app` passes `default_answer_validators()` into `PickService` | [answers.py:60](../backend/picks/answers.py), [app.py:43](../backend/app.py) |
+| Data passed to the strategy | The `Bet` (its `options` and `answer_type`) | [pools/models.py:15](../backend/pools/models.py) |
+| Strategy results | `ChoiceAnswer` and `TextAnswer`, stored as `Pick.answer` | [picks/models.py:10–23](../backend/picks/models.py) |
 
 ```mermaid
 classDiagram
@@ -473,7 +473,7 @@ importing anything from `picks`.
 
 Evidence: [US28 acceptance tests](../backend/tests/acceptance/test_us28_open_ended.py),
 which go through both strategies via the HTTP API, following the team's
-[testing approach](iterations/3/i03.d004-testing.md#what-we-test-and-why).
+[testing approach](iterations/3/i03.d004-testing.md#testing-policy).
 
 ##### Consequences and alternatives
 
@@ -488,7 +488,7 @@ which go through both strategies via the HTTP API, following the team's
   raises. `create_or_replace` only runs with a returned answer, so a rejected
   answer never reaches the database; the AC 28.5 tests check that the saved
   answer survives.
-- *Typed results.* The repository ([`_answer_columns`](../backend/picks/repository.py#L54))
+- *Typed results.* The repository ([`_answer_columns`](../backend/picks/repository.py))
   and `ScoreService` match on `ChoiceAnswer`/`TextAnswer` instead of checking
   which nullable field is set.
 

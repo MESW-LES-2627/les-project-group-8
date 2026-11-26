@@ -360,6 +360,33 @@ test('US27 Display multiple choice as a dropdown', async ({ record }) => {
 	await pickOutcome(page, GOALS.statement, '4 or more');
 });
 
+test('US28 Create and answer an open-ended Bet', async ({ record, browser }) => {
+	const { ana, ben } = people();
+	const statement = 'Who scores first?';
+	const answerAs = async (on: Page, text: string) => {
+		const card = betCard(on, statement);
+		await card.getByRole('textbox', { name: 'Your answer' }).fill(text);
+		await card.getByRole('button', { name: /Save answer|Change answer/ }).click();
+		await expect(card.getByText(`Saved: ${text}`)).toBeVisible();
+	};
+	const page = await record();
+	await signUp(page, ana);
+	const path = await poolWith(page, 'Weekend derby', []);
+	await page.getByLabel('Bet statement').fill(statement);
+	await page.getByLabel('Free text').check();
+	await page.getByRole('button', { name: 'Add bet' }).click();
+	await answerAs(page, 'The number 9');
+	await offCamera(browser, ben, async (other) => {
+		await open(other, path);
+		await answerAs(other, 'Nobody before half-time');
+	});
+	await closePool(path);
+	await open(page, path);
+	const answers = betCard(page, statement).getByRole('region', { name: "Everyone's answers" });
+	await answers.scrollIntoViewIfNeeded();
+	await expect(answers.getByRole('listitem')).toHaveText([/Ana Silva\s+The number 9/, /Ben Costa\s+Nobody before half-time/]);
+});
+
 test('US31 See a pool’s leaderboard', async ({ record, browser }) => {
 	const { ana, ben, cleo } = people();
 	const page = await record();

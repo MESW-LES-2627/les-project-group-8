@@ -11,6 +11,7 @@ const bet: Bet = {
 	id: 'b1',
 	pool_id: 'p1',
 	statement: 'Who wins?',
+	answer_type: 'choice',
 	presentation: 'radio',
 	winning_outcome_id: 'o1',
 	options: [
@@ -21,7 +22,7 @@ const bet: Bet = {
 };
 
 function pick(id: string, name: string, outcome_id: string, bet_id = 'b1'): Pick {
-	return { id, bet_id, user_id: id, user: { id, name }, outcome_id, created_at: '' };
+	return { id, bet_id, user_id: id, user: { id, name }, outcome_id, answer_text: null, created_at: '' };
 }
 
 const heading = { name: 'Correct pickers — Porto' };

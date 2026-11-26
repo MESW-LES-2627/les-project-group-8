@@ -17,6 +17,7 @@ const bet: Bet = {
 	id: 'b1',
 	pool_id: 'p1',
 	statement: 'Who wins?',
+	answer_type: 'choice',
 	presentation: 'radio',
 	winning_outcome_id: null,
 	options: [
@@ -38,6 +39,12 @@ describe('ResolveControl', () => {
 	it('shows the winning Outcome once the Bet is resolved', async () => {
 		const screen = await render(ResolveControl, { bet: { ...bet, winning_outcome_id: 'o2' } });
 		await expect.element(screen.getByRole('status')).toHaveTextContent('Resolved — winning outcome: Benfica');
+		await expect.element(screen.getByRole('button', { name: 'Resolve bet' })).not.toBeInTheDocument();
+	});
+
+	it('tells the Decider that a free-text Bet cannot be resolved yet', async () => {
+		const screen = await render(ResolveControl, { bet: { ...bet, answer_type: 'text', options: [] } });
+		await expect.element(screen.getByText('Free-text bets cannot be resolved yet.')).toBeVisible();
 		await expect.element(screen.getByRole('button', { name: 'Resolve bet' })).not.toBeInTheDocument();
 	});
 

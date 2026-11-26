@@ -11,6 +11,7 @@ const bet: Bet = {
 	id: 'b1',
 	pool_id: 'p1',
 	statement: 'Who wins?',
+	answer_type: 'choice',
 	presentation: 'radio',
 	winning_outcome_id: 'o1',
 	options: [
@@ -21,7 +22,13 @@ const bet: Bet = {
 };
 
 function pick(id: string, name: string, outcome_id: string, bet_id = 'b1'): Pick {
-	return { id, bet_id, user_id: id, user: { id, name }, outcome_id, created_at: '' };
+	return { id, bet_id, user_id: id, user: { id, name }, outcome_id, answer_text: null, created_at: '' };
+}
+
+const textBet: Bet = { ...bet, answer_type: 'text', options: [], winning_outcome_id: null };
+
+function answer(id: string, name: string, answer_text: string): Pick {
+	return { id, bet_id: 'b1', user_id: id, user: { id, name }, outcome_id: null, answer_text, created_at: '' };
 }
 
 const heading = { name: "Everyone's picks" };
@@ -47,6 +54,21 @@ describe('BetPicks', () => {
 		page.data.picks = [];
 		const screen = await render(BetPicks, { bet });
 		await expect.element(screen.getByText('No picks for this bet.')).toBeVisible();
+	});
+
+	it("lists everyone's answers to a free-text Bet", async () => {
+		page.data.picks = [answer('a', 'Ana', 'Ronaldo'), answer('b', 'Bruno', 'Messi')];
+		const screen = await render(BetPicks, { bet: textBet });
+		await expect.element(screen.getByRole('heading', { name: "Everyone's answers" })).toBeVisible();
+		const items = screen.getByRole('listitem');
+		await expect.element(items.nth(0)).toHaveTextContent('Ana Ronaldo');
+		await expect.element(items.nth(1)).toHaveTextContent('Bruno Messi');
+	});
+
+	it('says so when nobody answered a free-text Bet', async () => {
+		page.data.picks = [];
+		const screen = await render(BetPicks, { bet: textBet });
+		await expect.element(screen.getByText('No answers for this bet.')).toBeVisible();
 	});
 
 	it.each([
