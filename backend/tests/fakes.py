@@ -5,7 +5,7 @@ from dataclasses import replace
 from datetime import datetime, timezone
 
 from picks.models import Pick
-from pools.models import Bet, NewBet, NewPool, Outcome, Pool
+from pools.models import Bet, NewBet, NewPool, Outcome, Pool, UserSummary
 from users.models import User
 
 
@@ -20,16 +20,38 @@ class FakeUserRepository:
     def get(self, user_id: str) -> User | None:
         return self.users.get(user_id)
 
+    def update_name(self, user_id: str, name: str) -> User | None:
+        user = self.users.get(user_id)
+        if user is None:
+            return None
+        updated = replace(user, name=name)
+        self.users[user_id] = updated
+        return updated
+
 
 class FakePoolRepository:
-    def __init__(self):
+    def __init__(self, users: FakeUserRepository):
+        self._users = users
         self.pools: list[Pool] = []
 
     def list_pools(self) -> list[Pool]:
-        return list(reversed(self.pools))
+        return [self._with_current_names(pool) for pool in reversed(self.pools)]
 
     def get_pool(self, pool_id: str) -> Pool | None:
-        return next((pool for pool in self.pools if pool.id == pool_id), None)
+        pool = next((pool for pool in self.pools if pool.id == pool_id), None)
+        return self._with_current_names(pool) if pool is not None else None
+
+    def _with_current_names(self, pool: Pool) -> Pool:
+        """Mirrors the real read, which joins `users` and so sees a renamed User."""
+        return replace(
+            pool,
+            creator=self._current_user(pool.creator),
+            decider=self._current_user(pool.decider),
+        )
+
+    def _current_user(self, summary: UserSummary) -> UserSummary:
+        user = self._users.get(summary.id)
+        return UserSummary.of(user) if user is not None else summary
 
     def create_pool(
         self,

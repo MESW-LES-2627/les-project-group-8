@@ -15,8 +15,8 @@ def user_repo():
 
 
 @pytest.fixture
-def pool_repo():
-    return FakePoolRepository()
+def pool_repo(user_repo):
+    return FakePoolRepository(user_repo)
 
 
 @pytest.fixture
