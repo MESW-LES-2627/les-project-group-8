@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { validateName } from '#lib/account.ts';
+import { NAME_MAX } from '#lib/account.ts';
 import { readField } from '#lib/form.ts';
 import { loginPath } from '#lib/redirect.ts';
 import { ApiError, renameCurrentUser } from '#lib/server/api.ts';
@@ -9,7 +9,6 @@ export function load({ locals, url }) {
 	if (!locals.session) {
 		redirect(303, loginPath(url));
 	}
-	return { saved: url.searchParams.has('saved') };
 }
 
 export const actions = {
@@ -19,10 +18,13 @@ export const actions = {
 		}
 
 		const form = await request.formData();
-		const { name, error } = validateName(readField(form, 'name'));
+		const name = readField(form, 'name').trim();
 		const values = { name };
-		if (error) {
-			return fail(400, { error: 'Please fix the errors below.', fields: { name: error }, values });
+		if (!name) {
+			return fail(400, { error: 'Name cannot be empty.', values });
+		}
+		if (name.length > NAME_MAX) {
+			return fail(400, { error: `Name must be at most ${NAME_MAX} characters.`, values });
 		}
 
 		try {
@@ -36,7 +38,7 @@ export const actions = {
 				redirect(303, '/no-user');
 			}
 			if (err instanceof ApiError && err.status === 400) {
-				return fail(400, { error: err.message, fields: { name: err.message }, values });
+				return fail(400, { error: err.message, values });
 			}
 			return fail(502, {
 				error: err instanceof Error ? err.message : 'Could not save your name.',
@@ -44,6 +46,6 @@ export const actions = {
 			});
 		}
 
-		redirect(303, '/account?saved=1');
+		redirect(303, '/account');
 	}
 };

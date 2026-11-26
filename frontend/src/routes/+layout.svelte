@@ -18,13 +18,7 @@
 			<div class="flex items-center gap-4">
 				{#if data.loggedIn}
 					{#if data.user}
-						<a
-							href="/account"
-							title="Change your name"
-							class="text-sm font-bold underline-offset-2 hover:underline"
-						>
-							{data.user.name}
-						</a>
+						<a href="/account" class="text-sm font-bold hover:underline">{data.user.name}</a>
 					{/if}
 					<form method="POST" action="/logout">
 						<button

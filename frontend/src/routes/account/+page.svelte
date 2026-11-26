@@ -1,16 +1,10 @@
 <script lang="ts">
 	import { NAME_MAX } from '#lib/account.ts';
 	import Form from '#lib/components/Form.svelte';
-	import { errorClass, inputClass, labelClass, submitClass } from '#lib/form.ts';
+	import { inputClass, labelClass, submitClass } from '#lib/form.ts';
 	import type { PageProps } from './$types';
 
-	type FormState = {
-		error: string;
-		fields?: { name?: string };
-		values?: { name?: string };
-	};
-
-	let { data, form = null }: { data: PageProps['data']; form?: FormState | null } = $props();
+	let { data, form }: PageProps = $props();
 </script>
 
 <svelte:head>
@@ -22,12 +16,6 @@
 	Your name is how other people see you in pools. Changing it keeps your pools, picks and
 	record.
 </p>
-
-{#if data.saved}
-	<p role="status" class="mt-6 border border-black bg-neutral-100 px-3 py-2 text-sm font-bold">
-		Name updated.
-	</p>
-{/if}
 
 <Form error={form?.error} class="mt-8 space-y-5">
 	{#snippet children(submitting)}
@@ -41,11 +29,7 @@
 				maxlength={NAME_MAX}
 				value={form?.values?.name ?? data.user?.name ?? ''}
 				class={inputClass}
-				aria-invalid={form?.fields?.name ? 'true' : undefined}
 			/>
-			{#if form?.fields?.name}
-				<p class={errorClass}>{form.fields.name}</p>
-			{/if}
 		</div>
 
 		<div class="flex items-center gap-4 border-t border-black pt-5">

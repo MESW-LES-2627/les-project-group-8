@@ -64,10 +64,8 @@ paths:
     patch:
       summary: Rename myself
       description: >
-        Changes the display name of the logged-in User. An id or user_id in the
-        body is refused: the token decides whose name changes, so another User's
-        name can never be changed. The User id, Account, ownership, Picks and
-        Records stay as they are.
+        Renames only the logged-in User. An id or user_id in the body is refused;
+        the token decides whose name changes.
       operationId: renameMe
       security:
         - bearerAuth: []
@@ -85,23 +83,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserSummary'
         '400':
-          description: >
-            Missing or empty name, a name longer than 80 characters after
-            trimming, or an identity field in the body.
+          description: Empty or too long name after trimming, or an identity field in the body.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                emptyName:
-                  value:
-                    error: "Field 'name' cannot be empty."
-                tooLong:
-                  value:
-                    error: "Field 'name' must be at most 80 characters."
-                anotherUser:
-                  value:
-                    error: "Field 'id' is not accepted: you can only rename yourself."
         '401':
           $ref: '#/components/responses/AuthenticationRequired'
         '403':
