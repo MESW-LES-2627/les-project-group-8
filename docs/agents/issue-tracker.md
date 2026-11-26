@@ -12,18 +12,20 @@ Epics and user stories for this repo live as GitHub issues. Use the `gh` CLI for
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
 - **Close**: `gh issue close <number> --comment "..."`
 
+- **Link to a repo file from an issue, PR or comment body**: use an absolute URL, `https://github.com/MESW-LES-2627/les-project-group-8/blob/<commit-sha>/<path>`. GitHub resolves a relative path such as `docs/foo.md` against the page URL there (`…/pull/docs/foo.md`), not the repo, so the link breaks. Use a commit SHA instead of a branch name so the link still works after the branch is deleted.
+
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
 
 ## Project board
 
-Issues are tracked on the org project **Group 8 — Iteration 2** (number `24`, owner `MESW-LES-2627`). Work is two levels deep: an **epic** (label `epic`) is a parent issue whose sub-issues are **user stories** (label `user-story`). Technical work has issue type `Task` and defects issue type `Bug`; both go on the board too, with no story. Stories keep the `user-story` label; never write technical work as an "As a developer…" story. The board's `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`, so epics stay in the project. Its views:
+Issues are tracked on the current iteration's org project, **Group 8 — Iteration N** (owner `MESW-LES-2627`): the open project with that title and the highest number. Never hardcode its number or ids; the snippets below look them up. Work is two levels deep: an **epic** (label `epic`) is a parent issue whose sub-issues are **user stories** (label `user-story`). Technical work has issue type `Task` and defects issue type `Bug`; both go on the board too, with no story. Stories keep the `user-story` label; never write technical work as an "As a developer…" story. The board's `Status` field has `To do`, `In progress`, `In review`, `Done`. Sub-issues of an issue already on the board are added to it automatically, in `To do`, so epics stay in the project. Its views:
 
-- **Iteration 2 board**: stories only (`label:user-story`), in swimlanes by `Parent issue`. The iteration-2 claim links it as `views/1`, so edit it in place and never recreate it.
+- **Iteration N board**: stories only (`label:user-story`), in swimlanes by `Parent issue`. Each iteration's claim links it as `views/1`, so edit it in place and never recreate it.
 - **Technical work**: Tasks and Bugs (`type:Task,Bug`).
 - **Epics**: a table of epics with their `Sub-issues progress`.
 - **Roadmap**: epics only.
 
-Iteration 1's board (`22`) is kept as a record.
+Earlier iterations' boards are closed and kept as a record; never add issues to them.
 
 From iteration 3, every story, Task and Bug gets points in the board's `Estimate` field at iteration planning, before work starts (Fibonacci 1, 2, 3, 5, 8, with reference story US22 #77 = 3; split anything over 8). Report story points and task points (Tasks and Bugs) separately. Cycle time is read from the `Status` history; hours are not logged.
 
@@ -31,6 +33,7 @@ GitHub's board automation only reacts to issues **linked** to a PR, and `Closes 
 
 | When | Do |
 | :--- | :--- |
+| A new iteration starts | Create its board, switch on its **Auto-add to project** workflow (Project → Workflows, filtered to this repo; UI only), and close the previous board. |
 | Iteration planning (from iteration 3) | Set `Estimate` on every story, Task and Bug planned for the iteration. |
 | You start an issue (story, Task or Bug) | Assign it (`gh issue edit <n> --add-assignee @me`) and set it `In progress` before the first commit, so its cycle time is right. |
 | Its PR into `staging` opens | Set the issue `In review` by hand. List it in the PR body as `Closes #<n>` (one keyword per issue); the workflow links it. |
@@ -41,20 +44,29 @@ A stack member merged into its parent branch closes its stories when that branch
 
 One time only: stories merged into `staging` before ADR 0006 are closed by the next promotion PR, with one `Closes #<n>` each.
 
-**Set a status** (option ids: `To do` `f75ad846`, `In progress` `47fc9ee4`, `In review` `1d04f341`, `Done` `98236657`):
+**Find the board and the issue's item** (adding an issue that is already on the board returns its existing item):
 
 ```sh
-item=$(gh api graphql -f query='{repository(owner:"MESW-LES-2627",name:"les-project-group-8"){issue(number:<n>){projectItems(first:5){nodes{id project{number}}}}}}' \
-  --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number==24) | .id')
-gh project item-edit --id "$item" --project-id PVT_kwDOFEfeUs4Bqvy6 \
-  --field-id PVTSSF_lADOFEfeUs4Bqvy6zhpFf7I --single-select-option-id <option-id>
+o=MESW-LES-2627
+proj=$(gh project list --owner $o --format json \
+  --jq '[.projects[] | select(.closed | not) | select(.title | startswith("Group 8 — Iteration"))] | max_by(.number) | .number')
+pid=$(gh project view "$proj" --owner $o --format json --jq .id)
+item=$(gh project item-add "$proj" --owner $o --url "https://github.com/$o/les-project-group-8/issues/<n>" --format json --jq .id)
 ```
 
-**Set an estimate**, with `$item` found as above:
+**Set a status** (`To do`, `In progress`, `In review` or `Done`):
 
 ```sh
-gh project item-edit --id "$item" --project-id PVT_kwDOFEfeUs4Bqvy6 \
-  --field-id PVTF_lADOFEfeUs4Bqvy6zhqtlxU --number <points>
+field=$(gh project field-list "$proj" --owner $o --format json --jq '.fields[] | select(.name=="Status") | .id')
+opt=$(gh project field-list "$proj" --owner $o --format json --jq '.fields[] | select(.name=="Status") | .options[] | select(.name=="<status>") | .id')
+gh project item-edit --id "$item" --project-id "$pid" --field-id "$field" --single-select-option-id "$opt"
+```
+
+**Set an estimate**:
+
+```sh
+field=$(gh project field-list "$proj" --owner $o --format json --jq '.fields[] | select(.name=="Estimate") | .id')
+gh project item-edit --id "$item" --project-id "$pid" --field-id "$field" --number <points>
 ```
 
 ## Pull requests as a triage surface

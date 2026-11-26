@@ -13,6 +13,8 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+.coverage
+htmlcov/
 
 # Environment
 .env
@@ -24,3 +26,7 @@ venv/
 
 # Local copies of cited books and PDFs (not redistributable)
 docs/books/
+
+# Local worktree checkouts and IDE settings
+.claude/worktrees/
+.idea/

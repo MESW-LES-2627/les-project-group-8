@@ -1,0 +1,11 @@
+# Coverage measures what pytest is responsible for (docs/assets/iterations/3/grilling-testing-policy-and-coverage.md, Q3, Q9).
+# Each omitted source names the layer that covers it instead.
+[run]
+branch = True
+source = .
+omit =
+    tests/*
+    .venv/*
+    # Supabase repositories and client factory: covered by e2e.
+    */repository.py
+    shared/db.py
