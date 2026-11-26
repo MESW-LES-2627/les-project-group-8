@@ -58,3 +58,27 @@ their decision and its recommended answer.
    `screenshots` branch and the PR comment (Q3–Q5, Q8, Q9, Q12, Q13).
 3. **Story gallery:** GIFs and README on push to `staging` (Q6, Q10).
 4. **Follow-up:** a mobile viewport as a second Playwright project (Q11).
+
+## 5. Addendum: review of PR #224 (2026-11-26)
+
+Joaolfc0's [review comment](https://github.com/MESW-LES-2627/les-project-group-8/pull/224#issuecomment-7194917707)
+raised two points: the gallery adds about 10 MB to the `screenshots` branch on
+every push to `staging`, which is never pruned, and the 387 lines of story
+tests must be kept in step with every UI change. Alef's answer, with Claude
+Code running the `grilling` skill:
+[reply on the PR](https://github.com/MESW-LES-2627/les-project-group-8/pull/224).
+
+Facts the AI looked up: `staging` got 45 first-parent pushes in the month to
+2026-11-26, so about 450 MB of GIF history a month. GIFs don't delta-compress
+and recordings are never byte-identical. A plain `git clone` fetches every
+branch, so the growth reaches every clone. `stories.yml` is not a required
+check and runs only after a merge to `staging`.
+
+| # | Question | Decision |
+| - | - | - |
+| Q14 | How to stop the gallery's history growing | Publish it to its own `stories` branch, replaced on each run by a single orphan commit with a force-push. Don't force-push `screenshots`: PR comments link to its commit SHAs (Q12). Not a workflow artifact: it expires and can't be viewed in the browser. The push retry loop goes, since the workflow's `concurrency` group already serializes story runs. |
+| Q15 | Is the gallery worth its upkeep | Keep all 25 stories. A broken story never blocks a merge; it drops its GIF and turns the staging run red. A UI change already means editing that flow's e2e tests. |
+| Q16 | `pr/<n>/` growth on `screenshots` | Unchanged (Q12): small PNGs of changed screens only. Said so in the reply. |
+
+The fix lands on PR #224 itself, in a fresh `/implement 218` session that also
+updates the PR title and body to name the `stories` branch.
