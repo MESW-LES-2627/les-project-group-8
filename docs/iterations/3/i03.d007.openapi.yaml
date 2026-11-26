@@ -61,6 +61,52 @@ paths:
         '403':
           $ref: '#/components/responses/NoUserForAccount'
 
+    patch:
+      summary: Rename myself
+      description: >
+        Changes the display name of the logged-in User. An id or user_id in the
+        body is refused: the token decides whose name changes, so another User's
+        name can never be changed. The User id, Account, ownership, Picks and
+        Records stay as they are.
+      operationId: renameMe
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenameMeRequest'
+      responses:
+        '200':
+          description: The renamed User.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSummary'
+        '400':
+          description: >
+            Missing or empty name, a name longer than 80 characters after
+            trimming, or an identity field in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyName:
+                  value:
+                    error: "Field 'name' cannot be empty."
+                tooLong:
+                  value:
+                    error: "Field 'name' must be at most 80 characters."
+                anotherUser:
+                  value:
+                    error: "Field 'id' is not accepted: you can only rename yourself."
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/NoUserForAccount'
+
   /pools:
     get:
       summary: List all pools
@@ -440,6 +486,19 @@ components:
             error: "No user exists for this account."
 
   schemas:
+    RenameMeRequest:
+      type: object
+      description: Must not contain id or user_id (400); only the logged-in User can be renamed.
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Display name, trimmed before saving.
+          example: "Ana"
+
     CreatePoolRequest:
       type: object
       description: >
