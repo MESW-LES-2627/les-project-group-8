@@ -27,6 +27,13 @@ jobs:
       run:
         working-directory: frontend
     steps:
+      # Supabase's ports (supabase/config.toml) sit in Linux's ephemeral range (32768-60999): an outbound
+      # connection can take one and fail `supabase start` with "address already in use". First step, so no
+      # connection holds one yet; working-directory `.` because frontend/ is not checked out yet.
+      - name: Reserve Supabase's ports
+        working-directory: .
+        run: sudo sysctl -w net.ipv4.ip_local_reserved_ports=54320-54329
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -88,9 +95,10 @@ jobs:
             cp -R "$RUNNER_TEMP/base/frontend/showcase" .
           fi
           # A changed screen fails its test, a new one is written: neither is a crash.
+          # No results.json means Playwright never ran: the error above is the cause.
           # shortcut: tells a visual change from a crash by Playwright's error text; check it on a Playwright upgrade.
           PLAYWRIGHT_JSON_OUTPUT_NAME=results.json SHOWCASE=1 \
-            pnpm test:e2e --update-snapshots=missing --reporter=list,json || node -e '
+            pnpm test:e2e --update-snapshots=missing --reporter=list,json || { [ -f results.json ] && node -e '
               const visual = /pixels \(ratio [\d.]+ of all image pixels\) are different|Expected an image \d+px by \d+px, received/;
               const errors = (suite) => [
                 ...(suite.suites ?? []).flatMap(errors),
@@ -100,7 +108,7 @@ jobs:
               const crashes = [...report.errors, ...report.suites.flatMap(errors)].filter((e) => !visual.test(e.message ?? ""));
               crashes.forEach((e) => console.error(e.message));
               process.exit(crashes.length ? 1 : 0);
-            '
+            '; }
 
       - name: Publish
         env:
