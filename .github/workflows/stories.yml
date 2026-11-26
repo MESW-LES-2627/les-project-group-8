@@ -94,7 +94,7 @@ jobs:
           ls stories | sort -V | while IFS= read -r file; do
             title=${file%.webm} # shortcut: assumes every story test's title starts with "USn "; check it if a test breaks that.
             id=${title%% *}
-            ffmpeg -loglevel error -i "stories/$file" \
+            ffmpeg -nostdin -loglevel error -i "stories/$file" \
               -vf 'fps=8,scale=800:-1:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse' "$out/$id.gif"
             printf '\n## %s: %s\n\n![%s](%s.gif)\n' "$id" "${title#* }" "$id" "$id" >> "$out/README.md"
           done
