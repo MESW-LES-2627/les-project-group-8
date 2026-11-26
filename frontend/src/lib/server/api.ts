@@ -26,7 +26,7 @@ function apiBase(): string {
 }
 
 type RequestOptions = {
-	method?: 'GET' | 'POST';
+	method?: 'GET' | 'POST' | 'PATCH';
 	/** Sent as JSON. */
 	body?: unknown;
 	/** The logged-in Account's Supabase access token; Flask verifies it (ADR 0001). */
@@ -125,6 +125,15 @@ export function getLeaderboard(poolId: string): Promise<LeaderboardEntry[]> {
 /** The User the access token belongs to. */
 export function getCurrentUser(accessToken: string): Promise<UserSummary> {
 	return request<UserSummary>('/me', { accessToken });
+}
+
+/** Renames only the token's User; Picks, Records and the Account stay as they are. */
+export function renameCurrentUser(name: string, accessToken: string): Promise<UserSummary> {
+	return request<UserSummary>('/me', {
+		method: 'PATCH',
+		body: { name },
+		accessToken
+	});
 }
 
 /** Flask makes the token's User the creator and decider. */
